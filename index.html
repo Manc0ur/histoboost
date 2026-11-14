@@ -2426,6 +2426,7 @@ function kaMenu(){ sylKA();
       <button class="item" data-m="cards" ${count?"":"disabled"}><span class="txt"><strong>Leerkaarten</strong><span class="sub">Lees het kenmerkend aspect, draai de kaart om voor tijdvak, toelichting en voorbeelden</span></span></button>
     </div>
   </section>`;
+  sorteerMenu(["cards","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","jaar","hitster","map","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-tv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.tv; S.sel.has(n)?S.sel.delete(n):S.sel.add(n); kaMenu();});
   app.querySelectorAll("[data-tvper]").forEach(b=>b.onclick=()=>{const tvs=TVPER[+b.dataset.tvper][1]; if(tvs.every(n=>S.sel.has(n))) tvs.forEach(n=>S.sel.delete(n)); else tvs.forEach(n=>S.sel.add(n)); kaMenu();});
@@ -2511,6 +2512,13 @@ function cards(){
 
 /* ---------- Menu historische context ---------- */
 const hk = k => S.hc&&S.hc.id&&S.hc.id!=="steden" ? S.hc.id+"-"+k : k;
+/* oefeningen bij elkaar zetten: kennis, tijd, verbanden, toetsen */
+function sorteerMenu(order){
+  const first=app.querySelector(".list > [data-m]"); if(!first) return;
+  const list=first.parentElement, items=[...list.children];
+  const pos=m=>{const i=order.indexOf(m); return i<0?99:i;};
+  items.sort((a,b)=>pos(a.dataset.m)-pos(b.dataset.m)).forEach(x=>list.appendChild(x));
+}
 function hcMenu(){
   const H=S.hc; sylHC(H);
   app.innerHTML = `
@@ -2546,6 +2554,7 @@ function hcMenu(){
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één deelvraag om te oefenen.</p>`}
   </section>`;
+  sorteerMenu(["lees","begrip","memory","gk","kruis","wie","tijd","tijdlijn","jaar","hitster","map","keten","koppel","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,begrip:hcBegrip,tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
