@@ -2557,8 +2557,9 @@ function hcMenu(){
     <h2>Kies een oefening</h2>
     <div class="list">
       ${[["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
-         ["begrip","Begrippen omschrijvingen","Kies de juiste omschrijving bij een begrip"],
-         ["koppelb","Begrippen koppelen","Sleep de juiste omschrijving naar elk begrip"],
+         ["koppelb","Begrippen","Sleep de juiste omschrijving naar elk begrip"],
+         ["oneout","Welk woord weg","Vier begrippen, personen of gebeurtenissen: welke hoort er niet bij?"],
+         ["fabel","Feit of fabel","Klopt de uitspraak? Kies goed of fout en lees de uitleg"],
          ["tijd","Chronologie","Sleep gebeurtenissen in de goede volgorde"],
          ["tijdlijn","Tijdlijn","Sleep elke gebeurtenis naar het juiste jaartal"],
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
@@ -2577,10 +2578,10 @@ function hcMenu(){
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één deelvraag om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["lees","begrip","koppelb","memory","gk","kruis","wie","keten","tijd","tijdlijn","jaar","hitster","map","koppel","mc","quiz","exam"]);
+  sorteerMenu(["lees","koppelb","memory","gk","kruis","wie","oneout","fabel","tijd","tijdlijn","jaar","hitster","map","keten","koppel","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,begrip:hcBegrip,koppelb:()=>hcKoppelB(),tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,koppelb:()=>hcKoppelB(),oneout:hcOneOut,fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
   window.scrollTo(0,0);
 }
 
@@ -2626,8 +2627,8 @@ function hcKoppelB(prev){
     const ok=round.filter((b,i)=>isRight(i)).length, all=ok===round.length, full=place.every(p=>p!==null);
     const bank=chips.map((c,i)=>i).filter(i=>slotOf(i)<0);
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-    <div class="meta"><span>Begrippen koppelen</span><span>${round.length} begrippen</span></div>
-    <h2>Begrippen koppelen</h2>
+    <div class="meta"><span>Begrippen</span><span>${round.length} begrippen</span></div>
+    <h2>Begrippen</h2>
     <p class="lead">Sleep bij elk begrip de juiste omschrijving. Je kunt ook op een omschrijving tikken en daarna op een begrip. Let op: er zijn meer omschrijvingen dan begrippen.</p>
     <div class="bk">
       <div class="bkl">${round.map((b,i)=>{ const ci=place[i], cls=checked?(isRight(i)?"correct":"wrong"):(ci===null?"empty":"");
@@ -2688,6 +2689,71 @@ function hcKoppelB(prev){
     chip.addEventListener("pointermove",move); chip.addEventListener("pointerup",up); chip.addEventListener("pointercancel",up);
   }
   draw(); window.scrollTo(0,0);
+}
+
+/* ---------- Welk woord weg ---------- */
+function hcOneOut(){
+  const H=S.hc, sel=H.dv.filter(d=>S.dvSel.has(d.nr)), dvOf=nr=>H.dv.find(d=>d.nr===nr);
+  const pers=WBI.filter(w=>w.hc&&w.hc[H.id]).map(w=>({n:w.n,u:w.u,dvs:w.hc[H.id]}));
+  const types=[
+    {tag:"Begrippen",items:H.begrippen.map(b=>({t:b.b,x:b.d,dvs:[b.dv]}))},
+    {tag:"Personen",items:pers.map(p=>({t:p.n,x:p.u,dvs:p.dvs}))},
+    {tag:"Gebeurtenissen",items:H.tijdlijn.map(e=>({t:e.t,x:"gebeurde in "+fmtY(e.j)+".",dvs:[e.dv],j:e.j}))}
+  ];
+  const qs=[], used=new Set();
+  let guard=0;
+  while(qs.length<8 && guard++<200){
+    const T=types[Math.floor(Math.random()*types.length)], A=sel.length?sel[Math.floor(Math.random()*sel.length)]:null;
+    if(!A) break;
+    let inA=T.items.filter(x=>x.dvs.includes(A.nr)), notA=T.items.filter(x=>!x.dvs.includes(A.nr));
+    if(T.tag==="Gebeurtenissen"){ /* alleen als het jaartal duidelijk buiten de periode van het onderdeel valt */
+      const m=String(A.periode).match(/(\d{3,4})\D+(\d{3,4})/); if(!m||/v\.?\s?C/i.test(A.periode)) continue;
+      const lo=+m[1], hi=+m[2]; inA=inA.filter(x=>x.j>=lo&&x.j<=hi); notA=notA.filter(x=>x.j<lo||x.j>hi); }
+    if(inA.length<3||!notA.length) continue;
+    const diffP=notA.filter(x=>{const d=dvOf(x.dvs[0]);return d&&d.periode!==A.periode;}); const three=pickN(inA,3), odd=pickN(diffP.length?diffP:notA,1)[0];
+    const id="oo"+three.map(x=>x.t).sort().join("|")+odd.t; if(used.has(id)) continue; used.add(id);
+    const B=dvOf(odd.dvs[0]);
+    const all=shuffle([...three,odd]);
+    qs.push({id,ask:QTAG(T.tag)+(T.tag==="Gebeurtenissen"?"Welke gebeurtenis hoort er niet bij?":T.tag==="Personen"?"Welke persoon hoort er niet bij?":"Welk begrip hoort er niet bij?"),
+      q:"Drie van deze vier horen bij elkaar. Kies degene die er niet bij hoort.",right:odd.t,
+      opts:all.map(x=>({id:x.t,label:x.t})),
+      hint:`Drie van de vier horen bij het onderdeel “${A.vraag}” (${A.periode}). Welke past daar niet bij?`,
+      uitleg:`<strong>${esc(odd.t)}</strong> hoort er niet bij: dat hoort bij “${esc(B?B.vraag:"een ander onderdeel")}”${B?` (${B.periode})`:""}. De andere drie horen bij “${esc(A.vraag)}” (${A.periode}).<br>${three.map(x=>`• <strong>${esc(x.t)}</strong>${x.x?": "+esc(x.x):""}`).join("<br>")}<br>• <strong>${esc(odd.t)}</strong>${odd.x?": "+esc(odd.x):""}`,
+      review:`<strong>${esc(odd.t)}</strong> hoort niet bij “${esc(A.vraag)}”.`});
+  }
+  if(qs.length<3){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies bij “Welke onderdelen?” minimaal één onderdeel met genoeg begrippen, personen of gebeurtenissen.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
+  mcEx({title:"Welk woord weg",qs,back:hcMenu,again:hcOneOut});
+}
+/* ---------- Feit of fabel ---------- */
+function hcFabel(){
+  const H=S.hc, dvOf=nr=>H.dv.find(d=>d.nr===nr), selDv=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.nr);
+  const inSel=x=>!selDv.length||selDv.includes(x.dv);
+  const evs=H.tijdlijn.filter(inSel), begs=H.begrippen.filter(inSel);
+  const pers=WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.u.startsWith(w.n));
+  const keten=(H.ketens||[]).filter(k=>ktVerloop(k)&&(!selDv.length||!k.dv||selDv.includes(k.dv)));
+  const gens=[];
+  const mk=(id,stmt,truth,uitTrue,uitFalse,tag)=>({id,ask:QTAG(tag||"Feit of fabel")+"Klopt deze uitspraak?",q:stmt,right:truth?"goed":"fout",
+    opts:[{id:"goed",label:"Goed"},{id:"fout",label:"Fout"}],uitleg:truth?uitTrue:uitFalse,review:`${esc(stmt)} — ${truth?"goed":"fout"}`});
+  // 1. jaartal bij gebeurtenis
+  const yrs=[...new Set(H.tijdlijn.map(e=>e.j))];
+  evs.forEach(e=>{ const t=Math.random()<.5;
+    if(t) gens.push(()=>mk("y"+e.j+e.t,`In ${fmtY(e.j)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis"));
+    else { const o=yrs.filter(y=>y!==e.j).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`In ${fmtY(w)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde in <strong>${fmtY(e.j)}</strong>, niet in ${fmtY(w)}.`,"Gebeurtenis"); }); } });
+  // 2. betekenis van een begrip
+  begs.forEach(b=>{ const t=Math.random()<.5;
+    if(t) gens.push(()=>mk("b"+b.b,`${b.b}: ${b.d}`,true,`Dat klopt. <strong>${esc(b.b)}</strong>: ${esc(b.d)}`,"","Begrip"));
+    else { const o=simBegrippen(b,H.begrippen.filter(x=>x.d!==b.d),2); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("b"+b.b+w.b,`${b.b}: ${w.d}`,false,"",`Dat klopt niet. <strong>${esc(b.b)}</strong> betekent: ${esc(b.d)}<br>De omschrijving in de uitspraak hoort bij <strong>${esc(w.b)}</strong>.`,"Begrip"); }); } });
+  // 3. uitspraak over een persoon
+  pers.forEach(p=>{ const t=Math.random()<.5, rest=p.u.slice(p.n.length);
+    if(t) gens.push(()=>mk("p"+p.n,p.u,true,`Dat klopt: ${esc(p.u)}`,"","Persoon"));
+    else { const o=pers.filter(x=>x!==p&&!p.u.includes(x.n)); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("p"+p.n+w.n,w.n+rest,false,"",`Dat klopt niet. Dit gaat over <strong>${esc(p.n)}</strong>, niet over ${esc(w.n)}: ${esc(p.u)}`,"Persoon"); }); } });
+  const qs=[], seen=new Set(); let guard=0;
+  const byGroup=[]; // gelijkmatig verdelen over de soorten
+  while(qs.length<10 && guard++<400 && gens.length){
+    const g=gens.splice(Math.floor(Math.random()*gens.length),1)[0], q=g(); if(!q||seen.has(q.id)) continue; seen.add(q.id); qs.push(q);
+  }
+  if(qs.length<3){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
+  mcEx({title:"Feit of fabel",qs,back:hcMenu,again:hcFabel});
 }
 function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
@@ -4301,6 +4367,9 @@ Object.assign(ICONS,{
  "hc:wo2":'<path d="M12 2v20M8 22h8"/><path d="M2 12l10-3 10 3"/><path d="M9 6h6"/>',
  "hc:koudeoorlog":'<circle cx="12" cy="12" r="1.8"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
  "hc:wereldorde":I.globe,
+ "m:koppelb":'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+ "m:oneout":'<circle cx="6.5" cy="6.5" r="3.2"/><circle cx="17.5" cy="6.5" r="3.2"/><circle cx="6.5" cy="17.5" r="3.2"/><path d="M17.5 13.6l3.6 6.4h-7.2z"/>',
+ "m:fabel":'<path d="M3 7.5l3.2 3.2L11 4.8"/><path d="M14 14l6 6M20 14l-6 6"/><path d="M3 17h7"/>',
  "v:tlvragen":I.bubble,"v:tlbronnen":I.search,"v:tlbetr":I.shield,"v:tlordening":I.hourglass,"v:tloorzaak":I.domino,"v:tlstandplaats":I.eye
 });
 
