@@ -4514,17 +4514,17 @@ function kwBuild(words,target){
   let best=null;
   for(let attempt=0;attempt<60;attempt++){
     const pool=shuffle(words).sort((a,b)=>(a.k.length>9)-(b.k.length>9)).slice(0,45); const fi=pool.findIndex(w=>w.k.length>=7&&w.k.length<=10); if(fi>0) pool.unshift(...pool.splice(fi,1)); const evs=pool.filter(w=>w.tag==="Gebeurtenis").slice(0,3); evs.forEach(e=>{ pool.splice(pool.indexOf(e),1); pool.splice(1,0,e); });
-    const G=new Map(), placed=[]; const at=(r,c)=>G.get(r+","+c);
+    const G=new Map(), D=new Map(), placed=[]; const at=(r,c)=>G.get(r+","+c);
     let minR=0,maxR=0,minC=0,maxC=0;
     const fits=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1, L=w.k.length; let cross=0;
       if(at(r-dr,c-dc)||at(r+dr*L,c+dc*L)) return null;
       for(let i=0;i<L;i++){ const rr=r+dr*i, cc=c+dc*i, ch=at(rr,cc);
-        if(ch){ if(ch!==w.k[i]) return null; cross++; }
+        if(ch){ if(ch!==w.k[i]||((D.get(rr+","+cc)||0)&(1<<dir))) return null; cross++; }
         else if(at(rr+dc,cc+dr)||at(rr-dc,cc-dr)) return null; }
       const nr0=Math.min(minR,r), nr1=Math.max(maxR,r+dr*(L-1)), nc0=Math.min(minC,c), nc1=Math.max(maxC,c+dc*(L-1));
       if(nr1-nr0>=11||nc1-nc0>=13) return null;
       return cross*4-((nr1-nr0)*(nc1-nc0)-(maxR-minR)*(maxC-minC))/12; };
-    const put=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1; for(let i=0;i<w.k.length;i++) G.set((r+dr*i)+","+(c+dc*i),w.k[i]);
+    const put=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1; for(let i=0;i<w.k.length;i++) { const kk=(r+dr*i)+","+(c+dc*i); G.set(kk,w.k[i]); D.set(kk,(D.get(kk)||0)|(1<<dir)); }
       placed.push({...w,r,c,dir}); minR=Math.min(minR,r); maxR=Math.max(maxR,r+dr*(w.k.length-1)); minC=Math.min(minC,c); maxC=Math.max(maxC,c+dc*(w.k.length-1)); };
     put(pool[0],0,0,0);
     for(const w of pool.slice(1)){
@@ -4574,18 +4574,19 @@ function kruiswoord({scope,back,again}){
   function paint(){ const w=curWord(); const cs=w?new Set(wordCells(w)):new Set();
     grid.querySelectorAll(".kwc").forEach(d=>{ d.classList.toggle("hl",cs.has(d.dataset.k)); d.classList.toggle("cur",d.dataset.k===sel); });
     app.querySelectorAll(".kwclues li").forEach(li=>li.classList.toggle("on",w&&+li.dataset.w===P.placed.indexOf(w))); }
-  function select(k,dir){ sel=k; if(dir!==undefined) selDir=dir; const o=cell.get(k); if(!o.words.some(i=>P.placed[i].dir===selDir)) selDir=P.placed[o.words[0]].dir; paint(); const el=inp(k); if(el&&document.activeElement!==el) el.focus(); }
+  function select(k,dir){ sel=k; if(dir!==undefined) selDir=dir; const o=cell.get(k); if(!o.words.some(i=>P.placed[i].dir===selDir)) selDir=P.placed[o.words[0]].dir; paint(); const el=inp(k); if(el&&document.activeElement!==el) el.focus(); if(el&&el.select) el.select(); }
   function move(step){ const w=curWord(); if(!w) return; const cs=wordCells(w); const i=cs.indexOf(sel)+step; if(i>=0&&i<cs.length) select(cs[i],w.dir); }
   grid.querySelectorAll(".kwc").forEach(d=>{ const k=d.dataset.k, el=d.querySelector("input");
     el.addEventListener("mousedown",e=>{ if(sel===k){ e.preventDefault(); selDir=selDir?0:1; select(k,selDir); } });
     el.addEventListener("focus",()=>{ if(sel!==k) select(k); });
     el.addEventListener("keydown",e=>{
+      if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){ e.preventDefault(); const ch=kwNorm(e.key); if(ch){ show(k,ch); val.set(k,ch); d.classList.remove("bad","ok"); move(1); if(checked) checkAll(true); } return; }
       if(e.key==="Backspace"){ e.preventDefault(); if(el.value){ show(k,""); val.delete(k); } else { move(-1); if(sel){ show(sel,""); val.delete(sel); } } d.classList.remove("bad","ok"); return; }
       const arrows={ArrowRight:[0,1,0],ArrowLeft:[0,-1,0],ArrowDown:[1,0,1],ArrowUp:[-1,0,1]}; if(arrows[e.key]){ e.preventDefault(); const [dr,dc,dir]=arrows[e.key]; const [r,c]=k.split(",").map(Number); const nk=(r+dr)+","+(c+dc); if(cell.has(nk)) select(nk,dir); else selDir=dir, paint(); return; }
     });
     el.addEventListener("input",()=>{ const ch=kwNorm(el.value).slice(-1); show(k,ch); if(ch){ val.set(k,ch); d.classList.remove("bad","ok"); move(1); } else val.delete(k); if(checked) checkAll(true); });
   });
-  app.querySelectorAll(".kwclues li").forEach(li=>li.onclick=()=>{ const w=P.placed[+li.dataset.w]; const cs=wordCells(w); const first=cs.find(k=>!val.get(k))||cs[0]; select(first,w.dir); });
+  app.querySelectorAll(".kwclues li").forEach(li=>li.onclick=()=>{ const w=P.placed[+li.dataset.w]; const cs=wordCells(w); select(cs[0],w.dir); });
   function checkAll(quiet){
     let wrong=0, empty=0;
     cell.forEach((o,k)=>{ const v=val.get(k), d=grid.querySelector(`[data-k="${k}"]`); d.classList.remove("bad","ok"); if(!v){ empty++; return; } if(v!==o.ch){ wrong++; d.classList.add("bad"); } });
