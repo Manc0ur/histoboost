@@ -149,6 +149,26 @@ button{font:inherit;color:inherit}
 .wchip.sel{outline:3px solid var(--focus);outline-offset:1px}
 .bank{position:sticky;bottom:0;background:var(--bg);border-top:2px solid var(--line);padding:.8rem 0;display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.2rem;z-index:3}
 .bank.over{border-top-color:var(--focus)}
+/* Begrippen koppelen */
+.bk{display:grid;grid-template-columns:minmax(0,1fr);gap:1.1rem;margin-top:1rem}
+@media(min-width:620px){.bk{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start}}
+.bkrow{margin-bottom:.7rem}
+.bkterm{font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:.25rem}
+.bkslot{min-height:3.1rem;border:2px dashed var(--line);border-radius:10px;padding:.25rem;display:flex;align-items:stretch;color:var(--muted);font-size:.88rem;cursor:pointer;background:transparent;width:100%;text-align:left;font:inherit;font-size:.88rem}
+.bkslot.empty{align-items:center;justify-content:center}
+.bkslot.over{border-color:var(--focus);background:var(--surface)}
+.bkslot.correct{border:2px solid var(--ok);background:var(--ok-bg)}
+.bkslot.wrong{border:2px solid var(--bad);background:var(--bad-bg)}
+.bkslot[disabled]{cursor:default}
+.bkbank{display:flex;flex-direction:column;gap:.5rem;padding:.6rem;border:2px solid var(--line);border-radius:12px;background:var(--bg)}
+.bkbank.over{border-color:var(--focus)}
+.bkbank h3{font-size:1rem;margin:0 0 .1rem;color:var(--muted)}
+.bkchip{display:block;width:100%;text-align:left;background:var(--surface);border:2px solid var(--ink);border-radius:10px;padding:.45rem .65rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font:inherit;font-size:.9rem;line-height:1.35;color:var(--ink)}
+.bkchip.sel{outline:3px solid var(--focus);outline-offset:1px}
+@media(max-width:619px){.bkbank{position:sticky;bottom:0;max-height:38vh;overflow-y:auto;z-index:3;box-shadow:0 -6px 14px rgba(0,0,0,.12)}}
+.bkslot .bkchip{border-width:1.5px}
+@media(pointer:coarse){.bkchip{touch-action:auto;cursor:pointer}}
+
 .sel{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.45rem .6rem;margin-left:.3rem}
 .bron{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem;margin-bottom:.8rem}
 .bron summary{cursor:pointer;font-weight:700;font-family:"Bricolage Grotesque",sans-serif}
@@ -2537,7 +2557,8 @@ function hcMenu(){
     <h2>Kies een oefening</h2>
     <div class="list">
       ${[["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
-         ["begrip","Begrippen","Kies de juiste omschrijving bij een begrip"],
+         ["begrip","Begrippen omschrijvingen","Kies de juiste omschrijving bij een begrip"],
+         ["koppelb","Begrippen koppelen","Sleep de juiste omschrijving naar elk begrip"],
          ["tijd","Chronologie","Sleep gebeurtenissen in de goede volgorde"],
          ["tijdlijn","Tijdlijn","Sleep elke gebeurtenis naar het juiste jaartal"],
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
@@ -2556,10 +2577,10 @@ function hcMenu(){
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één deelvraag om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["lees","begrip","memory","gk","kruis","wie","tijd","tijdlijn","jaar","hitster","map","keten","koppel","mc","quiz","exam"]);
+  sorteerMenu(["lees","begrip","koppelb","memory","gk","kruis","wie","keten","tijd","tijdlijn","jaar","hitster","map","koppel","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,begrip:hcBegrip,tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,begrip:hcBegrip,koppelb:()=>hcKoppelB(),tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
   window.scrollTo(0,0);
 }
 
@@ -2577,6 +2598,97 @@ function hcLees(){
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
+function hcKoppelB(prev){
+  const H=S.hc, key=hk("koppelb"), BX=H.bext||BEXT;
+  let pool=H.begrippen.filter(b=>S.dvSel.has(b.dv)&&b.d);
+  if(pool.length<6) pool=H.begrippen.filter(b=>b.d);
+  const N=Math.min(pool.length>=8?7+(Math.random()<.5?1:0)-(Math.random()<.4?1:0):pool.length,8);
+  const round=pickRound(key,pool,b=>b.b,Math.max(4,N));
+  const used=new Set(round.map(b=>b.d)), extra=[], others=H.begrippen.filter(x=>!round.includes(x)&&x.d&&!used.has(x.d));
+  const want=Math.max(0,Math.min(12,Math.max(10,round.length+3))-round.length);
+  for(const b of shuffle(round)){ if(extra.length>=want) break; for(const x of simBegrippen(b,others,3)){ if(!extra.includes(x)&&!used.has(x.d)){ extra.push(x); break; } } }
+  for(const x of shuffle(others)){ if(extra.length>=want) break; if(!extra.includes(x)&&!used.has(x.d)) extra.push(x); }
+  const chips=shuffle([...round.map((b,i)=>({t:b.d,of:i})),...extra.map(b=>({t:b.d,of:-1}))]);
+  const place=round.map(()=>null);
+  let sel=null, checked=false, shown=false, recorded=false;
+  const slotOf=ci=>place.indexOf(ci);
+  const isRight=i=>place[i]!==null&&chips[place[i]].of===i;
+  function drop(ci,target){
+    const origin=slotOf(ci);
+    if(target==="bank"){ if(origin>=0) place[origin]=null; }
+    else { const prevc=place[target]; if(origin>=0) place[origin]=prevc; place[target]=ci; }
+    sel=null; draw();
+  }
+  let lastType='';
+  const tapChip=ci=>{ const sl=slotOf(ci); if(sel!==null&&sel!==ci&&sl>=0) drop(sel,sl); else { sel=sel===ci?null:ci; draw(); } };
+  const chipHtml=ci=>`<button class="bkchip ${sel===ci?"sel":""}" data-c="${ci}">${esc(chips[ci].t)}</button>`;
+  function draw(){
+    const ok=round.filter((b,i)=>isRight(i)).length, all=ok===round.length, full=place.every(p=>p!==null);
+    const bank=chips.map((c,i)=>i).filter(i=>slotOf(i)<0);
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <div class="meta"><span>Begrippen koppelen</span><span>${round.length} begrippen</span></div>
+    <h2>Begrippen koppelen</h2>
+    <p class="lead">Sleep bij elk begrip de juiste omschrijving. Je kunt ook op een omschrijving tikken en daarna op een begrip. Let op: er zijn meer omschrijvingen dan begrippen.</p>
+    <div class="bk">
+      <div class="bkl">${round.map((b,i)=>{ const ci=place[i], cls=checked?(isRight(i)?"correct":"wrong"):(ci===null?"empty":"");
+        return `<div class="bkrow"><div class="bkterm">${esc(b.b)}</div>
+          <div class="bkslot ${cls}" data-slot="${i}" role="button" tabindex="0" aria-label="Omschrijving bij ${esc(b.b)}${ci!==null?": "+esc(chips[ci].t):", leeg"}">${ci!==null?(checked?`<span class="bkchip" style="cursor:default;border-color:transparent;background:transparent">${esc(chips[ci].t)}</span>`:chipHtml(ci)):"Sleep hier de omschrijving heen"}</div></div>`; }).join("")}</div>
+      ${checked?"":`<div class="bkbank" data-bank="1"><h3>Omschrijvingen</h3>${bank.map(chipHtml).join("")||`<span class="gph">Alle omschrijvingen zijn gebruikt.</span>`}</div>`}
+    </div>
+    ${checked?`<div class="feedback ${all?"good":"badf"}" role="status">
+      <p><strong>${all?(shown?"Dit zijn de goede omschrijvingen.":"Helemaal goed!"):`${ok} van de ${round.length} goed.`}</strong></p>
+      ${all?"":`<p>Verplaats de rode omschrijvingen. De goede blijven staan.</p>`}</div>`:""}
+    <div class="row" style="margin-top:1rem">
+      ${checked?(all?`<button class="btn" id="new">Volgende set</button>`:`<button class="btn" id="fix">Verder slepen</button><button class="btn ghost" id="show">Toon goede antwoorden</button>`)
+        :`<button class="btn" id="check" ${full?"":"disabled"}>Controleer</button>`}
+    </div>
+    ${checked&&all?statusLine(key,pool.map(b=>b.b)):""}`;
+    app.querySelector("#back").onclick=hcMenu;
+    const c=app.querySelector("#check"); if(c) c.onclick=()=>{ checked=true; if(!recorded){ round.forEach((b,i)=>record(key,b.b,isRight(i))); recorded=true; } draw(); };
+    const f=app.querySelector("#fix"); if(f) f.onclick=()=>{ checked=false; round.forEach((b,i)=>{ if(!isRight(i)) place[i]=null; }); draw(); };
+    const sh=app.querySelector("#show"); if(sh) sh.onclick=()=>{ round.forEach((b,i)=>{ place[i]=chips.findIndex(x=>x.of===i); }); shown=true; draw(); };
+    const nw=app.querySelector("#new"); if(nw) nw.onclick=()=>hcKoppelB();
+    if(checked){ window.scrollTo(0,0); return; }
+    app.querySelectorAll("[data-slot]").forEach(sl=>{
+      const act=e=>{ const i=+sl.dataset.slot; if(e.target.closest(".bkchip")&&(e.detail>0||lastType==="touch")) return; if(sel!==null) drop(sel,i); else if(place[i]!==null){ sel=place[i]; draw(); } };
+      sl.addEventListener("click",act);
+      sl.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(e); } });
+    });
+    const bankEl=app.querySelector("[data-bank]");
+    bankEl.addEventListener("click",e=>{ if(e.target===bankEl && sel!==null) drop(sel,"bank"); });
+    app.querySelectorAll("button.bkchip").forEach(b=>b.addEventListener("click",e=>{ if(e.detail===0||lastType==="touch"){ e.stopPropagation(); tapChip(+b.dataset.c); } }));
+    app.querySelectorAll("button.bkchip").forEach(ch=>ch.addEventListener("pointerdown",e=>{ lastType=e.pointerType; if(e.pointerType!=="touch") startDrag(e); }));
+  }
+  function startDrag(e){
+    if(e.button>0) return;
+    const chip=e.currentTarget, ci=+chip.dataset.c, r=chip.getBoundingClientRect();
+    const sx=e.clientX, sy=e.clientY, ox=sx-r.left, oy=sy-r.top;
+    let ghost=null, over=null;
+    chip.setPointerCapture(e.pointerId);
+    const targetAt=(x,y)=>{ const el=document.elementFromPoint(x,y); return el?el.closest("[data-slot],[data-bank]"):null; };
+    const move=ev=>{
+      if(!ghost){
+        if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<6) return;
+        ghost=chip.cloneNode(true); ghost.classList.add("dragghost"); ghost.classList.remove("sel"); ghost.style.width=r.width+"px";
+        document.body.appendChild(ghost); chip.style.opacity=".35";
+      }
+      ghost.style.left=(ev.clientX-ox)+"px"; ghost.style.top=(ev.clientY-oy)+"px";
+      const t=targetAt(ev.clientX,ev.clientY);
+      if(t!==over){ over?.classList.remove("over"); over=t; over?.classList.add("over"); }
+    };
+    const up=ev=>{
+      chip.removeEventListener("pointermove",move); chip.removeEventListener("pointerup",up); chip.removeEventListener("pointercancel",up);
+      over?.classList.remove("over");
+      if(ghost){
+        ghost.remove(); chip.style.opacity="";
+        const t=targetAt(ev.clientX,ev.clientY);
+        if(t && ev.type==="pointerup") drop(ci, t.dataset.slot!==undefined?+t.dataset.slot:"bank");
+      } else if(ev.type==="pointerup"){ tapChip(ci); }
+    };
+    chip.addEventListener("pointermove",move); chip.addEventListener("pointerup",up); chip.addEventListener("pointercancel",up);
+  }
+  draw(); window.scrollTo(0,0);
+}
 function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
   const BX=H.bext||BEXT, LK=H.lijkt||LIJKT;
@@ -2587,7 +2699,7 @@ function hcBegrip(){
       opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
       uitleg:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`,review:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`};
   });
-  mcEx({title:"Begrippen",qs,back:hcMenu,again:hcBegrip,key:hk("begrip"),ids:pool.map(b=>b.b)});
+  mcEx({title:"Begrippen omschrijvingen",qs,back:hcMenu,again:hcBegrip,key:hk("begrip"),ids:pool.map(b=>b.b)});
 }
 
 function kaTijd(){
