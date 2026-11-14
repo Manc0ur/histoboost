@@ -1548,7 +1548,7 @@ const TL_WO1 = mkHC({
   ketens:[
    {dv:1,titel:"Van spanningen naar wereldoorlog",stappen:["Nationalisme, militarisme en imperialisme zorgen voor spanningen","Landen sluiten bondgenootschappen","Frans Ferdinand wordt vermoord in Sarajevo","Oostenrijk-Hongarije verklaart Servië de oorlog","Bondgenoten moeten elkaar helpen en heel Europa mobiliseert"],uit:"Bondgenootschappen maakten van een klein conflict een grote oorlog.",hint:"Begin bij de oorzaken."},
    {dv:1,titel:"Het Schlieffenplan mislukt",stappen:["Duitsland wil geen tweefrontenoorlog","Het plan: eerst via België Frankrijk verslaan","Op 4 augustus 1914 vallen de Duitsers België binnen","De opmars in het westen loopt vast en Rusland mobiliseert sneller","Er ontstaat een loopgravenoorlog"],uit:"Door het mislukte plan kwam het tot een loopgravenoorlog.",hint:"Begin bij het Duitse probleem."},
-   {dv:1,titel:"Het keerpunt van 1917",stappen:["Duitsland begint de onbeperkte duikbotenoorlog","Ook Amerikaanse schepen worden aangevallen","De VS verklaren Duitsland de oorlog","In Rusland moet de tsaar aftreden en Lenin grijpt de macht","Duitsland moet in 1918 een wapenstilstand sluiten"],uit:"1917 was een keerpunt in de oorlog.",hint:"Begin op zee."},
+   {dv:1,titel:"Het keerpunt van 1917",stappen:["Duitsland begint de onbeperkte duikbotenoorlog","Ook Amerikaanse schepen worden aangevallen","De VS verklaren Duitsland de oorlog","Duitsland moet in 1918 een wapenstilstand sluiten"],uit:"1917 was een keerpunt in de oorlog.",hint:"Begin op zee."},
    {dv:2,titel:"Neutraal, maar toch schaarste",stappen:["Nederland blijft neutraal maar mobiliseert het leger","In het begin verdient Nederland veel aan de handel","De onbeperkte duikbotenoorlog zorgt voor handelsbelemmeringen","Er komt een tekort aan grondstoffen en voedsel","De regering voert een distributiesysteem met bonkaarten in"],uit:"Ook een neutraal land kreeg te maken met schaarste.",hint:"Begin bij de neutraliteit."},
    {dv:2,titel:"Belgische vluchtelingen",stappen:["Op 4 augustus 1914 vallen de Duitsers België binnen","Een miljoen Belgen vluchten naar Nederland","De regering verspreidt de vluchtelingen over kampen","In 1915 zetten de Duitsers de dodendraad langs de grens","Vluchten is niet meer mogelijk"],uit:"Nederland ving Belgische vluchtelingen op.",hint:"Begin bij de inval."},
    {dv:3,titel:"Van schoolstrijd naar Pacificatie",stappen:["Confessionelen willen geld voor bijzondere scholen","Socialisten willen algemeen kiesrecht","Samen stemmen ze voor elkaars wensen","De grondwet van 1917 voert algemeen mannenkiesrecht in","De schoolstrijd is voorbij"],uit:"De Pacificatie van 1917.",hint:"Begin bij de confessionelen."}
@@ -2267,9 +2267,9 @@ function qKeten(k,all,c){
   const i=Math.floor(Math.random()*(k.stappen.length-1)), nxt=k.stappen[i+1];
   const others=simSteps(k,i,nxt,all,3);
   if(others.length<3) return null;
-  return {id:"kt"+k.titel+i,ask:QTAG("Gevolg")+"Wat volgde er direct op?",q:k.stappen[i],c:c(k),right:"a",
+  return {id:"kt"+k.titel+i,ask:QTAG("Keten")+"Wat is de volgende stap in deze keten?",q:k.stappen[i],c:c(k),right:"a",
     opts:shuffle([{id:"a",label:nxt},...others.map((s,j)=>({id:"d"+j,label:s}))]),hint:k.hint||"",
-    uitleg:`Uit de keten ‘${esc(k.titel)}’: daarna kwam <strong>${esc(nxt)}</strong>.`,extra:k.uit||""};
+    uitleg:`Uit de keten ‘${esc(k.titel)}’: de volgende stap is <strong>${esc(nxt)}</strong>.`,extra:k.uit||""};
 }
 function qGat(t,c){
   const P=parseGk(t.tekst); if(!P.gaps.length) return null;
