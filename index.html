@@ -1350,7 +1350,7 @@ const NEDERLAND = mkHC({
 /* ---------- TL: Staatsinrichting 1848–1914 ---------- */
 const TL_STAATS = mkHC({
   id:"staats", niveau:"tl", titel:"Staatsinrichting 1848–1914", jaren:"1848–1914", examHc:"staats",
-  url:"https://maaikezijm.com/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"nl", mapSub:"Klik op de kaart van Nederland en omgeving aan waar iets gebeurde",
   dv:[
    {nr:1,c:8,periode:"vanaf 1848",vraag:"Kenmerken van de Nederlandse staatsinrichting",sub:"Staatsinrichting van Nederland",ka:[],tekst:[
@@ -1484,7 +1484,7 @@ const TL_STAATS = mkHC({
 /* ---------- TL: Eerste Wereldoorlog 1914–1918 ---------- */
 const TL_WO1 = mkHC({
   id:"wo1", niveau:"tl", titel:"Eerste Wereldoorlog", jaren:"1914–1918", examHc:"wo1",
-  url:"https://maaikezijm.com/de-eerste-wereldoorlog/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"world", mapSub:"Klik op de kaart aan waar iets gebeurde",
   dv:[
    {nr:1,c:9,periode:"1914–1918",vraag:"Oorzaken, verloop en afloop van de oorlog",sub:"Europa (en de wereld)",ka:[],tekst:[
@@ -1581,7 +1581,7 @@ const TL_WO1 = mkHC({
 /* ---------- TL: Interbellum 1918–1939 ---------- */
 const TL_INTER = mkHC({
   id:"interbellum", niveau:"tl", titel:"Interbellum", jaren:"1918–1939", examHc:"interbellum",
-  url:"https://maaikezijm.com/het-interbellum/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"world", mapSub:"Klik op de kaart aan waar iets gebeurde",
   dv:[
    {nr:1,c:9,periode:"1919–1933",vraag:"Versailles, Weimar en de economische crisis",sub:"Europa (en de wereld)",ka:[],tekst:[
@@ -1691,7 +1691,7 @@ const TL_INTER = mkHC({
 /* ---------- TL: Tweede Wereldoorlog 1939–1945 ---------- */
 const TL_WO2 = mkHC({
   id:"wo2", niveau:"tl", titel:"Tweede Wereldoorlog", jaren:"1939–1945", examHc:"wo2",
-  url:"https://maaikezijm.com/de-tweede-wereldoorlog/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"world", mapSub:"Klik op de kaart aan waar iets gebeurde",
   dv:[
    {nr:1,c:9,periode:"1939–1945",vraag:"Oorzaken, begin, verloop en afloop van de oorlog",sub:"Europa (en de wereld)",ka:[],tekst:[
@@ -1795,7 +1795,7 @@ const TL_WO2 = mkHC({
 /* ---------- TL: Periode 1945–1990 ---------- */
 const TL_KOUDE = mkHC({
   id:"koudeoorlog", niveau:"tl", titel:"Periode 1945–1990", jaren:"1945–1990", examHc:"koudeoorlog",
-  url:"https://maaikezijm.com/europa-en-de-nieuwe-wereld/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"world", mapSub:"Klik op de kaart aan waar iets gebeurde",
   dv:[
    {nr:1,c:10,periode:"1945–1949",vraag:"Nieuwe machtsverhoudingen en de dekolonisatie van Indonesië",sub:"Europa en de wereld",ka:[],tekst:[
@@ -1906,7 +1906,7 @@ const TL_KOUDE = mkHC({
 /* ---------- TL: Nieuwe wereldorde vanaf 1990 ---------- */
 const TL_ORDE = mkHC({
   id:"wereldorde", niveau:"tl", titel:"Nieuwe wereldorde", jaren:"vanaf 1990", examHc:"wereldorde",
-  url:"https://maaikezijm.com/de-nieuwe-wereldorde/", urlLabel:"maaikezijm.com",
+  url:"", urlLabel:"",
   mapId:"world", mapSub:"Klik op de kaart aan waar iets gebeurde",
   dv:[
    {nr:1,c:10,periode:"1990–2001",vraag:"Het einde van de Koude Oorlog en nieuwe machtsverhoudingen",sub:"Europa en de wereld",ka:[],tekst:[
@@ -2508,7 +2508,7 @@ function hcMenu(){
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
   <h1 style="font-size:2.2rem">${esc(H.titel)}</h1>
-  <p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. <a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>
+  <p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a>`:""}</p>
   <section class="section">
     <h2>${H.niveau==="tl"?"Welke onderdelen?":"Welke deelvragen?"}</h2>
     <div class="list">${H.dv.map(d=>`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
@@ -2554,7 +2554,7 @@ function hcLees(){
     ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${esc(kaOf(n).t)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
     ${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}
   </article>`).join("")}
-  <p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`;
+  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}`;
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
@@ -4110,7 +4110,7 @@ function decorate(){
   app.querySelectorAll(".hscard .ht").forEach(el=>mark(el,el.textContent));
   if((any||app.querySelector(".star"))&&!app.querySelector(".starnote")){
     const anchor=app.querySelector(".qcard,.order,.tl,.pool,.hscur-wrap,.hslist");
-    if(anchor) anchor.insertAdjacentHTML("beforebegin",`<p class="starnote"><span class="star" aria-hidden="true">★</span> = staat in de stofomschrijving, dit moet je kennen. Zonder sterretje: extra uitleg van ${S.niveau==="tl"?"maaikezijm.com":"geschiedenisvandaag.nu"}.</p>`);
+    if(anchor) anchor.insertAdjacentHTML("beforebegin",`<p class="starnote"><span class="star" aria-hidden="true">★</span> = staat in de stofomschrijving, dit moet je kennen. Zonder sterretje: ${S.niveau==="tl"?"extra uitleg.":"extra uitleg van geschiedenisvandaag.nu."}</p>`);
   }
 }
 document.addEventListener("click",e=>{ const s=e.target.closest(".star[data-tip]"); if(!s) return; e.stopPropagation(); e.preventDefault();
