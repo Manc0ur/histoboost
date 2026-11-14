@@ -2263,13 +2263,17 @@ function qWaar(m,all,c){
   return {id:"wr"+m.id,ask:QTAG("Waar?")+"Waar gebeurde dit?",q:m.t,k:m.plaats,c:c(m),right:m.plaats,
     opts:shuffle([m.plaats,...others]).map(p=>({id:p,label:p})),hint:"",uitleg:`<strong>${esc(m.plaats)}</strong>.`,extra:m.uit};
 }
+/* ---------- Ketens: oorzaak en gevolg óf verloop ---------- */
+const KT_VERLOOP=new Set(["Van Versailles naar Hitler", "Van rivaliteit met Spanje naar de Pilgrim Fathers", "Van handelspost naar Brits bestuur", "Van Bokseropstand naar revolutie", "Van republiek naar krijgsheren", "Van 4 Meibeweging naar Volksrepubliek", "Van München naar vernietigingskampen", "Van capitulatie naar twee Duitslanden", "Van detente naar erkenning", "Van Gorbatsjov naar hereniging", "Van gidsland naar terughoudendheid", "De Luxemburgse kwestie", "Op weg naar de Pacificatie van 1917", "Van wetsvoorstel tot wet", "Het Schlieffenplan mislukt", "Belgische vluchtelingen", "Van schoolstrijd naar Pacificatie", "Van München naar Polen", "Stalin en de planeconomie", "Crisis in Nederland", "Van Polen tot de slag om Engeland", "Keerpunten in de oorlog", "Het einde van de oorlog", "Van inval tot capitulatie", "Van razzia naar Februaristaking", "Van Spoorwegstaking naar bevrijding", "Nederlands-Indië bezet", "Van proclamatie naar soevereiniteitsoverdracht", "Van blokkade naar twee Duitslanden", "De Cubacrisis", "Het einde van de Koude Oorlog", "Van wederopbouw naar consumptiemaatschappij", "Het uiteenvallen van de Sovjet-Unie", "Van tolerantie naar polarisatie", "Kritiek op de EU", "Van republiek naar keizerrijk", "Van vervolgd geloof naar staatsgodsdienst", "Van benoemingsrecht naar compromis", "Van plantage naar afschaffing", "Van rassenleer naar Holocaust", "Van bondgenoten naar Koude Oorlog"]);
+const ktVerloop=k=>KT_VERLOOP.has(k.titel);
+const ktSoort=k=>ktVerloop(k)?"Verloop":"Oorzaak en gevolg";
 function qKeten(k,all,c){
   const i=Math.floor(Math.random()*(k.stappen.length-1)), nxt=k.stappen[i+1];
   const others=simSteps(k,i,nxt,all,3);
   if(others.length<3) return null;
-  return {id:"kt"+k.titel+i,ask:QTAG("Keten")+"Wat is de volgende stap in deze keten?",q:k.stappen[i],c:c(k),right:"a",
+  return {id:"kt"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hierna?":"Wat was het gevolg hiervan?"),q:k.stappen[i],c:c(k),right:"a",
     opts:shuffle([{id:"a",label:nxt},...others.map((s,j)=>({id:"d"+j,label:s}))]),hint:k.hint||"",
-    uitleg:`Uit de keten ‘${esc(k.titel)}’: de volgende stap is <strong>${esc(nxt)}</strong>.`,extra:k.uit||""};
+    uitleg:`Uit ${ktVerloop(k)?"het verloop":"de keten"} ‘${esc(k.titel)}’: ${ktVerloop(k)?"hierna gebeurde":"het gevolg was"} <strong>${esc(nxt)}</strong>.`,extra:k.uit||""};
 }
 function qGat(t,c){
   const P=parseGk(t.tekst); if(!P.gaps.length) return null;
@@ -2410,7 +2414,7 @@ function kaMenu(){ sylKA();
       <button class="item" data-m="hitster" ${KA_TL.some(e=>S.sel.has(e.tv))?"":"disabled"}><span class="txt"><strong>Hitster</strong><span class="sub">Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!</span></span></button>
       <button class="item" data-m="jaar" ${KA_TL.some(e=>S.sel.has(e.tv))?"":"disabled"}><span class="txt"><strong>Wanneer gebeurde het?</strong><span class="sub">Typ het jaartal bij een gebeurtenis. Hoe dichterbij, hoe meer punten</span></span></button>
       <button class="item" data-m="map"><span class="txt"><strong>Waar gebeurde het?</strong><span class="sub">Klik op de wereldkaart aan waar een gebeurtenis of ontwikkeling plaatsvond</span></span></button>
-      <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv))?"":"disabled"}><span class="txt"><strong>Oorzaak en gevolg</strong><span class="sub">Zet de stappen van een historische ontwikkeling in de goede volgorde</span></span></button>
+      <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv))?"":"disabled"}><span class="txt"><strong>Oorzaak, gevolg en verloop</strong><span class="sub">Zet de stappen van een ontwikkeling in de goede volgorde: oorzaak en gevolg, of het verloop in de tijd</span></span></button>
       <button class="item" data-m="gk"><span class="txt"><strong>Gatenkaas</strong><span class="sub">Sleep begrippen, personen, jaartallen en tijdvakken naar de juiste plek in een tekst</span></span></button>
       <button class="item" data-m="quiz" ${count?"":"disabled"}><span class="txt"><strong>Quiz</strong><span class="sub">Allerlei oefeningen door elkaar: tijdvakken, kenmerkende aspecten, jaartallen, plaatsen, oorzaak en gevolg en gatenkaas</span></span></button>
       <button class="item" data-m="exam" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken (${kaExamList().length} vragen)</span></span></button>
@@ -2528,7 +2532,7 @@ function hcMenu(){
          ["hitster","Hitster","Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!"],
          ["jaar","Wanneer gebeurde het?","Typ het jaartal bij een gebeurtenis. Hoe dichterbij, hoe meer punten"],
          ["map","Waar gebeurde het?",H.mapSub||"Klik op de kaart van de Lage Landen aan waar iets gebeurde"],
-         ["keten","Oorzaak en gevolg","Zet de stappen van een redenering in de goede volgorde"],
+         ["keten","Oorzaak, gevolg en verloop","Zet de stappen in de goede volgorde: oorzaak en gevolg, of het verloop in de tijd"],
          ["koppel","Koppel aan een kenmerkend aspect","Bij welk kenmerkend aspect past deze gebeurtenis of examenbron?"],
          ["gk","Gatenkaas","Sleep begrippen, personen en gebeurtenissen naar de juiste plek in een tekst"],
          ["quiz","Quiz","Allerlei oefeningen door elkaar: begrippen, "+(H.koppel.length?"kenmerkende aspecten, ":"")+"jaartallen, plaatsen, oorzaak en gevolg en gatenkaas"],
@@ -2586,8 +2590,8 @@ function hcTijd(){
 
 function hcKeten(k){
   const H=S.hc, list=H.ketens.filter(x=>S.dvSel.has(x.dv)), ch=list[k%list.length];
-  orderEx({title:ch.titel,meta:["Oorzaak en gevolg",`Keten ${k%list.length+1} van ${list.length}`],
-    intro:"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
+  orderEx({title:ch.titel,meta:[ktSoort(ch),`Keten ${k%list.length+1} van ${list.length}`],
+    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
     items:ch.stappen.map((s,i)=>({id:"s"+i,label:s,c:H.dv[ch.dv-1].c})),back:hcMenu,explain:ch.uit,hintAll:ch.hint,
     nextLabel:"Volgende keten",onNext:()=>hcKeten(k+1)});
 }
@@ -3708,8 +3712,8 @@ function kaKeten(k){
   const list=KA_KETENS.filter(x=>S.sel.has(x.tv));
   if(!list.length) return kaMenu();
   const ch=list[k%list.length];
-  orderEx({title:ch.titel,meta:[`Oorzaak en gevolg, tijdvak ${ch.tv}`,`Keten ${k%list.length+1} van ${list.length}`],
-    intro:"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
+  orderEx({title:ch.titel,meta:[`${ktSoort(ch)}, tijdvak ${ch.tv}`,`Keten ${k%list.length+1} van ${list.length}`],
+    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
     items:ch.stappen.map((s,i)=>({id:"s"+i,label:s,c:ch.tv})),back:kaMenu,explain:ch.uit,hintAll:ch.hint,
     nextLabel:"Volgende keten",onNext:()=>kaKeten(k+1)});
 }
@@ -4628,9 +4632,9 @@ function mcWat(e,evs,c,X){
 function mcOorzaak(k,all,c){
   const i=1+Math.floor(Math.random()*(k.stappen.length-1)), prev=k.stappen[i-1];
   const others=simSteps(k,i,prev,all,3); if(others.length<3) return null;
-  return {id:"oz"+k.titel+i,ask:QTAG("Oorzaak")+"Wat ging hier direct aan vooraf?",q:k.stappen[i],c,right:"a",
+  return {id:"oz"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hier vlak voor?":"Wat was de oorzaak hiervan?"),q:k.stappen[i],c,right:"a",
     opts:shuffle([{id:"a",label:prev},...others.map((s,j)=>({id:"d"+j,label:s}))]),hint:k.hint||"",
-    uitleg:`Uit ‘${esc(k.titel)}’: eerst kwam <strong>${esc(prev)}</strong>.`,extra:k.uit||""};
+    uitleg:`Uit ${ktVerloop(k)?"het verloop":"de keten"} ‘${esc(k.titel)}’: ${ktVerloop(k)?"eerst gebeurde":"de oorzaak was"} <strong>${esc(prev)}</strong>.`,extra:k.uit||""};
 }
 function mcDef(w,all,c){
   const others=pickSim(w,all.filter(x=>x.a!==w.a),3,{text:x=>x.a,ctx:x=>x.q||"",near:x=>w.src&&x.src===w.src?1:0}); if(others.length<3) return null;
