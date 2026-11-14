@@ -2559,7 +2559,7 @@ function hcMenu(){
       ${[["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
          ["koppelb","Begrippen","Sleep de juiste omschrijving naar elk begrip"],
          ["oneout","Welk woord weg","Vier begrippen, personen of gebeurtenissen: welke hoort er niet bij?"],
-         ["fabel","Feit of fabel","Klopt de uitspraak? Kies goed of fout en lees de uitleg"],
+         ["fabel","Feit of fictie","Klopt de uitspraak? Kies goed of fout en lees de uitleg"],
          ["tijd","Chronologie","Sleep gebeurtenissen in de goede volgorde"],
          ["tijdlijn","Tijdlijn","Sleep elke gebeurtenis naar het juiste jaartal"],
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
@@ -2724,7 +2724,7 @@ function hcOneOut(){
   if(qs.length<3){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies bij “Welke onderdelen?” minimaal één onderdeel met genoeg begrippen, personen of gebeurtenissen.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
   mcEx({title:"Welk woord weg",qs,back:hcMenu,again:hcOneOut});
 }
-/* ---------- Feit of fabel ---------- */
+/* ---------- Feit of fictie ---------- */
 function hcFabel(){
   const H=S.hc, dvOf=nr=>H.dv.find(d=>d.nr===nr), selDv=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.nr);
   const inSel=x=>!selDv.length||selDv.includes(x.dv);
@@ -2732,7 +2732,7 @@ function hcFabel(){
   const pers=WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.u.startsWith(w.n));
   const keten=(H.ketens||[]).filter(k=>ktVerloop(k)&&(!selDv.length||!k.dv||selDv.includes(k.dv)));
   const gens=[];
-  const mk=(id,stmt,truth,uitTrue,uitFalse,tag)=>({id,ask:QTAG(tag||"Feit of fabel")+"Klopt deze uitspraak?",q:stmt,right:truth?"goed":"fout",
+  const mk=(id,stmt,truth,uitTrue,uitFalse,tag)=>({id,ask:QTAG(tag||"Feit of fictie")+"Klopt deze uitspraak?",q:stmt,right:truth?"goed":"fout",
     opts:[{id:"goed",label:"Goed"},{id:"fout",label:"Fout"}],uitleg:truth?uitTrue:uitFalse,review:`${esc(stmt)} — ${truth?"goed":"fout"}`});
   // 1. jaartal bij gebeurtenis
   const yrs=[...new Set(H.tijdlijn.map(e=>e.j))];
@@ -2753,7 +2753,7 @@ function hcFabel(){
     const g=gens.splice(Math.floor(Math.random()*gens.length),1)[0], q=g(); if(!q||seen.has(q.id)) continue; seen.add(q.id); qs.push(q);
   }
   if(qs.length<3){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
-  mcEx({title:"Feit of fabel",qs,back:hcMenu,again:hcFabel});
+  mcEx({title:"Feit of fictie",qs,back:hcMenu,again:hcFabel});
 }
 function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
