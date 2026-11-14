@@ -2697,7 +2697,7 @@ function hcOneOut(){
   const H=S.hc, sel=H.dv.filter(d=>S.dvSel.has(d.nr));
   const pers=WBI.filter(w=>w.hc&&w.hc[H.id]);
   const look=n=>{
-    if(n[0]==="@"){ const e=H.tijdlijn.find(x=>String(x.j)===n.slice(1)); return e?{t:e.t,x:"gebeurde in "+fmtY(e.j)+".",dvs:[e.dv],tag:"Gebeurtenissen"}:null; }
+    if(n[0]==="@"){ const e=H.tijdlijn.find(x=>String(x.j)===n.slice(1)); return e?{t:onePart(e.t),x:"gebeurde in "+fmtY(e.j)+".",dvs:[e.dv],tag:"Gebeurtenissen"}:null; }
     const b=H.begrippen.find(x=>x.b===n); if(b) return {t:b.b,x:b.d,dvs:[b.dv],tag:"Begrippen"};
     const p=pers.find(x=>x.n===n); if(p) return {t:p.n,x:p.u,dvs:p.hc[H.id],tag:"Personen"};
     return null; };
@@ -2721,6 +2721,7 @@ function hcOneOut(){
   mcEx({title:"Welk woord weg",qs,back:hcMenu,again:hcOneOut});
 }
 /* ---------- Feit of fictie ---------- */
+function onePart(t){ const p=String(t).split(/;\s*/).filter(x=>x&&!/^de oorlog begint$/i.test(x)); const x=p[Math.floor(Math.random()*p.length)]||t; return x.charAt(0).toUpperCase()+x.slice(1); }
 function hcFabel(){
   const H=S.hc, dvOf=nr=>H.dv.find(d=>d.nr===nr), selDv=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.nr);
   const inSel=x=>!selDv.length||selDv.includes(x.dv);
@@ -2732,7 +2733,7 @@ function hcFabel(){
     opts:[{id:"goed",label:"Goed"},{id:"fout",label:"Fout"}],uitleg:truth?uitTrue:uitFalse,review:`${esc(stmt)} — ${truth?"goed":"fout"}`});
   // 1. jaartal bij gebeurtenis
   const yrs=[...new Set(H.tijdlijn.map(e=>e.j))];
-  evs.forEach(e=>{ const t=Math.random()<.5;
+  evs.forEach(e0=>{ const e=Object.assign({},e0,{t:onePart(e0.t)}); const t=Math.random()<.5;
     if(t) gens.push(()=>mk("y"+e.j+e.t,`In ${fmtY(e.j)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis"));
     else { const o=yrs.filter(y=>y!==e.j).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`In ${fmtY(w)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde in <strong>${fmtY(e.j)}</strong>, niet in ${fmtY(w)}.`,"Gebeurtenis"); }); } });
   // 2. betekenis van een begrip
