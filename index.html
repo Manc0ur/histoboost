@@ -208,6 +208,11 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 @media (max-width:520px){.band span{height:40px;font-size:1rem}.band-years{font-size:.6rem}}
 .qtag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:.05rem .55rem;margin-right:.4rem;vertical-align:.1em;color:var(--muted)}
+/* oefeningenmenu: twee vierkantere knoppen naast elkaar */
+.list:has(>.item[data-m]),.list:has(>.item[data-v]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+.list:has(>.item[data-m])>.item,.list:has(>.item[data-v])>.item{flex-direction:column;align-items:flex-start;gap:.6rem;padding:.9rem;min-height:9.5rem}
+.list:has(>.item[data-m])>.item .txt,.list:has(>.item[data-v])>.item .txt{flex:0 1 auto}
+.list:has(>.item[data-m])>.item .sub,.list:has(>.item[data-v])>.item .sub{font-size:.85rem;line-height:1.35;margin-top:.15rem}
 .item .ico{flex:none;width:2.6rem;height:2.6rem;border-radius:10px;display:grid;place-items:center;background:var(--bg);color:var(--focus)}
 .item .ico svg{width:1.45rem;height:1.45rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .item:disabled .ico{opacity:.5}
