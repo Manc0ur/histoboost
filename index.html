@@ -4182,7 +4182,7 @@ const VAARD = [
   ["Een motief voor het moderne imperialisme was het idee dat Europeanen ‘beschaving’ moesten brengen: de last van de blanke man.",TERREIN,2,"Gaat het om een denkbeeld?","Het superioriteitsdenken is een ideologisch motief: cultureel-mentaal terrein.","Op welk terrein ligt deze oorzaak?"],
   ["Een oorzaak van de opkomst van Hitler was de massawerkloosheid na de beurscrash van 1929.",TERREIN,1,"Waardoor ontstond de werkloosheid?","De economische crisis maakte veel Duitsers ontvankelijk voor de beloften van de NSDAP: sociaal-economisch terrein.","Op welk terrein ligt deze oorzaak?"],
   ["Een motief voor het moderne imperialisme was dat Europese landen elkaar de macht in Afrika niet gunden.",TERREIN,0,"Gaat het om macht tussen staten?","Concurrentie tussen staten om gebied en aanzien is een politiek motief: politiek-bestuurlijk terrein.","Op welk terrein ligt deze oorzaak?"],
-  ["Een oorzaak van de eerste kruistocht was de oproep van de paus om Jeruzalem te bevrijden.",TERREIN,2,"Wie riep op, en met welke reden?","De paus riep op om het Heilige Land te veroveren: een godsdienstige en dus cultureel-mentale oorzaak.","Op welk terrein ligt deze oorzaak?"],
+  ["Een oorzaak van de eerste kruistocht was het geloof dat God ridders hun zonden zou vergeven als ze naar Jeruzalem trokken.",TERREIN,2,"Gaat het hier om macht en grenzen, om geld, of om geloof?","Het gaat om geloof en de hoop op vergeving van zonden: een godsdienstige en dus cultureel-mentale oorzaak.","Op welk terrein ligt deze oorzaak?"],
   ["De moord op de Oostenrijkse troonopvolger Franz Ferdinand (1914) als verklaring voor de Eerste Wereldoorlog.",AO,0,"","De moord was de aanleiding: de meest directe oorzaak. De spanningen bestonden al veel langer."],
   ["De wapenwedloop en de bondgenootschappen tussen Europese landen als verklaring voor de Eerste Wereldoorlog.",AO,1,"","Deze spanningen bouwden zich jarenlang op en maakten een grote oorlog mogelijk: oorzaken op lange termijn."],
   ["Luthers 95 stellingen (1517) als verklaring voor de reformatie.",AO,0,"","De stellingen waren de directe aanleiding. De kritiek op misstanden in de kerk bestond al lang."],
@@ -6007,7 +6007,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115194811"; let last=0, shown=false;
+  const BUILD="20261115195203"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
