@@ -331,6 +331,22 @@ input[type=checkbox]{width:1.25rem;height:1.25rem;accent-color:var(--ink);flex:n
 @media(max-width:619px){.pool[data-pool]{position:sticky;bottom:0;max-height:38vh;overflow-y:auto;z-index:3;background:var(--bg);border-style:solid;box-shadow:0 -6px 14px rgba(0,0,0,.12)}}
 @media(max-width:480px){.exq{flex-direction:column;gap:.15rem}}
 .hscard .ht,.hslist .ht{overflow-wrap:anywhere;hyphens:auto;min-width:0}
+
+h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
+.fcbar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.2rem 0 1rem}
+.fcbar .chip{font-size:.85rem}
+.fccard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;width:100%;min-height:15rem;padding:1.6rem 1.3rem;background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--focus);border-radius:16px;cursor:pointer;text-align:center;color:var(--ink);font:inherit;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.fccard:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.fccard.flipped{border-top-color:var(--ok)}
+.fcfront{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(1.35rem,4.5vw,1.9rem);line-height:1.2;overflow-wrap:anywhere;hyphens:auto}
+.fccard.flipped .fcfront{font-size:1.05rem;color:var(--muted)}
+.fcback{font-size:1.15rem;line-height:1.5;max-width:36rem}
+.fcback .fcyear{display:block;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:2rem;margin-bottom:.3rem}
+.fchint{color:var(--muted);font-size:.9rem}
+.fcrow{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:1rem}
+.fcrow .btn{width:100%;justify-content:center;text-align:center}
+.fckeys{color:var(--muted);font-size:.82rem;margin-top:.8rem}
+@media(pointer:coarse),(hover:none){.fckeys{display:none}}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -2107,7 +2123,7 @@ function home(){ SYL=null;
       <button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens gl/tl, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(q=>q.ex[0]==="t").length} vragen</span></button>
     </div>` : `
     <div class="list">
-      <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">15 oefeningen</span></button>
+      <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">16 oefeningen</span></button>
       ${hc.map(h=>`<button class="item" ${h.id?`data-hc="${h.id}"`:"disabled"}><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Historische context ${S.niveau}, ${h.jaren}</span></span><span class="tag">${h.id?hcCount(h.id)+" oefeningen":"binnenkort"}</span></button>`).join("")}
       <button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${S.niveau==="tl"?"havo":S.niveau}, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(exOfNiv).length} vragen</span></button>
       <button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">${S.niveau==="havo"?"Tijd, interpretatie en betekenis: historisch denken en redeneren":"Domein A: historisch denken en redeneren"}</span></span><span class="tag">${VAARDX().length+1} oefeningen</span></button>
@@ -2499,15 +2515,16 @@ function kaMenu(){ CTX="ka"; sylKA();
       <button class="item" data-m="quiz" ${count?"":"disabled"}><span class="txt"><strong>Quiz</strong><span class="sub">Allerlei oefeningen door elkaar: tijdvakken, kenmerkende aspecten, jaartallen, plaatsen, oorzaak en gevolg en gatenkaas</span></span></button>
       <button class="item" data-m="exam" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken (${kaExamList().length} vragen)</span></span></button>
       <button class="item" data-m="cards" ${count?"":"disabled"}><span class="txt"><strong>Leerkaarten</strong><span class="sub">Lees het kenmerkend aspect, draai de kaart om voor tijdvak, toelichting en voorbeelden</span></span></button>
+      <button class="item" data-m="flash" ${count?"":"disabled"}><span class="txt"><strong>Flashcards</strong><span class="sub">Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist</span></span></button>
     </div>
   </section>`;
-  sorteerMenu(["cards","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","exam"]);
+  sorteerMenu(["cards","flash","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-tv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.tv; S.sel.has(n)?S.sel.delete(n):S.sel.add(n); kaMenu();});
   app.querySelectorAll("[data-tvper]").forEach(b=>b.onclick=()=>{const tvs=TVPER[+b.dataset.tvper][1]; if(tvs.every(n=>S.sel.has(n))) tvs.forEach(n=>S.sel.delete(n)); else tvs.forEach(n=>S.sel.add(n)); kaMenu();});
   app.querySelector("#all").onclick=()=>{S.sel=new Set(TV.map(t=>t.n)); kaMenu();};
   app.querySelector("#none").onclick=()=>{S.sel=new Set(); kaMenu();};
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({order:tvOrder,ka2tv:()=>kaQuiz("ka2tv"),vb2ka:()=>kaQuiz("vb2ka"),cards:cards,gk:kaGatenkaas,keten:()=>kaKeten(0),tijdmachine:kaTijdmachine,tl:kaTijdlijn,chrono:kaTijd,exam:kaExam,quiz:kaMix,hitster:kaHitster,wie:kaWie,kruis:kaKruis,mc:kaMC,memory:kaMemory})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({order:tvOrder,ka2tv:()=>kaQuiz("ka2tv"),vb2ka:()=>kaQuiz("vb2ka"),cards:cards,flash:()=>flashcards({scope:"ka",key:"flash-ka",back:kaMenu}),gk:kaGatenkaas,keten:()=>kaKeten(0),tijdmachine:kaTijdmachine,tl:kaTijdlijn,chrono:kaTijd,exam:kaExam,quiz:kaMix,hitster:kaHitster,wie:kaWie,kruis:kaKruis,mc:kaMC,memory:kaMemory})[b.dataset.m]());
   menuScroll("ka");
 }
 
@@ -2595,6 +2612,7 @@ function sorteerMenu(order){
   items.sort((a,b)=>pos(a.dataset.m)-pos(b.dataset.m)).forEach(x=>list.appendChild(x));
 }
 function hcModes(H){ return [["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
+         ["flash","Flashcards","Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist"],
          ["koppelb","Begrippen","Sleep de juiste omschrijving naar elk begrip"],
          ["galgje","Galgje","Raad het begrip, de persoon of de gebeurtenis letter voor letter"],
          ["fabel","Feit of fictie","Klopt de uitspraak? Kies goed of fout en lees de uitleg"],
@@ -2643,10 +2661,10 @@ function hcMenu(){ CTX="hc";
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één ${H.niveau==="tl"?"onderdeel":"deelvraag"} om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["lees","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","keten","koppel","mc","quiz","exam"]);
+  sorteerMenu(["lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","keten","koppel","mc","quiz","exam"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
   menuScroll("hc:"+S.hc.id);
 }
 
@@ -2758,6 +2776,81 @@ function hcKoppelB(prev){
 
 /* ---------- Welk woord weg ---------- */
 
+
+/* ---------- Flashcards ---------- */
+function flashDeck(scope){
+  const D=[];
+  if(scope==="ka"){
+    const sel=n=>S.sel.has(n);
+    kwGapDefs(GK_KA.filter(t=>t.tv.some(sel))).filter(d=>d.a&&d.q&&!/\d/.test(d.a)).forEach(d=>D.push({id:"b:"+d.a,tag:"Begrip",f:d.a,a:d.q}));
+    WBI.filter(p=>p.u&&p.tv.some(sel)).forEach(p=>D.push({id:"p:"+p.n,tag:"Persoon",f:p.n,a:p.u}));
+    KA_TL.filter(e=>sel(e.tv)).forEach(e=>D.push({id:"g:"+e.j+":"+e.t,tag:"Gebeurtenis",f:e.t,y:e.j,a:e.u||(TLX[e.j]||[])[0]||""}));
+  } else {
+    const H=S.hc, inSel=x=>S.dvSel.has(x.dv);
+    H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>D.push({id:"b:"+b.b,tag:"Begrip",f:b.b,a:b.d}));
+    WBI.filter(p=>p.u&&p.hc[H.id]&&p.hc[H.id].some(x=>S.dvSel.has(x))).forEach(p=>D.push({id:"p:"+p.n,tag:"Persoon",f:p.n,a:p.u}));
+    H.tijdlijn.filter(inSel).forEach(e=>D.push({id:"g:"+e.j+":"+e.t,tag:"Gebeurtenis",f:e.t,y:e.j,a:((H.tlx||TLX)[e.j]||[])[0]||""}));
+  }
+  const seen=new Set(); return D.filter(c=>!seen.has(c.id)&&seen.add(c.id));
+}
+function flashcards({scope,key,back}){
+  const all=flashDeck(scope);
+  if(!all.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Flashcards</h2><p class="note">Bij deze keuze zijn geen kaarten. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
+  const TAGS=[["","Alles"],["Begrip","Begrippen"],["Persoon","Personen"],["Gebeurtenis","Gebeurtenissen"]].filter(([t])=>!t||all.some(c=>c.tag===t));
+  const STOPW=new Set(["van","der","den","het","de","en","op","in","voor","met","von","zu","the","of"]);
+  const maskName=(txt,n)=>{ let o=txt; [n,...n.split(/\s+/)].filter(w=>w.length>=3&&!STOPW.has(w.toLowerCase())).sort((a,b)=>b.length-a.length).forEach(w=>{ o=o.replace(new RegExp("(^|[^\\p{L}])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|[^\\p{L}])","giu"),"$1…"); }); return o; };
+  let typ="", reverse=false, queue=[], known=0, total=0, misses=0, flipped=false;
+  function start(){ queue=shuffle(all.filter(c=>!typ||c.tag===typ)); known=0; total=queue.length; misses=0; flipped=false; draw(); }
+  function frontOf(c){ if(c.tag==="Gebeurtenis"||!reverse) return esc(c.f)+(verplicht(c.f)?" "+starHtml():"");
+    return esc(c.tag==="Persoon"?maskName(c.a,c.f):c.a); }
+  function backOf(c){
+    if(c.tag==="Gebeurtenis") return `<span class="fcyear">${fmtY(c.y)}</span>${c.a?esc(c.a):""}`;
+    if(reverse) return `<strong>${esc(c.f)}</strong>`;
+    return esc(c.a); }
+  function draw(){
+    const c=queue[0];
+    const bar=`<div class="fcbar">${TAGS.map(([t,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${typ===t}" data-typ="${t}">${l} (${all.filter(x=>!t||x.tag===t).length})</button>`).join("")}
+      <button class="chip" style="--c:var(--t7)" aria-pressed="${reverse}" id="rev" title="Bij begrippen en personen eerst de omschrijving">Omschrijving voorop</button></div>`;
+    if(!c){
+      app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+      <div class="meta"><span>Flashcards</span><span>${known} van ${total} gekend</span></div>
+      <div class="progress"><i style="width:100%"></i></div>
+      <h2 style="margin-top:1rem">Alle ${total} kaarten gekend!</h2>
+      <p class="lead">${misses?`Je hebt ${misses} keer “nog niet” gekozen. Die kaarten kwamen terug tot je ze wist.`:"Je wist ze allemaal in één keer. Knap!"}</p>
+      <div class="row" style="margin-top:1rem"><button class="btn" id="again">Opnieuw</button><button class="btn ghost" id="menu">Andere oefening</button></div>`;
+      app.querySelector("#back").onclick=back; app.querySelector("#menu").onclick=back; app.querySelector("#again").onclick=start; window.scrollTo(0,0); return;
+    }
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <div class="meta"><span>Flashcards</span><span>${known} van ${total} gekend</span></div>
+    <div class="progress"><i style="width:${known/total*100}%"></i></div>
+    ${bar}
+    <button class="fccard ${flipped?"flipped":""}" id="fc" aria-label="${flipped?"Kaart, achterkant":"Kaart, voorkant: tik om om te draaien"}">
+      <span class="qtag">${c.tag}</span>
+      <span class="fcfront">${frontOf(c)}</span>
+      ${flipped?`<span class="fcback">${backOf(c)}</span>`:`<span class="fchint">Bedenk het antwoord en tik op de kaart om hem om te draaien</span>`}
+    </button>
+    ${flipped?`<div class="fcrow"><button class="btn ghost" id="no">Nog niet</button><button class="btn" id="yes">Ik wist het</button></div>`
+      :`<div class="fcrow" style="grid-template-columns:1fr"><button class="btn" id="flip">Draai om</button></div>`}
+    <p class="fckeys">Toetsenbord: spatie = omdraaien, → = ik wist het, ← = nog niet.</p>`;
+    app.querySelector("#back").onclick=back;
+    app.querySelectorAll("[data-typ]").forEach(b=>b.onclick=()=>{ typ=b.dataset.typ; start(); });
+    app.querySelector("#rev").onclick=()=>{ reverse=!reverse; flipped=false; draw(); };
+    app.querySelector("#fc").onclick=()=>{ flipped=!flipped; draw(); app.querySelector("#fc").focus(); };
+    const f=app.querySelector("#flip"); if(f) f.onclick=()=>{ flipped=true; draw(); };
+    const y=app.querySelector("#yes"); if(y) y.onclick=()=>answer(true);
+    const n=app.querySelector("#no"); if(n) n.onclick=()=>answer(false);
+  }
+  function answer(good){ const c=queue.shift(); record(key,c.id,good);
+    if(good) known++; else { misses++; queue.splice(Math.min(queue.length,3+Math.floor(Math.random()*3)),0,c); }
+    flipped=false; draw(); }
+  const kd=e=>{ if(!app.querySelector("#fc")){ if(!app.querySelector(".fcbar")){ document.removeEventListener("keydown",kd); } return; }
+    if(e.ctrlKey||e.metaKey||e.altKey) return; const t=e.target; if(t&&(t.tagName==="INPUT"||t.tagName==="SELECT")) return;
+    if(e.key===" "||e.key==="Enter"){ if(t&&t.closest&&t.closest("button")&&t.id!=="fc") return; e.preventDefault(); flipped=!flipped; draw(); }
+    else if(flipped&&(e.key==="ArrowRight"||e.key==="j")){ e.preventDefault(); answer(true); }
+    else if(flipped&&(e.key==="ArrowLeft"||e.key==="n")){ e.preventDefault(); answer(false); } };
+  if(window.__fcKd) document.removeEventListener("keydown",window.__fcKd); window.__fcKd=kd; document.addEventListener("keydown",kd);
+  start(); window.scrollTo(0,0);
+}
 /* ---------- Galgje ---------- */
 function hcGalgje(seen){
   seen=seen||new Set();
@@ -4506,6 +4599,7 @@ const ICONS={
  "hc:steden":I.houses,"hc:brits":I.unionjack,"hc:verlichting":I.sun,"hc:china":I.chinaflag,"hc:duitsland":I.wall,"hc:duitsland-h":I.wall,"hc:nederland":I.nl,
  "m:lees":I.book,"m:begrip":I.bulb,"m:tijd":I.sort,"m:chrono":I.sort,"m:tijdlijn":I.timeline,"m:tl":I.timeline,"m:jaar":I.clock,
  "m:map":I.globe,
+ "m:flash":'<rect x="3" y="7" width="13" height="14" rx="2"/><path d="M7 3.5h11.5a2 2 0 0 1 2 2V17"/><path d="M7.5 12h4M7.5 15.5h4"/>',
  "m:tijdmachine":'<path d="M12 21.5s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><path d="M12 7v3.6l2.4 1.5"/>',"m:keten":I.domino,"m:koppel":I.puzzle,"m:gk":I.cheese,"m:quiz":I.quiz,"m:hitster":I.hitster,"m:wie":I.who,"m:kruis":I.grid,"m:mc":I.abcd,"m:memory":I.memory,"m:exam":I.cap,"m:cards":I.cards,
  "m:ka2tv":I.hourglass,"m:vb2ka":I.search,
  "g:ka":I.layers,"g:exv":I.cap,"g:vaard":I.compass,"hc":I.landmark,
@@ -4514,9 +4608,9 @@ const ICONS={
 };
 
 Object.assign(ICONS,{
- "hc:staats":I.landmark,"hc:wo1":'<path d="M12 3c-4.4 0-7 3.3-7 7.5 0 3 1.5 5.4 3.8 6.6L10 21h4l1.2-3.9c2.3-1.2 3.8-3.6 3.8-6.6C19 6.3 16.4 3 12 3z"/><circle cx="9" cy="9.5" r="2"/><circle cx="15" cy="9.5" r="2"/><rect x="10" y="13.5" width="4" height="3.5" rx="1"/>',
+ "hc:staats":I.landmark,"hc:wo1":'<path d="M2 8h20M2 16h20"/><path d="M4 5.5l3 5M7 5.5l-3 5M13 5.5l3 5M16 5.5l-3 5M8.5 13.5l3 5M11.5 13.5l-3 5M17.5 13.5l3 5M20.5 13.5l-3 5"/>',
  "hc:interbellum":'<path d="M3 3v18h18"/><path d="M6 7l4 4 3-2 6 8"/><path d="M15 17h4v-4"/>',
- "hc:wo2":'<path d="M12 2.5c1 0 1.6 1.2 1.6 3V10l8 3.2v2l-8-1.6v4.6l2.6 1.8v1.6L12 20.4l-4.2 1.2V20l2.6-1.8v-4.6l-8 1.6v-2l8-3.2V5.5c0-1.8.6-3 1.6-3z"/>',
+ "hc:wo2":'<rect x="2.5" y="14.5" width="19" height="5" rx="2.5"/><path d="M5 14.5l1.5-3.5h10l1.5 3.5"/><path d="M9 11V8.5h5V11"/><path d="M14 9.5h7.5"/><circle cx="6.5" cy="17" r=".6"/><circle cx="10" cy="17" r=".6"/><circle cx="14" cy="17" r=".6"/><circle cx="17.5" cy="17" r=".6"/>',
  "hc:koudeoorlog":'<circle cx="12" cy="12" r="1.8"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>',
  "hc:wereldorde":I.globe,
  "m:koppelb":'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
@@ -5087,7 +5181,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115094739"; let last=0, shown=false;
+  const BUILD="20261115103236"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
