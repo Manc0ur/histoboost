@@ -2782,12 +2782,16 @@ const LNK_PALIAS={"Mao Zedong":["Mao"],"Franz Ferdinand":["Frans Ferdinand"],"Jo
 const LNK_SKIP=new Set(["Washington","Oranje","Frank","Grote"]), LNK_BSKIP=new Set(["multiculturele"]);
 const LNK_EALIAS={"steden:1302":["Guldensporenslag"],"steden:1602":["oprichting van de VOC"],"steden:1618":["Dertigjarige Oorlog"],
  "brits:1765":["verdrag van Allahabad"],"brits:1851":["eerste wereldtentoonstelling"],"brits:1869":["opening van het Suezkanaal"],
- "china:1912":["Republiek China"],"china:1949":["Volksrepubliek"],"duitsland:1949":["Bondsrepubliek Duitsland"],"duitsland-h:1949":["Bondsrepubliek Duitsland"],
+ "china:1912":["Republiek China"],"china:1949":["Volksrepubliek"],"duitsland:1949":["Bondsrepubliek Duitsland","Duitse Democratische Republiek"],"duitsland-h:1949":["Bondsrepubliek Duitsland","Duitse Democratische Republiek"],
  "nederland:1957":["invoering van de AOW"],"nederland:1959":["vondst van aardgas in Groningen"],"staats:1874":["Kinderwetje van Van Houten"],
  "interbellum:1923":["bezetting van het Ruhrgebied","mislukte staatsgreep door Hitler"],"interbellum:1926":["Duitsland lid van de Volkenbond"],
  "interbellum:1933":["machtsovername door de nazi's"],"interbellum:1935":["rassenwetten"],"interbellum:1938":["Conferentie van München"],
  "wo2:1939":["inval van Duitsland in Polen"],"wo2:1940":["Duitse inval","bombardement op Rotterdam"],"wo2:1943":["slag bij Stalingrad"],"wo2:1945":["bevrijding van Nederland"],
- "wereldorde:1993":["verandering van EG naar EU"],"wereldorde:2001":["11-9-2001"],"wereldorde:2002":["invoering van de euro"]};
+ "koudeoorlog:1945":["Republiek Indonesië"],"wereldorde:1993":["verandering van EG naar EU"],"wereldorde:2001":["11-9-2001"],"wereldorde:2002":["invoering van de euro"]};
+/* eigen omschrijvingen per context (gaan voor algemene begrippen) */
+const LNK_OWN={"steden":[["Republiek der Zeven Verenigde Nederlanden",["Republiek","Nederlandse Republiek"],"De staat die de zeven noordelijke gewesten na de Opstand vormden (vanaf 1588). Er werd geen nieuwe landsheer gezocht: het werd een confederatie, waarin de gewesten veel eigen bevoegdheden hielden en het overkoepelend bestuur, de Staten-Generaal, zwak was. Regenten bestuurden de steden en gewesten; de stadhouder was opperbevelhebber."]]};
+/* woorden die in een context naar een bestaand begrip van die context moeten verwijzen */
+const LNK_BALIAS={"duitsland":{"Republiek":"Republiek van Weimar"},"duitsland-h":{"Republiek":"Republiek van Weimar"}};
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 function lnkDict(H){
   const items=[], map=new Map(), ev=[], begr=new Map(), pIt=new Map();
@@ -2797,7 +2801,9 @@ function lnkDict(H){
   const own=WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]), rest=WBI.filter(p=>p.u&&!(p.hc&&p.hc[H.id]));
   [...own,...rest].forEach(p=>pIt.set(p,mk("Persoon",p.n,p.u)));
   own.forEach(p=>add(p.n,pIt.get(p)));
+  (LNK_OWN[H.id]||[]).forEach(([t,al,u])=>{ const it=mk("Begrip",t,u); [t,...al].forEach(n=>add(n,it,true)); });
   H.begrippen.forEach(b=>{ if(!b.d) return; const it=mk("Begrip",b.b,b.d); begr.set(b,it); add(b.b,it); });
+  Object.entries(LNK_BALIAS[H.id]||{}).forEach(([a,n])=>{ const it=map.get(key(n)); if(it) add(a,it,true); });
   const alias=p=>{ const o=[], s=p.n.replace(LNK_TITLE,""); if(s!==p.n) o.push(s);
     const w=s.split(/\s+/), l=w[w.length-1];
     if(w.length>=2&&!w.slice(1).some(x=>/^[a-z]/.test(x))&&!/^[IVX]+$/.test(l)&&l.length>=4&&!LNK_SKIP.has(l)) o.push(l);
@@ -5387,7 +5393,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115115751"; let last=0, shown=false;
+  const BUILD="20261115120559"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
