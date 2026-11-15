@@ -2303,7 +2303,7 @@ function home(){ SYL=null;
   const upd=()=>{ app.querySelectorAll(".list [data-hc]").forEach(b=>{ const on=sel.has(b.dataset.hc); b.setAttribute("aria-pressed",on); const t=b.querySelector(".tag"); if(t){ t.classList.toggle("on",on); t.textContent=on?"✓ gekozen":"kies"; } });
     app.querySelectorAll("[data-htv]").forEach(b=>b.setAttribute("aria-pressed",tvSel.has(+b.dataset.htv)));
     app.querySelectorAll("[data-htvper]").forEach(b=>b.setAttribute("aria-pressed",TVPER[+b.dataset.htvper][1].every(n=>tvSel.has(n))));
-    const tvs=tvList(), tn=app.querySelector("#tvnames"); if(tn) tn.innerHTML=tvs.length?`<p class="tvh">Gekozen: ${tvs.length} ${tvs.length===1?"tijdvak":"tijdvakken"}</p><ul class="tvl">${tvs.map(n=>`<li style="--c:${col(n)}"><b>${n}</b><span>${esc(tvOf(n).naam)}</span></li>`).join("")}</ul>`:`<p class="tvh">Nog geen tijdvak gekozen.</p>`;
+    const tvs=tvList(), tn=app.querySelector("#tvnames"); if(tn) tn.innerHTML=tvs.length?`<p class="tvh">Gekozen: ${tvs.length} ${tvs.length===1?"tijdvak":"tijdvakken"}</p><ul class="tvl">${tvs.map(n=>`<li style="--c:${col(n)}"><b>${n}</b><span>${esc(tvOf(n).naam)}</span></li>`).join("")}</ul>`:`<p class="tvh">Nog geen tijdvak of periode gekozen.</p>`;
     const ids=chosen(), g=app.querySelector("#hcgo"); g.disabled=!ids.length&&!tvs.length;
     const nv=S.niveau==="tl"?"TL":S.niveau==="vwo"?"VWO":"HAVO"; const tvT=tvs.length===1?`tijdvak ${tvs[0]}`:`${tvs.length} tijdvakken`, hcT=ids.length===1?HCDATA[ids[0]].titel:`${ids.length} ${word(2)}`;
     g.textContent=!ids.length&&!tvs.length?(S.niveau==="tl"?"Kies eerst een onderwerp":"Kies eerst een tijdvak of context"):!ids.length?`${nv}: Oefenen met ${tvT} ›`:!tvs.length?`${nv}: Oefenen met ${hcT} ›`:`${nv}: Oefenen met ${tvT} en ${hcT} ›`;
@@ -6008,7 +6008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115201602"; let last=0, shown=false;
+  const BUILD="20261115201851"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
