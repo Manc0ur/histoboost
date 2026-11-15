@@ -492,7 +492,7 @@ body.kqon{overflow:hidden}
 .oc3 li.gap{border:2px dashed var(--ink);font-weight:700;text-align:center;color:var(--muted)}
 .oc3 li.mid{border:2px solid var(--ink);font-weight:700}
 .ocl{display:block;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.blq{margin:.2rem 0 .8rem;padding:.7rem 1rem;border-left:6px solid var(--ink);background:var(--bg);border-radius:6px;font-size:1.05rem;line-height:1.55;max-width:62ch}.blctx{color:var(--muted)}.blmk{background:#ffe9a8;color:var(--ink);font-weight:700;font-style:italic;padding:.05em .2em;border-radius:4px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.blq{margin:.2rem 0 .8rem;padding:.7rem 1rem;border-left:6px solid var(--ink);background:var(--bg);border-radius:6px;font-size:1.05rem;line-height:1.55;max-width:62ch}.blctx{color:var(--muted)}.blmk{background:#ffe08a;color:#111827;font-weight:700;font-style:italic;padding:.05em .2em;border-radius:4px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .blhv{margin:0 0 .7rem;padding:.6rem .9rem;border-left:6px solid var(--ink);background:var(--bg);border-radius:6px;font-size:1.05rem;max-width:62ch}.blhv span{display:block;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .blnote{margin:.8rem 0 0;font-size:.93rem;color:var(--muted);max-width:62ch}
 .pehead{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:5;padding:.4rem 0}
@@ -5998,7 +5998,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115181946"; let last=0, shown=false;
+  const BUILD="20261115182459"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
