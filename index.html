@@ -4158,6 +4158,7 @@ const PERTV = {1:0,2:1,3:2,4:2,5:3,6:3,7:3,8:4,9:4,10:4};
 const FM = ["Feit","Mening"], VC = ["Verandering","Continuïteit"], AO = ["Aanleiding","Oorzaak op lange termijn"];
 const TERREIN = ["Politiek-bestuurlijk","Sociaal-economisch","Cultureel-mentaal"];
 const BED = ["Bedoeld gevolg","Onbedoeld gevolg"], TEMPO = ["Snel en plotseling","Langzaam en geleidelijk"], SPOOR = ["Materieel spoor","Immaterieel spoor"];
+const SPOOR_DEF="<strong>Materieel</strong> = iets tastbaars uit het verleden dat je kunt zien en aanraken, zoals een gebouw, schilderij of voorwerp.<br><strong>Immaterieel</strong> = iets wat je niet kunt aanraken maar wat wel doorleeft, zoals een idee, gebruik, feestdag, taal of herdenking.";
 const ASK = new Map([[FM,"Is dit een feit of een mening?"],[VC,"Is dit een verandering of continuïteit?"],[AO,"Is dit een aanleiding of een oorzaak op lange termijn?"],[BED,"Is dit een bedoeld of een onbedoeld gevolg?"],[TEMPO,"Wat voor soort verandering is dit?"],[SPOOR,"Wat voor spoor van het verleden is dit?"],[PER,"Kies de juiste periode."]]);
 // vraag: [vraag, opties, index goed antwoord, hint, uitleg, vraagtekst (optioneel)]
 const VAARD = [
@@ -4450,7 +4451,7 @@ function vaardQuiz(id){
     const [q,opts,r,hint,uit,ask]=x;
     const idx=opts.map((o,i)=>i), order=(opts.length<=3||opts===PER)?idx:shuffle(idx);
     return {id:q,ask:ask||ASK.get(opts)||"Kies het beste antwoord.",q,right:r,opts:order.map(i=>({id:i,label:opts[i]})),
-      hint,uitleg:`Het goede antwoord is: ${esc(opts[r])}.`,extra:uit,review:`${esc(q)} <strong>${esc(opts[r])}</strong>`};
+      hint,uitleg:opts===SPOOR?`Het goede antwoord is: ${esc(opts[r])}.${uit?" "+esc(uit):""}<br><br>${SPOOR_DEF}`:`Het goede antwoord is: ${esc(opts[r])}.`,extra:opts===SPOOR?"":uit,review:`${esc(q)} <strong>${esc(opts[r])}</strong>`};
   });
   mcEx({title:V.titel,qs,back:vaardMenu,again:()=>vaardQuiz(id),key:(S.niveau==="havo"?"vh-":"v-")+id,ids:V.qs.map(x=>x[0])});
 }
@@ -6006,7 +6007,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115194243"; let last=0, shown=false;
+  const BUILD="20261115194501"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
