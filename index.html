@@ -2768,7 +2768,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="quiz" ${count?"":"disabled"}><span class="txt"><strong>Quiz</strong><span class="sub">Allerlei oefeningen door elkaar: tijdvakken, kenmerkende aspecten, jaartallen, plaatsen, oorzaak en gevolg en gatenkaas</span></span></button>
       <button class="item" data-m="klas" ${count?"":"disabled"}><span class="txt"><strong>Klas Quiz</strong><span class="sub">Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op</span></span></button>
       <button class="item" data-m="exam" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken (${kaExamList().length} vragen)</span></span></button>
-      <button class="item" data-m="bronlab" ${blCount("ka")?"":"disabled"}><span class="txt"><strong>Bronnenlab</strong><span class="sub">${BLSUB}</span></span></button>
+      <button class="item" data-m="bronlab" ${blCount("ka")?"":"disabled"}><span class="txt"><strong>Bronnenlab (test)</strong><span class="sub">${BLSUB}</span></span></button>
       <button class="item" data-m="proef" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Proefexamen</strong><span class="sub">${PESUB}</span></span></button>
       <button class="item" data-m="cards" ${count?"":"disabled"}><span class="txt"><strong>Leerkaarten</strong><span class="sub">Lees het kenmerkend aspect, draai de kaart om voor tijdvak, toelichting en voorbeelden</span></span></button>
       <button class="item" data-m="flash" ${count?"":"disabled"}><span class="txt"><strong>Flashcards</strong><span class="sub">Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist</span></span></button>
@@ -2886,7 +2886,7 @@ function hcModes(H){ return [["lees","Lees de examenstof",H.niveau==="tl"?"De st
          ["gk","Gatenkaas","Sleep begrippen, personen en gebeurtenissen naar de juiste plek in een tekst"],
          ["quiz","Quiz","Allerlei oefeningen door elkaar: begrippen, "+(H.koppel.length?"kenmerkende aspecten, ":"")+"jaartallen, plaatsen, oorzaak en gevolg en gatenkaas"],
          ["klas","Klas Quiz","Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op"],
-         ...(hcExamList(true).length?[["bronlab","Bronnenlab",BLSUB],["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.parts?(H.niveau==="tl"?"deze onderwerpen":"deze contexten"):H.niveau==="tl"?"dit onderwerp":"deze context"} (${hcExamList(true).length} vragen)`],["proef","Proefexamen",PESUB]]:[])]
+         ...(hcExamList(true).length?[["bronlab","Bronnenlab (test)",BLSUB],["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.parts?(H.niveau==="tl"?"deze onderwerpen":"deze contexten"):H.niveau==="tl"?"dit onderwerp":"deze context"} (${hcExamList(true).length} vragen)`],["proef","Proefexamen",PESUB]]:[])]
         .filter(([m])=>m!=="koppel"||H.koppel.length); }
 function hcCount(id){ const keep=S.hc; S.hc=HCDATA[id]; const n=hcModes(S.hc).length; S.hc=keep; return n; }
 function hcWhy(H,m){
@@ -4768,7 +4768,7 @@ function blCount(scope){ const I=blItems(scope); return I.om.length+I.fm.length;
 function blMenu(scope){
   const I=blItems(scope), back=scope==="ka"?kaMenu:hcMenu;
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-  <h2>Bronnenlab</h2>
+  <h2>Bronnenlab (test)</h2>
   <p class="lead">Op het examen werk je steeds met bronnen. Hier oefen je de vragen die je bij elke bron stelt, met echte bronnen uit de centrale examens over jouw stof.</p>
   <section class="section"><div class="list">
    <button class="item" data-bl="om" ${I.om.length?"":"disabled"}><span class="txt"><strong>Om de bron</strong><span class="sub">Wat voor bron is het, wie schreef het, waarom, en hoe betrouwbaar is het? (${I.om.length} vragen)</span></span></button>
@@ -5997,7 +5997,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115145739"; let last=0, shown=false;
+  const BUILD="20261115151350"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
