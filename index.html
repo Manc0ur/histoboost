@@ -480,6 +480,7 @@ body.kqon{overflow:hidden}
 .exwarn strong{display:block;margin-bottom:.25rem}
 .exwarn p{margin:.25rem 0}
 .exwarnnote{margin:.3rem 0 0;font-size:.93rem;max-width:70ch}
+.nkl{margin:.4rem 0 .5rem 1.2rem;padding:0}.nkl li{margin:.25rem 0}#autostatus a{word-break:break-all}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -4807,6 +4808,13 @@ function exBron(q,n){
 }
 /* ---------- Laten nakijken door Claude ---------- */
 let SAMPLE=null, SAMPLEIMG=false, SAMPLEOFF=false;
+const CLAUDE_URL="https://claude.ai/artifact/BshyxQAiovoJWM6rSHQeie";
+const nakijkUitleg=()=>`<strong>Laten nakijken werkt alleen in de Claude-versie van HistoBoost.</strong> Zo doe je dat:
+  <ol class="nkl"><li>Kopieer eerst je antwoord uit het antwoordvak hierboven.</li>
+  <li>Open HistoBoost op claude.ai: <a href="${CLAUDE_URL}" target="_blank" rel="noopener">${CLAUDE_URL}</a></li>
+  <li>Log in met je Claude-account. Heb je die nog niet, dan kun je er op claude.ai een maken.</li>
+  <li>Ga in die versie naar dezelfde examenvraag, plak je antwoord en klik op <em>Laten nakijken</em>.</li></ol>
+  Lukt dat niet? Klik dan op <em>Zelf nakijken</em> en vergelijk je antwoord met het correctievoorschrift.`;
 (async()=>{ try{ if(window.claude&&claude.use){ SAMPLE=await claude.use("sample");
   if(SAMPLE){ const l=await SAMPLE.limits().catch(()=>null); SAMPLEIMG=!!(l&&l.images); } } }catch(e){ SAMPLE=null; } })();
 const OFFCODES=["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"];
@@ -4913,7 +4921,7 @@ function exRun(list,i){
     const au=app.querySelector("#auto"); if(au) au.onclick=async()=>{
       const box=app.querySelector("#autostatus"); const say=(m,cls="")=>{ box.innerHTML=`<p class="hintline ${cls}" role="status">${m}</p>`; };
       if(!(st.ans||"").trim()){ say("Schrijf eerst een antwoord, dan kijkt Claude het na."); ans.focus(); return; }
-      if(!SAMPLE){ say("Laten nakijken werkt alleen als je deze pagina op claude.ai opent en bent ingelogd met een Claude-account. Kijk je antwoord zelf na met het correctievoorschrift."); return; }
+      if(!SAMPLE){ say(nakijkUitleg()); return; }
       au.disabled=true; sh.disabled=true; ans.readOnly=true;
       say("Claude kijkt je antwoord na volgens het correctievoorschrift. Dit duurt meestal 10 tot 40 seconden…");
       try{
@@ -4925,7 +4933,7 @@ function exRun(list,i){
         const c=e&&e.code;
         if(OFFCODES.includes(c)){ SAMPLEOFF=true; au.remove(); say("Laten nakijken is niet beschikbaar voor jouw account. Kijk je antwoord zelf na met het correctievoorschrift."); }
         else if(c==="rate_limited") say("Je hebt Claude net vaak gebruikt. Probeer het over een tijdje opnieuw, of kijk zelf na.");
-        else if(c==="session_expired") say("Je bent uitgelogd bij Claude. Log opnieuw in en probeer het nog eens.");
+        else if(c==="session_expired") say(`Je bent uitgelogd bij Claude. Log opnieuw in op <a href="${CLAUDE_URL}" target="_blank" rel="noopener">claude.ai</a> en probeer het nog eens.`);
         else if(c==="cancelled") box.innerHTML="";
         else say("Het nakijken is niet gelukt. Probeer het opnieuw, of kijk zelf na.");
       }
@@ -5716,7 +5724,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115140731"; let last=0, shown=false;
+  const BUILD="20261115141004"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
