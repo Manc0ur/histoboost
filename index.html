@@ -372,8 +372,9 @@ h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
 .tll button.pc{cursor:pointer;border-color:var(--c);font-weight:700}
 .tll .yc{font-weight:800;font-variant-numeric:tabular-nums}
 .tll .yr{font-weight:700;white-space:nowrap}
-.tll .bl{all:unset;cursor:pointer;border-bottom:2px dotted var(--c);font-weight:700}
-.tll .bl:focus-visible,.tll .bc:focus-visible,.tll button.pc:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.lnk .bl{all:unset;cursor:pointer;border-bottom:2px dotted var(--c,var(--t5));font-weight:700}
+.lnk .bl[aria-pressed="true"]{border-bottom-style:solid;background:var(--surface)}
+.lnk .bl:focus-visible,.tll .bc:focus-visible,.tll button.pc:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
 .tll .bbox{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:12px;padding:1rem 1.1rem 1.1rem;margin:1.3rem 0 .8rem}
 .tll .bbox h4{font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem;margin:0}
 .tll .bbox .bsub{color:var(--muted);margin:.25rem 0 .7rem;font-size:.95rem}
@@ -2716,15 +2717,17 @@ function hcMenu(){ CTX="hc";
 function hcLees(){
   const H=S.hc;
   if(H.niveau==="tl") return tlLees();
-  app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
+  const D=lnkDict(H);
+  app.innerHTML = `<div class="lnk" id="lnk"><button class="back" id="back">‹ Terug naar oefeningen</button>
   <h2>${esc(H.titel)}</h2>
-  <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen.</p>
+  <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg.</p>
   ${H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>`<article class="dv" style="--c:${col(d.c)}">
     <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
-    ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${esc(kaOf(n).t)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
-    ${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}
+    ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${lnkHtml(esc(kaOf(n).t),D)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
+    ${d.tekst.map(p=>`<p>${lnkHtml(esc(p),D)}</p>`).join("")}
   </article>`).join("")}
-  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}`;
+  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}</div>`;
+  lnkSheet(app.querySelector("#lnk"),D);
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
@@ -2773,66 +2776,108 @@ function tllParse(s){
   return [{k:"p",label,text:rest}];
 }
 function tllBlocks(d){ const out=[]; d.tekst.forEach(p=>tllSentences(p).forEach(s=>out.push(...tllParse(s)))); return out; }
+/* ---------- Klikbare begrippen, personen en gebeurtenissen in de examenstof ---------- */
+const LNK_TITLE=/^(koning|koningin|keizer|keizerin|paus|prins|kroonprins|tsaar|president|generaal|stadhouder)\s+/i;
+const LNK_PALIAS={"Mao Zedong":["Mao"],"Franz Ferdinand":["Frans Ferdinand"],"John F. Kennedy":["Kennedy"]};
+const LNK_SKIP=new Set(["Washington","Oranje","Frank","Grote"]), LNK_BSKIP=new Set(["multiculturele"]);
+const LNK_EALIAS={"steden:1302":["Guldensporenslag"],"steden:1602":["oprichting van de VOC"],"steden:1618":["Dertigjarige Oorlog"],
+ "brits:1765":["verdrag van Allahabad"],"brits:1851":["eerste wereldtentoonstelling"],"brits:1869":["opening van het Suezkanaal"],
+ "china:1912":["Republiek China"],"china:1949":["Volksrepubliek"],"duitsland:1949":["Bondsrepubliek Duitsland"],"duitsland-h:1949":["Bondsrepubliek Duitsland"],
+ "nederland:1957":["invoering van de AOW"],"nederland:1959":["vondst van aardgas in Groningen"],"staats:1874":["Kinderwetje van Van Houten"],
+ "interbellum:1923":["bezetting van het Ruhrgebied","mislukte staatsgreep door Hitler"],"interbellum:1926":["Duitsland lid van de Volkenbond"],
+ "interbellum:1933":["machtsovername door de nazi's"],"interbellum:1935":["rassenwetten"],"interbellum:1938":["Conferentie van München"],
+ "wo2:1939":["inval van Duitsland in Polen"],"wo2:1940":["Duitse inval","bombardement op Rotterdam"],"wo2:1943":["slag bij Stalingrad"],"wo2:1945":["bevrijding van Nederland"],
+ "wereldorde:1993":["verandering van EG naar EU"],"wereldorde:2001":["11-9-2001"],"wereldorde:2002":["invoering van de euro"]};
+const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function lnkDict(H){
+  const items=[], map=new Map(), ev=[], begr=new Map(), pIt=new Map();
+  const mk=(k,t,u,y)=>{ const it={i:items.length,k,t,u,y}; items.push(it); return it; };
+  const key=n=>esc(n).toLowerCase().trim();
+  const add=(n,it,force)=>{ const k=key(n); if((!force&&k.length<4)||map.has(k)) return; map.set(k,it); };
+  const own=WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]), rest=WBI.filter(p=>p.u&&!(p.hc&&p.hc[H.id]));
+  [...own,...rest].forEach(p=>pIt.set(p,mk("Persoon",p.n,p.u)));
+  own.forEach(p=>add(p.n,pIt.get(p)));
+  H.begrippen.forEach(b=>{ if(!b.d) return; const it=mk("Begrip",b.b,b.d); begr.set(b,it); add(b.b,it); });
+  const alias=p=>{ const o=[], s=p.n.replace(LNK_TITLE,""); if(s!==p.n) o.push(s);
+    const w=s.split(/\s+/), l=w[w.length-1];
+    if(w.length>=2&&!w.slice(1).some(x=>/^[a-z]/.test(x))&&!/^[IVX]+$/.test(l)&&l.length>=4&&!LNK_SKIP.has(l)) o.push(l);
+    return o; };
+  const pal=p=>{ (LNK_PALIAS[p.n]||[]).forEach(a=>add(a,pIt.get(p),true)); alias(p).forEach(a=>add(a,pIt.get(p))); };
+  own.forEach(pal); rest.forEach(p=>add(p.n,pIt.get(p))); rest.forEach(pal);
+  const X=H.tlx||TLX;
+  H.tijdlijn.forEach(e=>{ const u=(X[e.j]||[])[0]; if(!u) return; const it=mk("Gebeurtenis",e.t,u,e.j); add(e.t,it); (LNK_EALIAS[H.id+":"+e.j]||[]).forEach(a=>add(a,it,true)); ev.push({it,j:e.j,dv:e.dv}); });
+  for(const id in HCDATA) if(id!==H.id) HCDATA[id].begrippen.forEach(b=>{ if(b.d&&!map.has(key(b.b))) add(b.b,mk("Begrip",b.b,b.d)); });
+  kwGapDefs(GK_KA).forEach(g=>{ if(!map.has(key(g.a))&&!LNK_BSKIP.has(g.a.toLowerCase())) add(g.a,mk("Begrip",g.a.charAt(0).toUpperCase()+g.a.slice(1),g.q)); });
+  const keys=[...map.keys()].sort((a,b)=>b.length-a.length);
+  const re=keys.length?new RegExp("(^|[^\\p{L}\\p{N}])("+keys.map(reEsc).join("|")+")(?=$|[^\\p{L}\\p{N}])","giu"):null;
+  return {items,map,re,ev,begr,pIt};
+}
+function lnkHtml(h,D,used){ if(!D||!D.re) return h; used=used||new Set();
+  return h.replace(D.re,(m,pre,w)=>{ const it=D.map.get(w.toLowerCase()); if(!it||used.has(it.i)||(it.k==="Persoon"&&!/^\p{Lu}/u.test(w))) return m; used.add(it.i); return `${pre}<button type="button" class="bl" data-l="${it.i}" aria-pressed="false">${w}</button>`; }); }
+function lnkSheet(W,D){
+  W.insertAdjacentHTML("beforeend",`<div class="bsheet" role="dialog" aria-live="polite" hidden><button type="button" class="x" aria-label="Sluiten">×</button><span class="bk"></span><span class="bt"></span><p></p></div>`);
+  const sh=W.querySelector(".bsheet"); let cur=null;
+  const close=()=>{ sh.hidden=true; if(cur) cur.setAttribute("aria-pressed","false"); cur=null; };
+  W.addEventListener("click",e=>{
+    const el=e.target.closest("[data-l]");
+    if(el){ if(cur===el){ close(); return; } const x=D.items[+el.dataset.l]; if(!x) return;
+      if(cur) cur.setAttribute("aria-pressed","false"); cur=el; el.setAttribute("aria-pressed","true");
+      const art=el.closest(".dv"); sh.style.setProperty("--c",art?art.style.getPropertyValue("--c"):"var(--t5)");
+      sh.querySelector(".bk").textContent=x.k+(x.y!=null?" · "+fmtY(x.y):""); sh.querySelector(".bt").textContent=x.t; sh.querySelector("p").textContent=x.u; sh.hidden=false; return; }
+    if(e.target.closest(".bsheet .x")||!e.target.closest(".bsheet")) close();
+  });
+  W.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+}
 function tlLees(){
-  const H=S.hc, B=H.begrippen.filter(b=>b.d), bIdx=new Map();
-  B.forEach((b,i)=>{ const k=b.b.toLowerCase(); if(!bIdx.has(k)) bIdx.set(k,i); });
-  const names=[...bIdx.keys()].filter(n=>n.length>=4).sort((a,b)=>b.length-a.length);
-  const reB=names.length?new RegExp("(^|[^\\p{L}\\p{N}])("+names.map(n=>esc(n).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?=$|[^\\p{L}\\p{N}])","giu"):null;
-  const P=[...WBI.filter(p=>p.u&&p.hc[H.id]),...WBI.filter(p=>p.u&&!p.hc[H.id])];
+  const H=S.hc, D=lnkDict(H), P=[...D.pIt.keys()];
   const wb=(hay,w)=>(" "+hay+" ").includes(" "+w+" ");
-  const findP=t=>{ const l=t.toLowerCase(); for(const f of [n=>n===l,n=>l.endsWith(" "+n)||n.endsWith(" "+l),n=>wb(l,n)||wb(n,l)]){ const i=P.findIndex(p=>f(p.n.toLowerCase())); if(i>=0) return i; } return -1; };
+  const findP=t=>{ const l=t.toLowerCase(); for(const f of [n=>n===l,n=>l.endsWith(" "+n)||n.endsWith(" "+l),n=>wb(l,n)||wb(n,l)]){ const p=P.find(p=>f(p.n.toLowerCase())); if(p) return D.pIt.get(p); } return null; };
   const year=h=>h.replace(/\(((?:\d{1,2}-\d{1,2}-|\d{1,2} [a-z]+ |[a-z]+ )?\d{4}(?:-\d{4}| en \d{4})?)\)/g,'(<span class="yr">$1</span>)');
-  const fmt=(t,lb)=>{ let h=esc(t).replace(/ \/ /g,", ");
-    if(lb&&bIdx.has(lb.toLowerCase())){ const i=bIdx.get(lb.toLowerCase()); const re=new RegExp(esc(lb).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"); if(re.test(h)) h=h.replace(re,m=>`<button class="bl" data-b="${i}">${m}</button>`); else h=`<button class="bl" data-b="${i}">${h}</button>`; }
-    else if(reB){ const used=new Set(); h=h.replace(reB,(m,pre,w)=>{ const i=bIdx.get(w.toLowerCase()); if(i===undefined||used.has(i)) return m; used.add(i); return `${pre}<button class="bl" data-b="${i}">${w}</button>`; }); }
-    return year(h); };
-  const li=it=>typeof it==="string"?`<li>${fmt(it)}</li>`:`<li>${fmt(it.t)}<ul class="sub">${it.sub.map(x=>`<li>${fmt(x)}</li>`).join("")}</ul></li>`;
-  const blk=b=>{
-    if(b.k==="h") return `<h4 class="sub">${fmt(b.text)}</h4>`;
-    if(b.k==="p") return /^Je kunt/.test(b.text)&&!b.label?`<p class="kan">${fmt(b.text)}</p>`:`<p class="ltx">${b.label?`<strong>${fmt(b.label)}:</strong> `:""}${fmt(b.text)}</p>`;
-    const lab=b.label?`<p class="${b.kan?"kan":"lbl"}">${fmt(b.label,b.lb)}:</p>`:"";
-    if(b.k==="flow") return lab+`<div class="flow" role="list">${b.items.map(x=>`<span class="st" role="listitem">${fmt(x)}</span>`).join('<span class="ar" aria-hidden="true">→</span>')}</div>`;
-    if(b.k==="chips") return lab+`<div class="chips">${b.items.map(x=>{ if(!b.pp) return `<span class="pc yc">${year(esc(x))}</span>`; const i=findP(x); return i>=0?`<button class="pc" data-p="${i}">${esc(x)}</button>`:`<span class="pc">${esc(x)}</span>`; }).join("")}</div>`;
-    return lab+`<ul class="cols">${b.items.map(li).join("")}</ul>`;
+  const btn=(it,inner,cls)=>`<button type="button" class="${cls||"bl"}" data-l="${it.i}" aria-pressed="false">${inner}</button>`;
+  const fmt=(t,used,lb)=>{ let h=esc(t).replace(/ \/ /g,", ");
+    const it=lb&&D.map.get(esc(lb).toLowerCase());
+    if(it){ if(used) used.add(it.i); const re=new RegExp(reEsc(esc(lb)),"i"); h=re.test(h)?h.replace(re,m=>btn(it,m)):btn(it,h); return year(h); }
+    return year(lnkHtml(h,D,used)); };
+  const li=(x,u)=>typeof x==="string"?`<li>${fmt(x,u)}</li>`:`<li>${fmt(x.t,u)}<ul class="sub">${x.sub.map(y=>`<li>${fmt(y,u)}</li>`).join("")}</ul></li>`;
+  const chip=(x,pp,nr)=>{ if(pp){ const it=findP(x); return it?btn(it,esc(x),"pc"):`<span class="pc">${esc(x)}</span>`; }
+    const ys=(x.match(/\d{4}/g)||[]).map(Number).reverse(), e=ys.map(y=>D.ev.find(e=>e.j===y&&e.dv===nr)).find(Boolean)||ys.map(y=>D.ev.find(e=>e.j===y)).find(Boolean);
+    if(e) return btn(e.it,esc(x),"pc yc");
+    return `<span class="pc yc">${esc(x)}</span>`; };
+  const blk=(b,nr)=>{ const u=new Set();
+    if(b.k==="h") return `<h4 class="sub">${fmt(b.text,u)}</h4>`;
+    if(b.k==="p") return /^Je kunt/.test(b.text)&&!b.label?`<p class="kan">${fmt(b.text,u)}</p>`:`<p class="ltx">${b.label?`<strong>${fmt(b.label,u)}:</strong> `:""}${fmt(b.text,u)}</p>`;
+    const lab=b.label?`<p class="${b.kan?"kan":"lbl"}">${fmt(b.label,u,b.lb)}:</p>`:"";
+    if(b.k==="flow") return lab+`<div class="flow" role="list">${b.items.map(x=>`<span class="st" role="listitem">${fmt(x,u)}</span>`).join('<span class="ar" aria-hidden="true">→</span>')}</div>`;
+    if(b.k==="chips") return lab+`<div class="chips">${b.items.map(x=>chip(x,b.pp,nr)).join("")}</div>`;
+    return lab+`<ul class="cols">${b.items.map(x=>li(x,u)).join("")}</ul>`;
   };
   const body=d=>{ const bl=tllBlocks(d); let h="";
     for(let i=0;i<bl.length;i++){ const b=bl[i], n=bl[i+1];
-      if(b.k==="list"&&b.label&&TLL_PAIR.test(b.label)&&n&&n.k==="list"&&n.label&&TLL_PAIR.test(n.label)){ h+=`<div class="pair"><div>${blk(b)}</div><div>${blk(n)}</div></div>`; i++; }
-      else h+=blk(b); }
+      if(b.k==="list"&&b.label&&TLL_PAIR.test(b.label)&&n&&n.k==="list"&&n.label&&TLL_PAIR.test(n.label)){ h+=`<div class="pair"><div>${blk(b,d.nr)}</div><div>${blk(n,d.nr)}</div></div>`; i++; }
+      else h+=blk(b,d.nr); }
     return h; };
   const dvs=H.dv.filter(d=>S.dvSel.has(d.nr));
-  app.innerHTML = `<div class="tll" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  app.innerHTML = `<div class="tll lnk" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
   <h2>${esc(H.titel)}</h2>
-  <p class="lead">Dit moet je kennen voor het examen: de stofomschrijving uit de syllabus, overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen: tik erop voor de uitleg. Onder elk onderdeel staan alle begrippen die je nodig hebt om de examenvragen te beantwoorden.</p>
-  ${dvs.map(d=>{ const bs=B.map((b,i)=>[b,i]).filter(([b])=>b.dv===d.nr);
+  <p class="lead">Dit moet je kennen voor het examen: de stofomschrijving uit de syllabus, overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg. Ook personen en jaartallen kun je aantikken. Onder elk onderdeel staan alle begrippen die je nodig hebt om de examenvragen te beantwoorden.</p>
+  ${dvs.map(d=>{ const bs=H.begrippen.filter(b=>b.dv===d.nr&&D.begr.has(b));
     return `<article class="dv" id="tll-${d.nr}" style="--c:${col(d.c)}">
     <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
     ${d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
     ${body(d)}
     ${bs.length?`<section class="bbox"><h4>Begrippen die je nodig hebt (${bs.length})</h4>
       <p class="bsub">Deze begrippen heb je nodig om examenvragen over dit onderdeel te beantwoorden. Tik op een begrip voor de uitleg.</p>
-      <div class="bchips">${bs.map(([b,i])=>`<button class="bc" data-b="${i}" aria-pressed="false">${esc(b.b)}</button>`).join("")}</div>
+      <div class="bchips">${bs.map(b=>btn(D.begr.get(b),esc(b.b),"bc")).join("")}</div>
       <button class="btn ghost" data-fl="${d.nr}">Oefen dit onderdeel met flashcards</button></section>`:""}
     <details class="orig"><summary>Originele tekst uit de syllabus</summary>${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}</details>
   </article>`; }).join("")}
-  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}
-  <div class="bsheet" id="bsheet" role="dialog" aria-live="polite" hidden><button class="x" aria-label="Sluiten">×</button><span class="bk"></span><span class="bt"></span><p></p></div></div>`;
-  const W=app.querySelector("#tll"), sh=W.querySelector("#bsheet");
-  let cur=null;
-  const close=()=>{ sh.hidden=true; if(cur) cur.setAttribute("aria-pressed","false"); cur=null; };
-  const open=(el,kind,title,txt)=>{ if(cur===el){ close(); return; } if(cur) cur.setAttribute("aria-pressed","false"); cur=el; el.setAttribute("aria-pressed","true");
-    const art=el.closest(".dv"); sh.style.setProperty("--c",art?art.style.getPropertyValue("--c"):"var(--t5)");
-    sh.querySelector(".bk").textContent=kind; sh.querySelector(".bt").textContent=title; sh.querySelector("p").textContent=txt; sh.hidden=false; };
-  W.addEventListener("click",e=>{
-    const b=e.target.closest("[data-b]"), p=e.target.closest("[data-p]"), f=e.target.closest("[data-fl]");
-    if(b){ const x=B[+b.dataset.b]; open(b,"Begrip",x.b,x.d); return; }
-    if(p){ const x=P[+p.dataset.p]; open(p,"Persoon",x.n,x.u); return; }
-    if(f){ const keep=S.dvSel, nr=+f.dataset.fl; S.dvSel=new Set([nr]);
-      flashcards({scope:"hc",key:hk("flash"),back:()=>{ hcLees(); const a=document.getElementById("tll-"+nr); if(a) a.scrollIntoView(); }});
-      S.dvSel=keep; return; }
-    if(e.target.closest(".x")||!e.target.closest("#bsheet")) close();
-  });
-  W.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}</div>`;
+  const W=app.querySelector("#tll");
+  lnkSheet(W,D);
+  W.addEventListener("click",e=>{ const f=e.target.closest("[data-fl]"); if(!f) return;
+    const keep=S.dvSel, nr=+f.dataset.fl; S.dvSel=new Set([nr]);
+    flashcards({scope:"hc",key:hk("flash"),back:()=>{ hcLees(); const a=document.getElementById("tll-"+nr); if(a) a.scrollIntoView(); }});
+    S.dvSel=keep; });
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
@@ -5342,7 +5387,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115114407"; let last=0, shown=false;
+  const BUILD="20261115115751"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
