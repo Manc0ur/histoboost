@@ -1,2 +1,2 @@
 # histoboost
-Boost je geschiedenis resultaat. Voor eeuwig en altijd gratis.
+Boost je geschiedenisresultaat. Voor eeuwig en altijd gratis.
