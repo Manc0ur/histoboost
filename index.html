@@ -2064,6 +2064,24 @@ function band(small){
 let CTX="hc";
 function kiesWat(){ return CTX==="ka"?"tijdvakken":(S.hc&&S.hc.niveau==="tl"?"onderdelen":"deelvragen"); }
 function leeg(title,back,wat){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>${esc(title)}</h2><p class="note">Bij deze keuze zijn te weinig ${wat}. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; window.scrollTo(0,0); }
+/* ---------- Scrollpositie van menu's onthouden ---------- */
+const SCROLLMEM={}; let NAV={from:null,back:false};
+try{ history.scrollRestoration="manual"; }catch(e){}
+function onNav(e){
+  const f=app.firstElementChild, k=f&&f.dataset?f.dataset.menu:null;
+  const btn=e.target&&e.target.closest?e.target.closest("button,a,[role=button]"):null;
+  const back=!!(btn&&(btn.id==="back"||btn.id==="menu"||/^\s*‹|Terug|Andere oefening/.test(btn.textContent||"")));
+  NAV={from:k||null,back};
+  if(k) SCROLLMEM[k]=window.scrollY;
+}
+document.addEventListener("click",onNav,true); document.addEventListener("change",onNav,true);
+function menuScroll(key){
+  const f=app.firstElementChild; if(f) f.dataset.menu=key;
+  try{ decorate(); }catch(e){}
+  const y=(NAV.from===key||NAV.back)?(SCROLLMEM[key]||0):0;
+  NAV={from:null,back:false};
+  window.scrollTo({top:y,left:0,behavior:"instant"});
+}
 /* ---------- Startscherm ---------- */
 function home(){ SYL=null;
   const hc = HCLIST[S.niveau] || [];
@@ -2097,7 +2115,7 @@ function home(){ SYL=null;
   const va=app.querySelector("[data-go=vaard]"); if(va) va.onclick=vaardMenu;
   const ev=app.querySelector("[data-go=exv]"); if(ev) ev.onclick=exMenu;
   app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{S.hc=HCDATA[b.dataset.hc]; S.dvSel=new Set([1,2,3]); hcMenu();});
-  window.scrollTo(0,0);
+  menuScroll("home");
 }
 
 /* ---------- Sleepbare lijst (muis, touch en toetsenbord) ---------- */
@@ -2488,7 +2506,7 @@ function kaMenu(){ CTX="ka"; sylKA();
   app.querySelector("#all").onclick=()=>{S.sel=new Set(TV.map(t=>t.n)); kaMenu();};
   app.querySelector("#none").onclick=()=>{S.sel=new Set(); kaMenu();};
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({order:tvOrder,ka2tv:()=>kaQuiz("ka2tv"),vb2ka:()=>kaQuiz("vb2ka"),cards:cards,gk:kaGatenkaas,keten:()=>kaKeten(0),map:kaMap,tl:kaTijdlijn,jaar:kaJaar,chrono:kaTijd,exam:kaExam,quiz:kaMix,hitster:kaHitster,wie:kaWie,kruis:kaKruis,mc:kaMC,memory:kaMemory})[b.dataset.m]());
-  window.scrollTo(0,0);
+  menuScroll("ka");
 }
 
 function tvOrder(){
@@ -2627,7 +2645,7 @@ function hcMenu(){ CTX="hc";
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,jaar:hcJaar,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,map:hcMap,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
-  window.scrollTo(0,0);
+  menuScroll("hc:"+S.hc.id);
 }
 
 function hcLees(){
@@ -3727,7 +3745,7 @@ function vaardMenu(){ SYL=null;
   </div></section>`;
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>b.dataset.v==="lees"?vaardLees():vaardQuiz(b.dataset.v));
-  window.scrollTo(0,0);
+  menuScroll("vaard");
 }
 function vaardLees(){
   let n=0;
@@ -4109,7 +4127,7 @@ function exMenu(){ SYL=null;
   app.querySelector("#open").onchange=e=>{EXF.open=e.target.checked;exMenu();};
   app.querySelector("#rand").onclick=()=>exRun(shuffle(list),0);
   app.querySelector("#seq").onclick=()=>exRun([...list].sort((a,b)=>{const[ya,ta]=a.ex.split("-"),[yb,tb]=b.ex.split("-");return yb.replace(/^[ht]/,"")-ya.replace(/^[ht]/,"")||ta-tb||a.nr-b.nr;}),0);
-  window.scrollTo(0,0);
+  menuScroll("ex");
 }
 function exParas(arr){ return arr.map(t=>t.startsWith("•")||t.startsWith("– ")?`<p class="exli">${esc(t)}</p>`:`<p>${esc(t)}</p>`).join(""); }
 function exBron(q,n){
