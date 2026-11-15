@@ -4852,7 +4852,7 @@ let PE=null;
 const peFmtMin=m=>(Number.isInteger(m)?String(m):String(m).replace(".",","))+" minuten";
 const peClock=sec=>{ const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), x=sec%60; return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(x).padStart(2,"0"); };
 const peLeft=()=>Math.max(0,Math.ceil((PE.end-Date.now())/1000));
-function pePool(scope){ return scope==="ka"?kaExamList():hcExamList(false); }
+function pePool(scope){ return scope==="ex"?exFiltered():scope==="ka"?kaExamList():hcExamList(false); }
 function peTvOf(q){ if(q.tv&&q.tv.length) return q.tv; const o=Object.keys(HCNAMES), r=Math.min(...(q.hc||[]).map(h=>o.indexOf(h)).filter(i=>i>=0)); return [isFinite(r)?r:99]; }
 function peOrder(list,first){
   return list.slice().sort((a,b)=>{
@@ -4883,16 +4883,16 @@ function peSelect(pool,target){
   }
   return peOrder(best.out,best.first);
 }
-function peStop(scope){ if(PE&&PE.iv) clearInterval(PE.iv); PE=null; (scope==="ka"?kaMenu:hcMenu)(); }
+function peStop(scope){ if(PE&&PE.iv) clearInterval(PE.iv); PE=null; (scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu)(); }
 function proefMenu(scope){
   if(PE&&PE.iv) clearInterval(PE.iv); PE=null; SYL=null;
-  EXSCOPE=scope==="ka"?new Set(S.sel):new Set(S.hc.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c).filter(c=>typeof c==="number"));
-  const pool=pePool(scope), tot=pool.reduce((a,q)=>a+q.cv.max,0), back=scope==="ka"?kaMenu:hcMenu;
+  EXSCOPE=scope==="ex"?(EXF.tv.size?new Set(EXF.tv):null):scope==="ka"?new Set(S.sel):new Set(S.hc.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c).filter(c=>typeof c==="number"));
+  const pool=pePool(scope), tot=pool.reduce((a,q)=>a+q.cv.max,0), back=scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu;
   if(!pool.length) return back();
   const sizes=[10,20,30,40,50,60].filter(n=>n<=tot); if(tot<=60&&!sizes.includes(tot)) sizes.push(tot);
   sizes.sort((a,b)=>a-b);
   const def=sizes.includes(30)?30:sizes[sizes.length-1];
-  app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+  app.innerHTML=`<button class="back" id="back">‹ Terug naar ${scope==="ex"?"examenvragen":"oefeningen"}</button>
   <h2>Proefexamen</h2>
   <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat de tijdvakken (of hoofdstukken) ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste. Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
   <section class="section"><h3>Hoe lang?</h3>
@@ -5119,9 +5119,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <section class="section"><h2>${isTL?"Onderwerp":"Historische context"}</h2>
     <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${EXF.hc===k}" data-hc="${k}">${esc(v)}</button>`).join("")}</div></section>
   ${(()=>{ const dvs=EXF.hc?exDvs(EXF.hc):[]; if(!dvs.length) return ""; return `<section class="section"><h2>Deelcontext</h2>
-    <div class="chips">${dvs.map(d=>`<button class="chip" style="--c:var(--t6)" aria-pressed="${EXF.dv.has(d.nr)}" data-edv="${d.nr}" title="${esc(d.vraag)}">${d.nr}. ${esc(d.periode)}</button>`).join("")}</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Niets gekozen betekent alle deelcontexten.</p>
-    ${dvs.map(d=>`<p style="color:var(--muted);font-size:.9rem;margin:.25rem 0"><strong>${d.nr}.</strong> ${esc(d.vraag)}</p>`).join("")}</section>`; })()}
+    <div class="list" role="group" aria-label="Deelcontexten">${dvs.map(d=>{ const on=EXF.dv.has(d.nr); return `<button class="item" aria-pressed="${on}" data-edv="${d.nr}"><span class="txt"><strong>Deelcontext ${d.nr} · ${esc(d.periode)}</strong><span class="sub">${esc(d.vraag)}</span></span><span class="tag ${on?"on":""}">${on?"✓ gekozen":"kies"}</span></button>`; }).join("")}</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Niets gekozen betekent alle deelcontexten.</p></section>`; })()}
   ${isTL?"":`<section class="section"><h2>Periode</h2>
     <div class="chips">${PERIODES.filter(p=>mine.some(q=>q.sec===p)).map(p=>`<button class="chip" style="--c:var(--t6)" aria-pressed="${EXF.per.has(p)}" data-per="${esc(p)}">${esc(p)}</button>`).join("")}</div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Niets gekozen betekent alle perioden.</p></section>
@@ -5137,6 +5136,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <section class="section">
     <p><strong>${list.length} ${list.length===1?"vraag":"vragen"}</strong> passen bij je keuze.</p>
     <div class="row"><button class="btn" id="rand" ${list.length?"":"disabled"}>Start in willekeurige volgorde</button><button class="btn ghost" id="seq" ${list.length?"":"disabled"}>Start in examenvolgorde</button></div>
+    <div class="row" style="margin-top:.8rem"><button class="btn ghost" id="pex" ${list.length?"":"disabled"}>Maak een proefexamen met deze selectie</button></div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Een proefexamen met een timer: vragen uit je selectie, op volgorde van tijd, zoals op het examen. Je kijkt pas na het inleveren na.</p>
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
   </section>`;
   app.querySelector("#back").onclick=home;
@@ -5148,6 +5149,7 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   app.querySelector("#exsel").onchange=e=>{EXF.ex=e.target.value;exMenu();};
   app.querySelector("#open").onchange=e=>{EXF.open=e.target.checked;exMenu();};
   app.querySelector("#rand").onclick=()=>exRun(shuffle(list),0);
+  app.querySelector("#pex").onclick=()=>proefMenu("ex");
   app.querySelector("#seq").onclick=()=>exRun([...list].sort((a,b)=>{const[ya,ta]=a.ex.split("-"),[yb,tb]=b.ex.split("-");return yb.replace(/^[ht]/,"")-ya.replace(/^[ht]/,"")||ta-tb||a.nr-b.nr;}),0);
   menuScroll("ex");
 }
@@ -6075,7 +6077,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115213249"; let last=0, shown=false;
+  const BUILD="20261115213620"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
