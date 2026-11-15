@@ -508,9 +508,18 @@ body.kqon{overflow:hidden}
 .logo{margin:1.8rem 0 .4rem;font-size:clamp(2.4rem,11vw,3.6rem);font-weight:900;letter-spacing:-.04em;line-height:1;display:flex;align-items:center;gap:.2em}.logob{display:inline-block;background:#ffc93c;color:#111827;padding:.08em .26em .13em;border-radius:.2em;transform:rotate(-4deg);box-shadow:.09em .09em 0 #ff5a5f}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
+.logobtn{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:.2em;font:inherit;letter-spacing:inherit;color:inherit;border-radius:.3em}
+.logobtn:focus-visible{outline:3px solid #ffc93c;outline-offset:6px}
+.logobtn:hover .logob{transform:rotate(-2deg) scale(1.04)}.logob{transition:transform .15s}
+.homeband{margin-top:2.2rem}.homeband .band{margin-top:0}
+.minihead{max-width:780px;margin:0 auto;padding:.9rem 1.1rem 0}
+.minihead .logobtn{font-size:1.35rem;font-weight:900;letter-spacing:-.04em;line-height:1}
+.minihead .logob{padding:.08em .24em .12em;border-radius:.2em;box-shadow:.09em .09em 0 #ff5a5f}
+.minihead+main.wrap{padding-top:.6rem}
 </style>
 </head>
 <body>
+<div class="minihead" id="minihead" hidden><button type="button" class="logobtn" aria-label="HistoBoost, naar het beginscherm" data-logohome>Histo<span class="logob">Boost</span></button></div>
 <main class="wrap" id="app"></main>
 <script>
 const TV = [
@@ -2260,13 +2269,16 @@ function menuScroll(key){
   NAV={from:null,back:false};
   window.scrollTo({top:y,left:0,behavior:"instant"});
 }
+/* Logo als knop naar het beginscherm (op andere schermen een klein logo bovenin) */
+(function(){ const mh=document.getElementById("minihead"); if(!mh) return;
+  mh.querySelector("[data-logohome]").onclick=()=>{ home(); window.scrollTo({top:0,behavior:"instant"}); };
+  const upd=()=>{ mh.hidden=!!app.querySelector("#logohome"); };
+  new MutationObserver(upd).observe(app,{childList:true}); upd(); })();
 /* ---------- Startscherm ---------- */
 function home(){ SYL=null;
   const hc = HCLIST[S.niveau] || [], sel=hcSelGet(), tvSel=tvSelGet();
   app.innerHTML = `
-  ${band(false)}
-  <div class="band-years" aria-hidden="true"><span>–3000</span><span>500</span><span>1000</span><span>1500</span><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1950</span><span>nu</span></div>
-  <h1 class="logo" aria-label="HistoBoost">Histo<span class="logob">Boost</span></h1>
+  <h1 class="logo"><button type="button" class="logobtn" id="logohome" aria-label="HistoBoost, naar het beginscherm">Histo<span class="logob">Boost</span></button></h1>
   <p class="lead">Boost je geschiedenisresultaat. Voor eeuwig en altijd gratis.</p>
   <section class="section">
     <h2>Jouw leerweg</h2>
@@ -2292,7 +2304,10 @@ function home(){ SYL=null;
     <div class="list">
       ${S.niveau==="tl"?`<button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">Historische vragen, bronnen, ordenen, oorzaken en standplaatsgebondenheid</span></span><span class="tag">${VAARD_TL.length+1} oefeningen</span></button><button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens gl/tl, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(q=>q.ex[0]==="t").length} vragen</span></button>`:`<button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${S.niveau==="tl"?"havo":S.niveau}, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(exOfNiv).length} vragen</span></button><button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">${S.niveau==="havo"?"Tijd, interpretatie en betekenis: historisch denken en redeneren":"Domein A: historisch denken en redeneren"}</span></span><span class="tag">${VAARDX().length+1} oefeningen</span></button>`}
     </div>
-  </section>`;
+  </section>
+  <div class="homeband">${band(false)}
+  <div class="band-years" aria-hidden="true"><span>–3000</span><span>500</span><span>1000</span><span>1500</span><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1950</span><span>nu</span></div></div>`;
+  const lh=app.querySelector("#logohome"); if(lh) lh.onclick=()=>{ home(); window.scrollTo({top:0,behavior:"instant"}); };
   app.querySelectorAll("[data-niv]").forEach(b=>b.onclick=()=>{S.niveau=b.dataset.niv; try{localStorage.setItem("niveau",S.niveau)}catch(e){} home();});
   const g=app.querySelector("[data-go=ka]"); if(g) g.onclick=kaMenu;
   const va=app.querySelector("[data-go=vaard]"); if(va) va.onclick=vaardMenu;
@@ -6036,7 +6051,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115212001"; let last=0, shown=false;
+  const BUILD="20261115212340"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
