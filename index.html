@@ -4176,7 +4176,7 @@ const VAARD = [
  {id:"oorzaak",titel:"Oorzaken en gevolgen",sub:"Soorten oorzaken en gevolgen herkennen en verklaringen met meerdere oorzaken",et:"4–6",qs:[
   ["Een oorzaak van de Opstand was dat Filips II de privileges van de steden en gewesten aantastte.",TERREIN,0,"Gaat het om macht en bestuur, om geld en samenleving, of om geloof en ideeën?","Privileges gaan over zelfbestuur en macht: politiek-bestuurlijk terrein.","Op welk terrein ligt deze oorzaak?"],
   ["Een oorzaak van de Opstand was de vervolging van protestanten.",TERREIN,2,"Waarom werden deze mensen vervolgd?","Protestanten werden vervolgd om hun geloof. Godsdienst valt onder het cultureel-mentale terrein.","Op welk terrein ligt deze oorzaak?"],
-  ["Een oorzaak van de Opstand was dat Filips II hoge belastingen hief om zijn oorlogen te betalen.",TERREIN,1,"Wie voelde deze maatregel vooral in de portemonnee?","Belastingen raken handel en inkomen: sociaal-economisch terrein. Je kunt ook verdedigen dat het politiek was, omdat de vorst de rechten van de gewesten aantastte.","Op welk terrein ligt deze oorzaak?"],
+  ["Een oorzaak van de Opstand was de slechte oogst rond 1565, waardoor het brood duur werd en veel mensen honger leden.",TERREIN,1,"Gaat het hier om macht, om geld en eten, of om geloof?","Slechte oogsten en hoge prijzen raken het dagelijks leven en de portemonnee: sociaal-economisch terrein.","Op welk terrein ligt deze oorzaak?"],
   ["Een oorzaak van de ontdekkingsreizen was dat de Ottomanen na 1453 de belasting op specerijen verhoogden.",TERREIN,1,"Gaat het hier om geld en handel?","Duurdere specerijen maakten een nieuwe zeeroute aantrekkelijk: een economisch, dus sociaal-economisch motief.","Op welk terrein ligt deze oorzaak?"],
   ["Een motief voor de ontdekkingsreizen was het verspreiden van het christendom.",TERREIN,2,"Gaat het om geloof en ideeën?","Het verspreiden van het geloof is een religieus motief: cultureel-mentaal terrein.","Op welk terrein ligt deze oorzaak?"],
   ["Een motief voor het moderne imperialisme was het idee dat Europeanen ‘beschaving’ moesten brengen: de last van de blanke man.",TERREIN,2,"Gaat het om een denkbeeld?","Het superioriteitsdenken is een ideologisch motief: cultureel-mentaal terrein.","Op welk terrein ligt deze oorzaak?"],
@@ -4201,13 +4201,13 @@ const VAARD = [
  {id:"vc",titel:"Verandering en continuïteit",sub:"Verandering en continuïteit onderscheiden, soorten verandering en sporen van het verleden",et:"7–9",qs:[
   ["Na het Concilie van Trente bleef Latijn de taal van de katholieke eredienst.",VC,1,"","Ondanks de reformatie bleef de katholieke kerk het Latijn gebruiken. Dat is continuïteit."],
   ["Rond 1000 groeiden de steden en nam de handel weer toe.",VC,0,"","De zelfvoorzienende samenleving maakte plaats voor een agrarisch-urbane samenleving: een verandering."],
-  ["Ook na de Pacificatie van 1917 hadden vrouwen nog geen kiesrecht.",VC,1,"","Mannen kregen algemeen kiesrecht, maar vrouwen bleven tot 1919 uitgesloten. Verandering en continuïteit gaan hier samen."],
+  ["In 1917 kregen alle mannen kiesrecht. Voor vrouwen bleef de situatie gelijk: zij mochten nog niet stemmen.",VC,1,"Kijk naar wat er voor vrouwen gebeurt, niet voor mannen.","Voor mannen veranderde er iets, maar voor vrouwen bleef het hetzelfde tot 1919: voor hen is dat continuïteit."],
   ["Door de stoommachine verplaatste het werk zich van huis naar fabriek.",VC,0,"","De industriële revolutie veranderde waar en hoe mensen werkten."],
   ["In de Republiek bekleedden dezelfde regentenfamilies generaties lang de bestuursfuncties.",VC,1,"","De macht bleef in handen van dezelfde families: continuïteit, die na 1672 zelfs toenam (oligarchisering)."],
   ["Na 1945 werden de meeste koloniën onafhankelijk.",VC,0,"","De dekolonisatie maakte een einde aan de westerse overheersing: een verandering."],
   ["Na de onafhankelijkheid van Latijns-Amerikaanse landen bleef de ongelijkheid tussen de casta’s bestaan.",VC,1,"","Het bestuur veranderde, maar de sociale ongelijkheid bleef: continuïteit."],
-  ["Na de afschaffing van de slavernij in 1863 stonden de vrijgemaakten in Suriname nog tien jaar onder staatstoezicht.",VC,1,"","Juridisch veranderde er iets, maar in de praktijk bleef de situatie lang hetzelfde: continuïteit."],
-  ["Het Congres van Wenen (1814–1815) herstelde de oude machten in Europa.",VC,1,"","Na de revoluties en Napoleon keerden vorsten terug: de restauratie. Dat is continuïteit met de tijd van vóór de revoluties."],
+  ["Na de afschaffing van de slavernij in 1863 moesten de vrijgemaakten in Suriname nog tien jaar onder staatstoezicht op de plantages blijven werken. Voor hun dagelijks werk veranderde dus bijna niets.",VC,1,"Wat veranderde er in de praktijk voor hun werk?","De slavernij was formeel afgeschaft, maar in de praktijk bleef het werk op de plantages bestaan: continuïteit."],
+  ["Ondanks de Franse Revolutie van 1789 bleven de meeste Fransen in de 19e eeuw boer.",VC,1,"Veranderde het dagelijks werk van de meeste mensen?","De revolutie veranderde het bestuur, maar het werk van de meeste Fransen op het land bleef lang hetzelfde: continuïteit."],
   ["Na de Tweede Wereldoorlog gingen Europese landen economisch samenwerken.",VC,0,"","Vroegere vijanden gingen samenwerken: het begin van de Europese eenwording."],
   ["De val van de Berlijnse Muur in november 1989.",TEMPO,0,"","Binnen enkele dagen veranderde de situatie in Berlijn ingrijpend: een snelle, plotselinge verandering."],
   ["De ontzuiling van de Nederlandse samenleving na 1960.",TEMPO,1,"","De zuilen verdwenen in de loop van tientallen jaren: een geleidelijke verandering."],
@@ -6007,7 +6007,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115195450"; let last=0, shown=false;
+  const BUILD="20261115195728"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
