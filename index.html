@@ -2913,7 +2913,7 @@ function sorteerMenu(order){
 }
 function hcModes(H){ return [["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
          ["flash","Flashcards","Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist"],
-         ["koppelb","Begrippen","Sleep de juiste omschrijving naar elk begrip"],
+         ["koppelb","Begrippen koppelen","Sleep de juiste omschrijving naar elk begrip"],
          ["galgje","Galgje","Raad het begrip, de persoon of de gebeurtenis letter voor letter"],
          ["fabel","Feit of fictie","Klopt de uitspraak? Kies goed of fout en lees de uitleg"],
          ["tijd","Chronologie","Sleep gebeurtenissen in de goede volgorde"],
@@ -3183,8 +3183,8 @@ function hcKoppelB(prev){
     const ok=round.filter((b,i)=>isRight(i)).length, all=ok===round.length, full=place.every(p=>p!==null);
     const bank=chips.map((c,i)=>i).filter(i=>slotOf(i)<0);
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-    <div class="meta"><span>Begrippen</span><span>${round.length} begrippen</span></div>
-    <h2>Begrippen</h2>
+    <div class="meta"><span>Begrippen koppelen</span><span>${round.length} begrippen</span></div>
+    <h2>Begrippen koppelen</h2>
     <p class="lead">Sleep bij elk begrip de juiste omschrijving. Je kunt ook op een omschrijving tikken en daarna op een begrip. Let op: er zijn meer omschrijvingen dan begrippen.</p>
     <div class="bk">
       <div class="bkl">${round.map((b,i)=>{ const ci=place[i], cls=checked?(isRight(i)?"correct":"wrong"):(ci===null?"empty":"");
@@ -6051,7 +6051,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115212340"; let last=0, shown=false;
+  const BUILD="20261115212741"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
