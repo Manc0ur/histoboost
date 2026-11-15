@@ -448,8 +448,12 @@ body.kqon{overflow:hidden}
 .hchint{color:var(--muted);margin:.2rem 0 .75rem;max-width:62ch}
 .hcselrow{margin:-.3rem 0 .6rem;gap:1rem}
 .hcgo{position:sticky;bottom:max(.8rem,env(safe-area-inset-bottom));z-index:5;margin-top:.9rem}
-.hcgo .btn{width:auto;box-shadow:0 6px 18px rgba(0,0,0,.18)}
-.hcgo .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+.hcgo .btn{width:auto;background:#FFC400;color:#16233A;font-size:1.05rem;padding:.85rem 1.5rem;box-shadow:0 4px 0 #B88B00,0 10px 24px rgba(0,0,0,.22);transition:transform .12s,box-shadow .12s,background .12s}
+.hcgo .btn:hover:not(:disabled){background:#FFD23F;transform:translateY(-1px)}
+.hcgo .btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #B88B00,0 4px 10px rgba(0,0,0,.2)}
+.hcgo .btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.hcgo .btn:disabled{opacity:1;background:var(--surface);color:var(--muted);border:2px dashed var(--line);cursor:default;box-shadow:none;transform:none}
+.hcgo:has(.btn:disabled){position:static}
 .kalist{list-style:none;padding:0;margin:.4rem 0 1rem}
 .kalist li{margin:.7rem 0;max-width:70ch}
 .kalist .katoel{display:block;color:var(--muted);font-size:.95rem;margin-top:.2rem}
@@ -5667,7 +5671,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115131655"; let last=0, shown=false;
+  const BUILD="20261115131930"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
