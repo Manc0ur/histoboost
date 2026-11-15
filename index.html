@@ -5055,7 +5055,26 @@ const exLvl = q => q.ex[0]==="h" ? "havo" : q.ex[0]==="t" ? "tl" : "vwo";
 const exOfNiv = q => exLvl(q)===exNiv();
 const exNames = () => exNiv()==="vwo" ? HCNAMES_V : exNiv()==="tl" ? HCNAMES_T : HCNAMES_H;
 const PERIODES=["Door de tijd heen","Prehistorie en oudheid","De middeleeuwen","Vroegmoderne tijd","Moderne tijd"];
-const EXF={hc:"",per:new Set(),tv:new Set(),vt:"",ex:"",open:false};
+const EXF={hc:"",dv:new Set(),per:new Set(),tv:new Set(),vt:"",ex:"",open:false};
+/* Deelvragen (deelcontexten) per historische context. Het examen geeft ze niet aan, dus we leiden ze af uit de jaartallen
+   in de vraag (of anders het tijdvak) en de kenmerkende aspecten. Een vraag kan bij meerdere deelvragen horen. */
+const exHcData = id => HCDATA[id==="duitsland"&&exNiv()==="havo"?"duitsland-h":id];
+const exPer = s => { const m=String(s).match(/(\d{3,4})\D+(\d{3,4})/); return m?[+m[1],+m[2]]:null; };
+function exDvs(id){ const H=exHcData(id); if(!H||!H.dv||exNiv()==="tl") return []; return H.dv.every(d=>exPer(d.periode))?H.dv:[]; }
+const EXDVC=new Map();
+function exDvOf(q,id){
+  const key=q.ex+":"+q.nr+":"+id; if(EXDVC.has(key)) return EXDVC.get(key);
+  const dvs=exDvs(id); let res=new Set();
+  if(dvs.length){
+    const t=JSON.stringify([q.ctx,q.q]), y=[...t.matchAll(/\b(1[0-9]{3}|20[01][0-9])\b/g)].map(m=>+m[1]);
+    let c=dvs.filter(d=>{ const [a,b]=exPer(d.periode);
+      return y.length?y.some(v=>v>=a-5&&v<=b+5):q.tv.some(n=>{ const r=exPer(TV[n-1].jaren)||[a,b]; return r[0]<=b&&r[1]>=a; }); });
+    if(!c.length) c=dvs;
+    const k=c.filter(d=>d.ka.some(x=>(q.ka||[]).includes(x))); if(k.length) c=k;
+    res=new Set(c.map(d=>d.nr));
+  }
+  EXDVC.set(key,res); return res;
+}
 function exData(){ if(!EXD) EXD=JSON.parse(document.getElementById("exdata").textContent); return EXD; }
 const exLabel = id => { const c=id[0]; const [y,t]=id.replace(/^[ht]/,"").split("-"); return `${c==="h"?"havo":c==="t"?"gl/tl":"vwo"} ${y}, tijdvak ${t}`; };
 function exType(q){
@@ -5082,11 +5101,11 @@ function exFresh(q){
 }
 function exFiltered(){
   const D=exData();
-  return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc||q.hc.includes(EXF.hc)||(EXF.hc==="_door"&&q.sec==="Door de tijd heen"))&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
+  return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc||q.hc.includes(EXF.hc)||(EXF.hc==="_door"&&q.sec==="Door de tijd heen"))&&(!EXF.dv.size||(()=>{ const d=exDvOf(q,EXF.hc); return [...EXF.dv].some(n=>d.has(n)); })())&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
 }
 function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   const D=exData(), list=exFiltered(), mine=D.qs.filter(exOfNiv);
-  if(EXF.hc && !(EXF.hc in exNames())) { EXF.hc=""; return exMenu(); }
+  if(EXF.hc && !(EXF.hc in exNames())) { EXF.hc=""; EXF.dv.clear(); return exMenu(); }
   if(EXF.ex && !mine.some(q=>q.ex===EXF.ex)) { EXF.ex=""; return exMenu(); }
   const exams=[...new Set(mine.map(q=>q.ex))];
   const vts=["Meerkeuze","Zonder bron","Met tekstbron","Met beeldbron","Chronologie"].filter(v=>mine.some(q=>exType(q)===v));
@@ -5099,6 +5118,10 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <p style="color:var(--muted);font-size:.93rem">Je hebt ${done} van de ${mine.length} vragen nagekeken.</p>
   <section class="section"><h2>${isTL?"Onderwerp":"Historische context"}</h2>
     <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${EXF.hc===k}" data-hc="${k}">${esc(v)}</button>`).join("")}</div></section>
+  ${(()=>{ const dvs=EXF.hc?exDvs(EXF.hc):[]; if(!dvs.length) return ""; return `<section class="section"><h2>Deelcontext</h2>
+    <div class="chips">${dvs.map(d=>`<button class="chip" style="--c:var(--t6)" aria-pressed="${EXF.dv.has(d.nr)}" data-edv="${d.nr}" title="${esc(d.vraag)}">${d.nr}. ${esc(d.periode)}</button>`).join("")}</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Niets gekozen betekent alle deelcontexten.</p>
+    ${dvs.map(d=>`<p style="color:var(--muted);font-size:.9rem;margin:.25rem 0"><strong>${d.nr}.</strong> ${esc(d.vraag)}</p>`).join("")}</section>`; })()}
   ${isTL?"":`<section class="section"><h2>Periode</h2>
     <div class="chips">${PERIODES.filter(p=>mine.some(q=>q.sec===p)).map(p=>`<button class="chip" style="--c:var(--t6)" aria-pressed="${EXF.per.has(p)}" data-per="${esc(p)}">${esc(p)}</button>`).join("")}</div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Niets gekozen betekent alle perioden.</p></section>
@@ -5117,7 +5140,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
   </section>`;
   app.querySelector("#back").onclick=home;
-  app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{EXF.hc=b.dataset.hc;exMenu();});
+  app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{EXF.hc=b.dataset.hc;EXF.dv.clear();exMenu();});
+  app.querySelectorAll("[data-edv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.edv;EXF.dv.has(n)?EXF.dv.delete(n):EXF.dv.add(n);exMenu();});
   app.querySelectorAll("[data-etv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.etv;EXF.tv.has(n)?EXF.tv.delete(n):EXF.tv.add(n);exMenu();});
   app.querySelectorAll("[data-per]").forEach(b=>b.onclick=()=>{const p=b.dataset.per;EXF.per.has(p)?EXF.per.delete(p):EXF.per.add(p);exMenu();});
   app.querySelector("#vt").onchange=e=>{EXF.vt=e.target.value;exMenu();};
@@ -6051,7 +6075,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115212741"; let last=0, shown=false;
+  const BUILD="20261115213249"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
