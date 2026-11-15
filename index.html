@@ -476,6 +476,10 @@ body.kqon{overflow:hidden}
 .hbsimpel{border-left:4px solid var(--ok);padding-left:.8rem}
 .kbrontxt.hbsimpel{border-left:4px solid var(--ok)}
 @media(max-width:760px){.hb[data-hb="b"] .hbbody{grid-template-columns:1fr}}
+.exwarn{margin:.2rem 0 1rem;padding:.8rem 1rem;border:2px solid var(--ink);border-left-width:8px;border-radius:10px;background:var(--bg);max-width:70ch}
+.exwarn strong{display:block;margin-bottom:.25rem}
+.exwarn p{margin:.25rem 0}
+.exwarnnote{margin:.3rem 0 0;font-size:.93rem;max-width:70ch}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -4679,22 +4683,31 @@ function hcGatenkaas(){
 /* ---------- Examenvragen (echte centrale examens) ---------- */
 function kaExamList(){ return exData().qs.filter(q=>exOfNiv(q)&&q.tv.some(t=>S.sel.has(t))); }
 let EXSUBVT="";
+let EXSCOPE=null; /* gekozen tijdvakken (Set) of null als alles geldt */
+const tvTxt=a=>a.length===1?"tijdvak "+a[0]:"tijdvak "+a.slice(0,-1).join(", ")+" en "+a[a.length-1];
+function exOutside(q){ if(!EXSCOPE||!EXSCOPE.size||exType(q)!=="Chronologie") return []; return q.tv.filter(t=>!EXSCOPE.has(t)); }
+function exWarnHtml(q){ const o=exOutside(q); if(!o.length) return "";
+  const mine=[...EXSCOPE].sort((a,b)=>a-b);
+  return `<div class="exwarn" role="note"><strong>Let op: deze chronologievraag gaat ook over andere tijdvakken dan je hebt gekozen</strong>
+    <p>Je hebt ${tvTxt(mine)} gekozen als stof. In deze vraag komen ook gebeurtenissen uit ${tvTxt(o)} voor. Dat hoort bij dit soort examenvraag: je moet álle gebeurtenissen in de goede volgorde zetten.</p></div>`; }
 function exSubMenu(list,title,back,again){
   const vts=["Meerkeuze","Zonder bron","Met tekstbron","Met beeldbron","Chronologie"].filter(v=>list.some(q=>exType(q)===v));
   if(EXSUBVT&&!vts.includes(EXSUBVT)) EXSUBVT="";
   const sel=list.filter(q=>!EXSUBVT||exType(q)===EXSUBVT), done=sel.filter(exDoneQ).length;
+  const nOut=sel.filter(q=>exOutside(q).length).length;
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>Examenvragen</h2><p class="lead">${esc(title)}</p>
     <div class="row" style="margin:1rem 0">
       <label>Soort vraag <select id="vt" class="sel"><option value="">Alle</option>${vts.map(v=>`<option ${EXSUBVT===v?"selected":""}>${esc(v)}</option>`).join("")}</select></label>
     </div>
     <p style="color:var(--muted)">${sel.length} ${sel.length===1?"vraag":"vragen"} · je hebt er ${done} nagekeken.</p>
+    ${nOut?`<div class="exwarn" role="note"><strong>Let op bij chronologievragen</strong><p>${nOut===1?"Bij 1 chronologievraag staan":"Bij "+nOut+" chronologievragen staan"} ook gebeurtenissen uit andere tijdvakken dan je hebt gekozen. Dat is normaal bij dit soort examenvraag. Je ziet daar een waarschuwing bij. Wil je ze overslaan, kies dan bij “Soort vraag” een ander soort.</p></div>`:""}
     <div class="row" style="margin-top:1rem"><button class="btn" id="go" ${sel.length?"":"disabled"}>Start</button></div>`;
   app.querySelector("#back").onclick=back;
   app.querySelector("#vt").onchange=e=>{ EXSUBVT=e.target.value; again(); };
   app.querySelector("#go").onclick=()=>{ EXRUN=new Set(); EXBACK=again; exRun(shuffle(sel),0); };
 }
-function kaExam(){ SYL=null; const l=kaExamList(); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken.`,kaMenu,kaExam); }
+function kaExam(){ SYL=null; EXSCOPE=new Set(S.sel); const l=kaExamList(); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken.`,kaMenu,kaExam); }
 function hcExamList(all){
   const H=S.hc; if(!H||!H.id) return [];
   const ids=H.parts||[H.id], hcIds=ids.filter(i=>HCDATA[i]).map(i=>HCDATA[i].examHc||i), kaTv=ids.filter(i=>KAPART[i]).flatMap(i=>KAPART[i].dv.map(d=>d.c));
@@ -4703,7 +4716,7 @@ function hcExamList(all){
   const sub=base.filter(q=>!q.tv.length||q.tv.some(t=>tvs.includes(t)));
   return sub.length?sub:base;
 }
-function hcExam(){ SYL=null; const l=hcExamList(false); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${S.hc.niveau==="tl"?"gl/tl":S.hc.niveau||"vwo"} over ${S.hc.titel}.`,hcMenu,hcExam); }
+function hcExam(){ SYL=null; EXSCOPE=new Set(S.hc.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c).filter(c=>typeof c==="number")); const l=hcExamList(false); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${S.hc.niveau==="tl"?"gl/tl":S.hc.niveau||"vwo"} over ${S.hc.titel}.`,hcMenu,hcExam); }
 let EXD=null;
 const HCNAMES_V={steden:"Steden en burgers in de Lage Landen",verlichting:"Verlichting",china:"China",duitsland:"Duitsland in Europa"};
 const HCNAMES_H={brits:"Het Britse Rijk",duitsland:"Duitsland in Europa",nederland:"Nederland 1948–2008"};
@@ -4743,7 +4756,7 @@ function exFiltered(){
   const D=exData();
   return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc||q.hc.includes(EXF.hc)||(EXF.hc==="_door"&&q.sec==="Door de tijd heen"))&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
 }
-function exMenu(){ SYL=null;
+function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   const D=exData(), list=exFiltered(), mine=D.qs.filter(exOfNiv);
   if(EXF.hc && !(EXF.hc in exNames())) { EXF.hc=""; return exMenu(); }
   if(EXF.ex && !mine.some(q=>q.ex===EXF.ex)) { EXF.ex=""; return exMenu(); }
@@ -4878,6 +4891,7 @@ function exRun(list,i){
     <div class="meta"><span>Examen ${exLabel(q.ex)}, vraag ${q.nr}</span><span>${i+1} van ${list.length}</span></div>
     <div class="progress"><i style="width:${(i+1)/list.length*100}%"></i></div>
     <div class="row" style="gap:.4rem;margin-bottom:.8rem"><span class="tag">${esc(q.sec)}</span><span class="tag">${exType(q)}</span>${q.tv.length?`<span class="tag">tijdvak ${q.tv.join(", ")}</span>`:""}${(q.ex[0]==="t"?[]:q.hc).map(h=>`<span class="tag">${esc(HCNAMES[h])}</span>`).join("")}<span class="tag">${q.p} ${q.p===1?"punt":"punten"}</span></div>
+    ${exWarnHtml(q)}
     ${refs.map(n=>exBron(q,n)).join("")}
     <div class="qcard" style="--c:var(--ink)">${q.ctx.length?`<div class="exctx">${exParas(q.ctx)}</div>`:""}
       <div class="exq"><span class="exnr">${q.p}p ${q.nr}</span><div>${exParas(q.q)}</div></div></div>
@@ -5702,7 +5716,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115140355"; let last=0, shown=false;
+  const BUILD="20261115140731"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
