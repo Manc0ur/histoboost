@@ -347,6 +347,51 @@ h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
 .fcrow .btn{width:100%;justify-content:center;text-align:center}
 .fckeys{color:var(--muted);font-size:.82rem;margin-top:.8rem}
 @media(pointer:coarse),(hover:none){.fckeys{display:none}}
+
+.tll .lead{max-width:64ch}
+.tll .dv{margin:1.4rem 0 2.2rem}
+.tll .kan{font-weight:700;margin:.6rem 0}
+.tll .kan::before{content:"✓ ";color:var(--c)}
+.tll .lbl{font-weight:800;margin:1rem 0 .35rem;font-size:1rem}
+.tll .ltx{margin:.55rem 0;max-width:68ch}
+.tll .ltx strong{font-weight:800}
+.tll h4.sub{font-family:"Bricolage Grotesque",sans-serif;font-size:1.1rem;margin:1.2rem 0 .2rem}
+.tll ul.cols{list-style:none;padding:0;margin:.2rem 0 .9rem;columns:2 17rem;column-gap:1.6rem}
+.tll ul.cols>li{break-inside:avoid;position:relative;padding:.16rem 0 .16rem 1.05rem}
+.tll ul.cols>li::before{content:"";position:absolute;left:.1rem;top:.72em;width:.45rem;height:.45rem;border-radius:50%;background:var(--c)}
+.tll ul.sub{list-style:none;padding:0;margin:.15rem 0 .1rem}
+.tll ul.sub>li{position:relative;padding:.08rem 0 .08rem 1rem}
+.tll ul.sub>li::before{content:"–";position:absolute;left:.1rem;color:var(--muted)}
+.tll .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.2rem 1.6rem}
+.tll .pair ul.cols{columns:1}
+.tll .flow{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin:.3rem 0 1rem}
+.tll .flow .st{background:var(--surface);border:2px solid var(--c);border-radius:10px;padding:.4rem .75rem;font-weight:700}
+.tll .flow .ar{color:var(--c);font-weight:800;font-size:1.25rem;line-height:1}
+.tll .chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.25rem 0 .9rem}
+.tll .pc{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.25rem .75rem;font:inherit;font-size:.95rem;color:var(--ink)}
+.tll button.pc{cursor:pointer;border-color:var(--c);font-weight:700}
+.tll .yc{font-weight:800;font-variant-numeric:tabular-nums}
+.tll .yr{font-weight:700;white-space:nowrap}
+.tll .bl{all:unset;cursor:pointer;border-bottom:2px dotted var(--c);font-weight:700}
+.tll .bl:focus-visible,.tll .bc:focus-visible,.tll button.pc:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.tll .bbox{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:12px;padding:1rem 1.1rem 1.1rem;margin:1.3rem 0 .8rem}
+.tll .bbox h4{font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem;margin:0}
+.tll .bbox .bsub{color:var(--muted);margin:.25rem 0 .7rem;font-size:.95rem}
+.tll .bchips{display:flex;flex-wrap:wrap;gap:.4rem}
+.tll .bc{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:8px;padding:.3rem .65rem;font:inherit;font-size:.93rem;font-weight:700;cursor:pointer}
+.tll .bc[aria-pressed="true"],.tll button.pc[aria-pressed="true"]{background:var(--c);color:#fff}
+.tll .bbox .btn{margin-top:.9rem;width:auto}
+.tll details.orig{margin-top:.6rem;color:var(--muted);font-size:.93rem}
+.tll details.orig summary{cursor:pointer;font-weight:700}
+.tll details.orig p{max-width:68ch}
+.bsheet{position:fixed;left:50%;bottom:max(1rem,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(40rem,calc(100% - 1.5rem));background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:5px solid var(--c,var(--t5));border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.22);padding:.9rem 1.1rem 1rem;z-index:50;max-height:60vh;overflow:auto}
+.bsheet .bk,.bsheet .bt{margin-right:2.4rem}
+.bsheet[hidden]{display:none}
+.bsheet .bt{display:block;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.15rem;margin-bottom:.2rem}
+.bsheet .bk{color:var(--muted);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bsheet p{margin:.2rem 0 0}
+.bsheet .x{position:absolute;right:.5rem;top:.45rem;border:0;background:transparent;color:var(--ink);font-size:1.6rem;line-height:1;cursor:pointer;padding:.3rem .5rem}
+@media(max-width:560px){.tll ul.cols{columns:1}.tll .flow{flex-direction:column;align-items:stretch}.tll .flow .ar{text-align:center;transform:rotate(90deg)}}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -2670,6 +2715,7 @@ function hcMenu(){ CTX="hc";
 
 function hcLees(){
   const H=S.hc;
+  if(H.niveau==="tl") return tlLees();
   app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
   <h2>${esc(H.titel)}</h2>
   <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen.</p>
@@ -2679,6 +2725,114 @@ function hcLees(){
     ${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}
   </article>`).join("")}
   ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}`;
+  app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
+}
+
+
+/* ---------- TL: Lees de examenstof (opgemaakt) ---------- */
+const TLL_PAIR=/^(Centralen|Geallieerden|As-mogendheden)$/;
+const TLL_OV={
+ "Je kunt belangrijke kenmerken van de Nederlandse staatsinrichting":[{k:"list",label:"Je kunt belangrijke kenmerken van de Nederlandse staatsinrichting herkennen en beschrijven",kan:1,items:["monarchie","republiek","democratie","dictatuur","grondwet","constitutie",{t:"de scheiding tussen:",sub:["de wetgevende macht","de uitvoerende macht","de rechterlijke macht"]},"rechtsstaat","onafhankelijke rechtspraak"]}],
+ "De controlerende en wetgevende bevoegdheden":[{k:"list",label:"De controlerende en wetgevende bevoegdheden van Eerste en Tweede Kamer",items:["recht van budget","recht van enquête","recht van interpellatie"]}],
+ "De Tweede Kamer heeft ook":[{k:"list",label:"De Tweede Kamer heeft ook",items:["het recht van initiatief","het recht van amendement"]}],
+ "De belangrijkste stappen van wetsvoorstel tot wet":[{k:"flow",label:"De belangrijkste stappen van wetsvoorstel tot wet",items:["minister","voorstel","Tweede Kamer (met rechten)","Eerste Kamer (met rechten)","wet"]}],
+ "Sociale grondrechten (bescherming door de overheid)":[{k:"list",label:"Sociale grondrechten (bescherming door de overheid): recht op",lb:"Sociale grondrechten",items:["bestaanszekerheid","onderwijs","gezondheidszorg","woongelegenheid","bewoonbaarheid van het land","werk","rechtsbijstand"]}],
+ "Artikel 1 van de Grondwet en het referendum":[{k:"list",items:["Artikel 1 van de Grondwet","het referendum"]}],
+ "De reactie van Willem II":[{k:"list",label:"De reactie van Willem II op revolutie(dreigingen) elders in Europa en de opvattingen van liberalen bij de grondwetsherziening in 1848",items:["parlementaire democratie","constitutionele monarchie met een parlementair stelsel"]}],
+ "In 1848 kwamen naast vrijheid van godsdienst":[{k:"list",label:"In 1848 kwamen in de grondwet",items:["vrijheid van godsdienst","vrijheid van meningsuiting","vrijheid van drukpers","het recht van vereniging en vergadering","vrijheid van onderwijs"]}],
+ "Nieuwe rechten voor de Tweede Kamer":[{k:"list",label:"Nieuwe rechten voor de Tweede Kamer",items:["recht van amendement","recht van enquête"]}],
+ "Beperking van de macht van de koning":[{k:"list",items:["beperking van de macht van de koning","uitbreiding van de macht van het parlement","ministeriële verantwoordelijkheid","onschendbaarheid van de koning"]}],
+ "Rechtstreekse verkiezingen op lokaal":[{k:"list",label:"Rechtstreekse verkiezingen op",items:["lokaal niveau (gemeenteraad)","provinciaal niveau (Provinciale Staten)","landelijk niveau (Tweede Kamer)"]},{k:"list",items:["censuskiesrecht","indirecte verkiezing van de Eerste Kamer door de Provinciale Staten"]}],
+ "Sociaal-economische veranderingen":[{k:"list",label:"Sociaal-economische veranderingen",items:["beginnende industrialisatie","modern imperialisme (grondstoffen en afzetmarkten)","verstedelijking","kinderarbeid","sociale kwestie",{t:"van liefdadigheid naar sociale wetgeving, zoals:",sub:["Armenwet","Kinderwetje van Van Houten","Ongevallenwet","Woningwet"]}]}],
+ "Opvattingen van liberalen":[{k:"list",label:"Opvattingen aan het eind van de 19e en het begin van de 20e eeuw van",items:["liberalen (Liberale Unie, hogere burgerij)","socialisten (SDAP, arbeiders)","protestanten (ARP, kleine luyden)","rooms-katholieken (RKSP)","feministen (Vrije Vrouwenvereniging, Vereniging voor Vrouwenkiesrecht, Eerste Feministische Golf)"]}],
+ "Het ontstaan van de verzuiling":[{k:"list",label:"Het ontstaan van de verzuiling in",lb:"Verzuiling",items:["partijen","media","onderwijs","verenigingsleven","vakbonden"]}],
+ "Het streven naar uitbreiding van het kiesrecht":[{k:"list",label:"Het streven naar uitbreiding van het kiesrecht",items:["algemeen kiesrecht","de geleidelijke uitbreiding van het kiesrecht met het Caoutchouc-artikel (1887)"]}],
+ "Bondgenootschappen":[{k:"h",text:"Bondgenootschappen"}],
+ "Centralen:":[{k:"list",label:"Centralen",items:["Duitsland","Oostenrijk-Hongarije","het Turkse Rijk"]}],
+ "Geallieerden: Frankrijk":[{k:"list",label:"Geallieerden",items:["Frankrijk","Groot-Brittannië","Rusland (1917: val van de tsaar en uitbreken Russische Revolutie)","de Verenigde Staten (vanaf 1917: onbeperkte duikbotenoorlog)"]}],
+ "Grondwet van 1917":[{k:"list",label:"Grondwet van 1917",items:[{t:"algemeen kiesrecht:",sub:["mannen: actief en passief kiesrecht","vrouwen: alleen passief kiesrecht"]},"de vervanging van het districtenstelsel door een stelsel van evenredige vertegenwoordiging (voordelen en nadelen van beide systemen)"]}],
+ "Enkele bepalingen van de Vrede van Versailles":[{k:"list",label:"Enkele bepalingen van de Vrede van Versailles",items:[{t:"strafbepalingen voor Duitsland, zoals:",sub:["herstelbetalingen","gebiedsafstand","demilitarisatie"]},"het ontstaan van nieuwe staten","de oprichting van de Volkenbond"]}],
+ "Staatsinrichting: grondwetswijziging 1983":[{k:"list",label:"Staatsinrichting",items:[{t:"grondwetswijziging 1983: opnemen van sociale grondrechten, recht op:",sub:["bestaanszekerheid","onderwijs","gezondheidszorg","woongelegenheid","bewoonbaarheid van het land","werk","rechtsbijstand"]},"bepaalde grondrechten kunnen met elkaar op gespannen voet staan"]}],
+ "Democratisch tekort":[{k:"list",label:"Democratisch tekort: de relatie tussen",lb:"Democratisch tekort",items:["het Europees Parlement","de Europese Commissie","de Raad van Ministers"]}]
+};
+function tllTop(s,sep){ let d=0; for(let i=0;i<s.length;i++){ const c=s[i]; if(c==="("||c==="[") d++; else if(c===")"||c==="]") d=Math.max(0,d-1); else if(!d&&s.startsWith(sep,i)) return i; } return -1; }
+function tllSplit(s,sep){ const o=[]; let r=s, i; while((i=tllTop(r,sep))>=0){ o.push(r.slice(0,i)); r=r.slice(i+sep.length); } o.push(r); return o.map(x=>x.trim()).filter(Boolean); }
+function tllSentences(p){ return p.replace(/([.?])\s+(?=[A-Z‘'])/g,"$1\u0001").split("\u0001").map(x=>x.trim().replace(/\.$/,"")).filter(Boolean); }
+function tllNest(t){ const j=tllTop(t,": "); if(j>0){ const sub=tllSplit(t.slice(j+2),", "); if(sub.length>=3) return {t:t.slice(0,j)+":",sub}; } return t; }
+function tllParse(s){
+  for(const k in TLL_OV) if(s.startsWith(k)) return TLL_OV[k];
+  const i=tllTop(s,": "); let label=null, rest=s;
+  if(i>0&&i<150){ label=s.slice(0,i); rest=s.slice(i+2); }
+  if(label&&/^(Personen|Persoon)$/.test(label)) return [{k:"chips",label,items:tllSplit(rest,", "),pp:1}];
+  if(label&&/^(Jaartallen|Jaartal)$/.test(label)) return [{k:"chips",label,items:tllSplit(rest,", ")}];
+  let items=tllSplit(rest," / ");
+  if(label&&/stappen/i.test(label)) return [{k:"flow",label,items}];
+  if(items.length<2&&label&&TLL_PAIR.test(label)){ items=tllSplit(rest,", "); const l=items.pop(); items.push(...l.split(" en ")); }
+  if(items.length>=2) return [{k:"list",label,items:items.map(tllNest)}];
+  if(!label&&!/\s/.test(s)) return [{k:"h",text:s}];
+  return [{k:"p",label,text:rest}];
+}
+function tllBlocks(d){ const out=[]; d.tekst.forEach(p=>tllSentences(p).forEach(s=>out.push(...tllParse(s)))); return out; }
+function tlLees(){
+  const H=S.hc, B=H.begrippen.filter(b=>b.d), bIdx=new Map();
+  B.forEach((b,i)=>{ const k=b.b.toLowerCase(); if(!bIdx.has(k)) bIdx.set(k,i); });
+  const names=[...bIdx.keys()].filter(n=>n.length>=4).sort((a,b)=>b.length-a.length);
+  const reB=names.length?new RegExp("(^|[^\\p{L}\\p{N}])("+names.map(n=>esc(n).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?=$|[^\\p{L}\\p{N}])","giu"):null;
+  const P=[...WBI.filter(p=>p.u&&p.hc[H.id]),...WBI.filter(p=>p.u&&!p.hc[H.id])];
+  const wb=(hay,w)=>(" "+hay+" ").includes(" "+w+" ");
+  const findP=t=>{ const l=t.toLowerCase(); for(const f of [n=>n===l,n=>l.endsWith(" "+n)||n.endsWith(" "+l),n=>wb(l,n)||wb(n,l)]){ const i=P.findIndex(p=>f(p.n.toLowerCase())); if(i>=0) return i; } return -1; };
+  const year=h=>h.replace(/\(((?:\d{1,2}-\d{1,2}-|\d{1,2} [a-z]+ |[a-z]+ )?\d{4}(?:-\d{4}| en \d{4})?)\)/g,'(<span class="yr">$1</span>)');
+  const fmt=(t,lb)=>{ let h=esc(t).replace(/ \/ /g,", ");
+    if(lb&&bIdx.has(lb.toLowerCase())){ const i=bIdx.get(lb.toLowerCase()); const re=new RegExp(esc(lb).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"); if(re.test(h)) h=h.replace(re,m=>`<button class="bl" data-b="${i}">${m}</button>`); else h=`<button class="bl" data-b="${i}">${h}</button>`; }
+    else if(reB){ const used=new Set(); h=h.replace(reB,(m,pre,w)=>{ const i=bIdx.get(w.toLowerCase()); if(i===undefined||used.has(i)) return m; used.add(i); return `${pre}<button class="bl" data-b="${i}">${w}</button>`; }); }
+    return year(h); };
+  const li=it=>typeof it==="string"?`<li>${fmt(it)}</li>`:`<li>${fmt(it.t)}<ul class="sub">${it.sub.map(x=>`<li>${fmt(x)}</li>`).join("")}</ul></li>`;
+  const blk=b=>{
+    if(b.k==="h") return `<h4 class="sub">${fmt(b.text)}</h4>`;
+    if(b.k==="p") return /^Je kunt/.test(b.text)&&!b.label?`<p class="kan">${fmt(b.text)}</p>`:`<p class="ltx">${b.label?`<strong>${fmt(b.label)}:</strong> `:""}${fmt(b.text)}</p>`;
+    const lab=b.label?`<p class="${b.kan?"kan":"lbl"}">${fmt(b.label,b.lb)}:</p>`:"";
+    if(b.k==="flow") return lab+`<div class="flow" role="list">${b.items.map(x=>`<span class="st" role="listitem">${fmt(x)}</span>`).join('<span class="ar" aria-hidden="true">→</span>')}</div>`;
+    if(b.k==="chips") return lab+`<div class="chips">${b.items.map(x=>{ if(!b.pp) return `<span class="pc yc">${year(esc(x))}</span>`; const i=findP(x); return i>=0?`<button class="pc" data-p="${i}">${esc(x)}</button>`:`<span class="pc">${esc(x)}</span>`; }).join("")}</div>`;
+    return lab+`<ul class="cols">${b.items.map(li).join("")}</ul>`;
+  };
+  const body=d=>{ const bl=tllBlocks(d); let h="";
+    for(let i=0;i<bl.length;i++){ const b=bl[i], n=bl[i+1];
+      if(b.k==="list"&&b.label&&TLL_PAIR.test(b.label)&&n&&n.k==="list"&&n.label&&TLL_PAIR.test(n.label)){ h+=`<div class="pair"><div>${blk(b)}</div><div>${blk(n)}</div></div>`; i++; }
+      else h+=blk(b); }
+    return h; };
+  const dvs=H.dv.filter(d=>S.dvSel.has(d.nr));
+  app.innerHTML = `<div class="tll" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>${esc(H.titel)}</h2>
+  <p class="lead">Dit moet je kennen voor het examen: de stofomschrijving uit de syllabus, overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen: tik erop voor de uitleg. Onder elk onderdeel staan alle begrippen die je nodig hebt om de examenvragen te beantwoorden.</p>
+  ${dvs.map(d=>{ const bs=B.map((b,i)=>[b,i]).filter(([b])=>b.dv===d.nr);
+    return `<article class="dv" id="tll-${d.nr}" style="--c:${col(d.c)}">
+    <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
+    ${d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
+    ${body(d)}
+    ${bs.length?`<section class="bbox"><h4>Begrippen die je nodig hebt (${bs.length})</h4>
+      <p class="bsub">Deze begrippen heb je nodig om examenvragen over dit onderdeel te beantwoorden. Tik op een begrip voor de uitleg.</p>
+      <div class="bchips">${bs.map(([b,i])=>`<button class="bc" data-b="${i}" aria-pressed="false">${esc(b.b)}</button>`).join("")}</div>
+      <button class="btn ghost" data-fl="${d.nr}">Oefen dit onderdeel met flashcards</button></section>`:""}
+    <details class="orig"><summary>Originele tekst uit de syllabus</summary>${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}</details>
+  </article>`; }).join("")}
+  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}
+  <div class="bsheet" id="bsheet" role="dialog" aria-live="polite" hidden><button class="x" aria-label="Sluiten">×</button><span class="bk"></span><span class="bt"></span><p></p></div></div>`;
+  const W=app.querySelector("#tll"), sh=W.querySelector("#bsheet");
+  let cur=null;
+  const close=()=>{ sh.hidden=true; if(cur) cur.setAttribute("aria-pressed","false"); cur=null; };
+  const open=(el,kind,title,txt)=>{ if(cur===el){ close(); return; } if(cur) cur.setAttribute("aria-pressed","false"); cur=el; el.setAttribute("aria-pressed","true");
+    const art=el.closest(".dv"); sh.style.setProperty("--c",art?art.style.getPropertyValue("--c"):"var(--t5)");
+    sh.querySelector(".bk").textContent=kind; sh.querySelector(".bt").textContent=title; sh.querySelector("p").textContent=txt; sh.hidden=false; };
+  W.addEventListener("click",e=>{
+    const b=e.target.closest("[data-b]"), p=e.target.closest("[data-p]"), f=e.target.closest("[data-fl]");
+    if(b){ const x=B[+b.dataset.b]; open(b,"Begrip",x.b,x.d); return; }
+    if(p){ const x=P[+p.dataset.p]; open(p,"Persoon",x.n,x.u); return; }
+    if(f){ const keep=S.dvSel, nr=+f.dataset.fl; S.dvSel=new Set([nr]);
+      flashcards({scope:"hc",key:hk("flash"),back:()=>{ hcLees(); const a=document.getElementById("tll-"+nr); if(a) a.scrollIntoView(); }});
+      S.dvSel=keep; return; }
+    if(e.target.closest(".x")||!e.target.closest("#bsheet")) close();
+  });
+  W.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
@@ -5188,7 +5342,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115112940"; let last=0, shown=false;
+  const BUILD="20261115114407"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
