@@ -2110,7 +2110,7 @@ function home(){ SYL=null;
       <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">15 oefeningen</span></button>
       ${hc.map(h=>`<button class="item" ${h.id?`data-hc="${h.id}"`:"disabled"}><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Historische context ${S.niveau}, ${h.jaren}</span></span><span class="tag">${h.id?hcCount(h.id)+" oefeningen":"binnenkort"}</span></button>`).join("")}
       <button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${S.niveau==="tl"?"havo":S.niveau}, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(exOfNiv).length} vragen</span></button>
-      <button class="item" ${S.niveau==="vwo"?'data-go="vaard"':"disabled"}><span class="txt"><strong>Vaardigheden</strong><span class="sub">Domein A: historisch denken en redeneren</span></span><span class="tag">${S.niveau==="vwo"?`${VAARD.length+1} oefeningen`:"binnenkort"}</span></button>
+      <button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">${S.niveau==="havo"?"Tijd, interpretatie en betekenis: historisch denken en redeneren":"Domein A: historisch denken en redeneren"}</span></span><span class="tag">${VAARDX().length+1} oefeningen</span></button>
     </div>`}
   </section>`;
   app.querySelectorAll("[data-niv]").forEach(b=>b.onclick=()=>{S.niveau=b.dataset.niv; try{localStorage.setItem("niveau",S.niveau)}catch(e){} home();});
@@ -3750,11 +3750,41 @@ const VAARD_TL = [
  ]}
 ];
 
-const VAARDX=()=>S.niveau==="tl"?VAARD_TL:VAARD;
+const ETG_H = [
+ ["Tijd en chronologie",[
+  "De tien tijdvakken gebruiken als referentiekader om gebeurtenissen chronologisch te ordenen.",
+  "De tien tijdvakken plaatsen in de periodes Prehistorie, Oudheid, Middeleeuwen, Vroegmoderne Tijd en Moderne Tijd, en deze periodes gebruiken als referentiekader om gebeurtenissen chronologisch te ordenen. In het centraal examen havo worden de perioden Prehistorie, Oudheid en Middeleeuwen niet bevraagd.",
+  "Uitleggen dat elke ordening van tijd een interpretatie is."]],
+ ["Causaliteit",[
+  "Rekening houden met het niet-lineaire en multi-causale karakter van historische verschijnselen en gebeurtenissen.",
+  "Rekening houden met verschillende soorten oorzaken en gevolgen, bijvoorbeeld directe en indirecte oorzaken, de aanleiding (meest directe oorzaak), direct optredende gevolgen en gevolgen op de langere termijn, gewilde en ongewilde, bedoelde en onbedoelde gevolgen, gevolgen van meer en minder belang op grond van schaal, intensiteit en duur, en oorzaken en gevolgen op politiek-bestuurlijk, sociaaleconomisch en cultureel-mentaal (waaronder godsdienstig) terrein.",
+  "Rekening houden met het gegeven dat elke ordening van causaliteit een interpretatie is."]],
+ ["Continuïteit en verandering",[
+  "In historische processen continuïteit en verandering onderscheiden.",
+  "Verschillende soorten verandering herkennen, bijvoorbeeld in tempo (tamelijk snel en plotseling of langzaam en geleidelijk), duur, schaal, intensiteit en omvang, en op politiek-bestuurlijk, sociaaleconomisch en cultureel-mentaal terrein.",
+  "Herkennen dat elke tijd materiële en immateriële sporen van het verleden in zich draagt.",
+  "Omgaan met het verschil tussen unieke en generieke betekenissen van historische concepten: begrippen als feodaal, imperialisme, centralisatie, democratie, burgerschap en oorlog hebben in de ene tijd en plaats een (deels) andere betekenis dan in een andere.",
+  "Uitleggen dat elke ordening van continuïteit en verandering een interpretatie is."]],
+ ["Standplaatsgebondenheid",[
+  "Menselijk gedrag (denken en doen) in het verleden verklaren vanuit de toen en daar bekende en geaccepteerde kennis en waarden, en vanuit de identiteit van individuen en groepen die in die tijd en/of op die plaats leefden. Daarbij rekening houden met factoren die de standplaatsgebondenheid bepalen, zoals waardesystemen, politieke, sociaaleconomische en culturele oriëntatie, kennis, gender, karakter en toevallige factoren."]],
+ ["Bron en vraagstelling",[
+  "Vraagstellingen gericht op (historisch) onderzoek formuleren aan de hand van voorgelegde bronnen.",
+  "Informatie uit bronnen verzamelen vanuit een bepaalde vraagstelling en deze als bewijs gebruiken bij het beantwoorden van die vraagstelling.",
+  "De bruikbaarheid van informatie uit een of meer bronnen voor een bepaalde vraagstelling afwegen, met aandacht voor de betrouwbaarheid (onder meer de aard van de bron, de context waarin die is ontstaan, de geïnformeerdheid en standplaatsgebondenheid van de maker, de bedoeling van de maker of opdrachtgever en het publiek waarvoor de bron bedoeld is) en de representativiteit (in hoeverre geldt dit voor meer mensen en meer situaties?).",
+  "Vaststellen wanneer je iets als een feit kunt aanvaarden, en zulke feiten onderscheiden van meningen en van vooroordelen en/of stereotypen.",
+  "Aan de hand van concrete voorbeelden of broninterpretaties uitleggen dat geschiedverhalen een constructie zijn van het verleden."]],
+ ["Betekenis geven aan en oordelen over het verleden",[
+  "Uitleggen dat de manier waarop mensen betekenis geven aan en oordelen over het verleden door de tijd heen verandert en per groep en individu kan verschillen, en benoemen vanuit welke motieven, interesses, waardesystemen en verwachtingen mensen tot een waardering komen van wat belangrijk is uit het verleden.",
+  "Bij morele oordelen over het verleden (door een ander) het anachronistisch toepassen van het kader van waarden en normen (van die ander) op het verleden herkennen."]]
+];
+/* havo: geen vragen over de perioden Prehistorie, Oudheid en Middeleeuwen (voetnoot syllabus) en geen hypothesen (eindterm 13) */
+const VAARD_H = VAARD.map(v=>({...v, sub:v.id==="bron"?"Onderzoeksvragen formuleren en bronnen als bewijs gebruiken":v.sub,
+  qs:v.qs.filter(q=>!(q[1]===PER&&/tijdvak [1-4]:/.test(q[0])) && !/naam ‘Middeleeuwen’/.test(q[0]) && !/hypothese/i.test(q[0]))}));
+const VAARDX=()=>S.niveau==="tl"?VAARD_TL:S.niveau==="havo"?VAARD_H:VAARD;
 function vaardMenu(){ SYL=null;
   app.innerHTML = `<button class="back" id="back">‹ Terug naar overzicht</button>
   <h1 style="font-size:2.2rem">Vaardigheden</h1>
-  <p class="lead">${S.niveau==="tl"?"Strategische vaardigheden uit de syllabus tl: vragen stellen, informatie verwerven en verwerken, en historisch redeneren.":"Domein A uit de syllabus: historisch denken en redeneren."}</p>
+  <p class="lead">${S.niveau==="tl"?"Strategische vaardigheden uit de syllabus tl: vragen stellen, informatie verwerven en verwerken, en historisch redeneren.":S.niveau==="havo"?"Vaardigheden uit de syllabus havo: tijd, interpretatie en betekenis nu.":"Domein A uit de syllabus: historisch denken en redeneren."}</p>
   <section class="section"><h2>Kies een oefening</h2><div class="list">
     <button class="item" data-v="lees"><span class="txt"><strong>Lees de eindtermen</strong><span class="sub">Wat je voor het examen moet kunnen</span></span></button>
     ${VAARDX().map(v=>`<button class="item" data-v="${v.id}"><span class="txt"><strong>${esc(v.titel)}</strong><span class="sub">${esc(v.sub)}</span></span><span class="tag">${v.et.includes(",")||v.et.includes("–")?"eindtermen":"eindterm"} ${v.et}</span></button>`).join("")}
@@ -3766,21 +3796,21 @@ function vaardMenu(){ SYL=null;
 function vaardLees(){
   let n=0;
   app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
-  <h2>${S.niveau==="tl"?"Vaardigheden uit de syllabus tl":"Eindtermen domein A"}</h2>
+  <h2>${S.niveau==="tl"?"Vaardigheden uit de syllabus tl":S.niveau==="havo"?"Vaardigheden uit de syllabus havo":"Eindtermen domein A"}</h2>
   <p class="lead">Dit moet je kunnen volgens de syllabus.</p>
-  ${(S.niveau==="tl"?ETG_TL:ETG).map((g,gi)=>`<article class="dv" style="--c:var(--t${gi+4})"><h3>${esc(g[0])}</h3>
+  ${(S.niveau==="tl"?ETG_TL:S.niveau==="havo"?ETG_H:ETG).map((g,gi)=>`<article class="dv" style="--c:var(--t${gi+4})"><h3>${esc(g[0])}</h3>
     ${g[1].map(t=>`<p><strong>${++n}.</strong> ${esc(t)}</p>`).join("")}</article>`).join("")}`;
   app.querySelector("#back").onclick=vaardMenu; window.scrollTo(0,0);
 }
 function vaardQuiz(id){
   const V=VAARDX().find(v=>v.id===id);
-  const qs=pickRound("v-"+id,V.qs,x=>x[0]).map(x=>{
+  const qs=pickRound((S.niveau==="havo"?"vh-":"v-")+id,V.qs,x=>x[0]).map(x=>{
     const [q,opts,r,hint,uit,ask]=x;
     const idx=opts.map((o,i)=>i), order=(opts.length<=3||opts===PER)?idx:shuffle(idx);
     return {id:q,ask:ask||ASK.get(opts)||"Kies het beste antwoord.",q,right:r,opts:order.map(i=>({id:i,label:opts[i]})),
       hint,uitleg:`Het goede antwoord is: ${esc(opts[r])}.`,extra:uit,review:`${esc(q)} <strong>${esc(opts[r])}</strong>`};
   });
-  mcEx({title:V.titel,qs,back:vaardMenu,again:()=>vaardQuiz(id),key:"v-"+id,ids:V.qs.map(x=>x[0])});
+  mcEx({title:V.titel,qs,back:vaardMenu,again:()=>vaardQuiz(id),key:(S.niveau==="havo"?"vh-":"v-")+id,ids:V.qs.map(x=>x[0])});
 }
 
 /* ---------- Gatenkaas ---------- */
@@ -5057,7 +5087,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115090634"; let last=0, shown=false;
+  const BUILD="20261115093145"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
