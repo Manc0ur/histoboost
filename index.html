@@ -4189,7 +4189,7 @@ const VAARD = [
   ["Langdurige kritiek op misstanden in de kerk, zoals de aflaathandel, als verklaring voor de reformatie.",AO,1,"","Deze onvrede groeide al eeuwen: een oorzaak op lange termijn."],
   ["De beurskrach van oktober 1929 als verklaring voor de economische crisis van de jaren dertig.",AO,0,"","De krach was het moment waarop de crisis losbarstte: de aanleiding."],
   ["Kopen op krediet en speculatie op de aandelenmarkt in de jaren twintig als verklaring voor de crisis van de jaren dertig.",AO,1,"","Deze zwakke plekken in de economie ontstonden over een langere periode: oorzaken op lange termijn."],
-  ["Lodewijk XIV dwong calvinisten tot bekering of emigratie. Daardoor trokken welvarende hugenoten naar de Republiek.",BED,1,"","Lodewijk wilde één geloof in Frankrijk. Dat hij daarmee de economie van de Republiek versterkte, was niet zijn bedoeling."],
+  ["Lodewijk XIV dwong calvinisten tot bekering of emigratie. Veel welvarende hugenoten trokken naar de Republiek, waardoor de Republiek economisch nog sterker werd.",BED,1,"Welk gevolg bedoelt de vraag? Wilde Lodewijk dat de Republiek rijker werd?","Lodewijk wilde één geloof in Frankrijk. Dat veel welvarende hugenoten vertrokken en de Republiek daardoor rijker werd, was niet zijn bedoeling."],
   ["Nederlands onderwijs in Indië moest de superioriteit van de westerse cultuur bevestigen, maar droeg bij aan het nationalisme.",BED,1,"","Opgeleide Indonesiërs gingen juist voor onafhankelijkheid strijden: een onbedoeld gevolg."],
   ["Met de Akte van Navigatie (1651) schaadde Engeland de Nederlandse tussenhandel.",BED,0,"","Dat was precies het doel van de wet: een bedoeld gevolg."],
   ["Willem III liet in 1672 gebieden onder water zetten, zodat de Franse legers Holland niet konden bereiken.",BED,0,"","Het onder water zetten was bedoeld om Holland te beschermen: een bedoeld gevolg."],
@@ -6007,7 +6007,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115195203"; let last=0, shown=false;
+  const BUILD="20261115195450"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
