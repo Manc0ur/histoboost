@@ -3445,10 +3445,10 @@ function hcGalgje(seen){
     <div class="gal">
       <svg viewBox="0 0 150 160" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-label="Galg, ${wrong} van ${MAX} fouten"><path d="M20 150h70M40 150V12h45v22"/>${parts(wrong)}</svg>
       <div class="galinfo"><div class="galword" style="--n:${longest}" aria-label="Het woord, ${words.length} ${words.length===1?"woord":"woorden"}, ${item.w.length} tekens">${wordHtml}</div>
-      <div class="galclue"><strong>${item.tag}:</strong> ${esc(item.clue)}</div>
+      <div class="galclue"><strong>${item.tag}${item.tag==="Gebeurtenis"?":</strong> "+esc(item.clue):"</strong>"}</div>
       ${done?"":`<div class="note">Nog ${MAX-wrong} ${MAX-wrong===1?"fout":"fouten"} mogelijk</div>`}</div>
     </div>
-    ${done?`<div class="feedback ${win&&!lost?"good":"badf"}" role="status"><p><strong>${win&&!lost?"Goed gedaan!":"Helaas."}</strong> Het antwoord is <strong>${esc(item.w)}</strong>.</p></div>
+    ${done?`<div class="feedback ${win&&!lost?"good":"badf"}" role="status"><p><strong>${win&&!lost?"Goed gedaan!":"Helaas."}</strong> Het antwoord is <strong>${esc(item.w)}</strong>.</p>${item.tag!=="Gebeurtenis"?`<p>${esc(item.clue)}</p>`:""}</div>
       <div class="row" style="margin-top:1rem"><button class="btn" id="next">Volgend woord</button></div>`
     :`<div class="galkeys" role="group" aria-label="Letters">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}" ${guessed.has(l)?"disabled":""} class="${guessed.has(l)?(target.includes(l)?"ok":"no"):""}">${l}</button>`).join("")}</div>`}`;
     app.querySelector("#back").onclick=()=>{ document.removeEventListener("keydown",kd); hcMenu(); };
@@ -6036,7 +6036,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115210727"; let last=0, shown=false;
+  const BUILD="20261115211542"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
