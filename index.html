@@ -505,6 +505,7 @@ body.kqon{overflow:hidden}
 .pnav button.cur{outline:3px solid var(--focus);outline-offset:1px}
 .peres{border:2px solid var(--ink);border-radius:12px;padding:1rem 1.2rem;background:var(--surface);margin:1rem 0;max-width:62ch}
 .peres p{margin:.3rem 0}
+.logo{margin:1.8rem 0 .4rem;font-size:clamp(2.4rem,11vw,3.6rem);font-weight:900;letter-spacing:-.04em;line-height:1;display:flex;align-items:center;gap:.2em}.logob{display:inline-block;background:#ffc93c;color:#111827;padding:.08em .26em .13em;border-radius:.2em;transform:rotate(-4deg);box-shadow:.09em .09em 0 #ff5a5f}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -2265,7 +2266,7 @@ function home(){ SYL=null;
   app.innerHTML = `
   ${band(false)}
   <div class="band-years" aria-hidden="true"><span>–3000</span><span>500</span><span>1000</span><span>1500</span><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1950</span><span>nu</span></div>
-  <h1 style="margin-top:1.5rem">HistoBoost</h1>
+  <h1 class="logo" aria-label="HistoBoost">Histo<span class="logob">Boost</span></h1>
   <p class="lead">Boost je geschiedenisresultaat. Voor eeuwig en altijd gratis.</p>
   <section class="section">
     <h2>Jouw leerweg</h2>
@@ -6007,7 +6008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115195728"; let last=0, shown=false;
+  const BUILD="20261115201602"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
