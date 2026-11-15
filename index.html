@@ -350,6 +350,7 @@ h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
 
 .tll .lead{max-width:64ch}
 .tll .dv{margin:1.4rem 0 2.2rem}
+.lnk h2.lgrp{margin:2.2rem 0 .2rem;padding-top:1.1rem;border-top:2px solid var(--line)}
 .tll .kan{font-weight:700;margin:.6rem 0}
 .tll .kan::before{content:"✓ ";color:var(--c)}
 .tll .lbl{font-weight:800;margin:1rem 0 .35rem;font-size:1rem}
@@ -442,6 +443,16 @@ body.kqon{overflow:hidden}
 .kqend li{margin:.3rem 0}
 .kqend .muted{color:#55627A}
 @media (max-width:640px){.kqopts{grid-template-columns:1fr}.kqo{min-height:3.4rem}}
+
+.hcsub{font-size:1.15rem;margin:1.5rem 0 .25rem}
+.hchint{color:var(--muted);margin:.2rem 0 .75rem;max-width:62ch}
+.hcselrow{margin:-.3rem 0 .6rem;gap:1rem}
+.hcgo{position:sticky;bottom:max(.8rem,env(safe-area-inset-bottom));z-index:5;margin-top:.9rem}
+.hcgo .btn{width:auto;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.hcgo .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+.dvgrp{margin:.8rem 0 0;font-weight:800;font-size:.95rem;color:var(--muted)}
+.dvgrp:first-child{margin-top:0}
+@media(max-width:560px){.hcgo .btn{width:100%}}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -2198,7 +2209,7 @@ function menuScroll(key){
 }
 /* ---------- Startscherm ---------- */
 function home(){ SYL=null;
-  const hc = HCLIST[S.niveau] || [];
+  const hc = HCLIST[S.niveau] || [], sel=hcSelGet();
   app.innerHTML = `
   ${band(false)}
   <div class="band-years" aria-hidden="true"><span>–3000</span><span>500</span><span>1000</span><span>1500</span><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1950</span><span>nu</span></div>
@@ -2212,25 +2223,80 @@ function home(){ SYL=null;
   </section>
   <section class="section">
     <h2>Kies je stof</h2>
-    ${S.niveau==="tl" ? `<div class="list">
-      ${hc.map(h=>`<button class="item" data-hc="${h.id}"><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Examenstof tl, ${h.jaren}</span></span><span class="tag">${hcCount(h.id)} oefeningen</span></button>`).join("")}
-      <button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">Historische vragen, bronnen, ordenen, oorzaken en standplaatsgebondenheid</span></span><span class="tag">${VAARD_TL.length+1} oefeningen</span></button>
-      <button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens gl/tl, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(q=>q.ex[0]==="t").length} vragen</span></button>
-    </div>` : `
+    ${S.niveau==="tl"?"":`<div class="list">
+      <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">17 oefeningen</span></button>
+    </div>
+    <h3 class="hcsub">Historische contexten</h3>`}
+    <p class="hchint">Kies een of meer ${S.niveau==="tl"?"onderwerpen":"contexten"} en klik op Oefenen. Kies je er meer, dan oefen je de stof van al die ${S.niveau==="tl"?"onderwerpen":"contexten"} door elkaar.</p>
+    <div class="row hcselrow"><button class="linkbtn" id="hcall">Alles kiezen</button><button class="linkbtn" id="hcnone">Niets</button></div>
+    <div class="list" role="group" aria-label="${S.niveau==="tl"?"Onderwerpen":"Historische contexten"}">
+      ${hc.map(h=>h.id?hcSelBtn(h,sel.has(h.id)):`<button class="item" disabled><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Historische context ${S.niveau}, ${h.jaren}</span></span><span class="tag">binnenkort</span></button>`).join("")}
+    </div>
+    <div class="hcgo"><button class="btn" id="hcgo"></button></div>
+    <h3 class="hcsub">${S.niveau==="tl"?"Vaardigheden en examenvragen":"Examenvragen en vaardigheden"}</h3>
     <div class="list">
-      <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">16 oefeningen</span></button>
-      ${hc.map(h=>`<button class="item" ${h.id?`data-hc="${h.id}"`:"disabled"}><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Historische context ${S.niveau}, ${h.jaren}</span></span><span class="tag">${h.id?hcCount(h.id)+" oefeningen":"binnenkort"}</span></button>`).join("")}
-      <button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${S.niveau==="tl"?"havo":S.niveau}, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(exOfNiv).length} vragen</span></button>
-      <button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">${S.niveau==="havo"?"Tijd, interpretatie en betekenis: historisch denken en redeneren":"Domein A: historisch denken en redeneren"}</span></span><span class="tag">${VAARDX().length+1} oefeningen</span></button>
-    </div>`}
+      ${S.niveau==="tl"?`<button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">Historische vragen, bronnen, ordenen, oorzaken en standplaatsgebondenheid</span></span><span class="tag">${VAARD_TL.length+1} oefeningen</span></button><button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens gl/tl, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(q=>q.ex[0]==="t").length} vragen</span></button>`:`<button class="item" data-go="exv"><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${S.niveau==="tl"?"havo":S.niveau}, met bronnen en correctievoorschrift</span></span><span class="tag">${exData().qs.filter(exOfNiv).length} vragen</span></button><button class="item" data-go="vaard"><span class="txt"><strong>Vaardigheden</strong><span class="sub">${S.niveau==="havo"?"Tijd, interpretatie en betekenis: historisch denken en redeneren":"Domein A: historisch denken en redeneren"}</span></span><span class="tag">${VAARDX().length+1} oefeningen</span></button>`}
+    </div>
   </section>`;
   app.querySelectorAll("[data-niv]").forEach(b=>b.onclick=()=>{S.niveau=b.dataset.niv; try{localStorage.setItem("niveau",S.niveau)}catch(e){} home();});
   const g=app.querySelector("[data-go=ka]"); if(g) g.onclick=kaMenu;
   const va=app.querySelector("[data-go=vaard]"); if(va) va.onclick=vaardMenu;
   const ev=app.querySelector("[data-go=exv]"); if(ev) ev.onclick=exMenu;
-  app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{S.hc=HCDATA[b.dataset.hc]; S.dvSel=new Set([1,2,3]); hcMenu();});
+  const word=n=>S.niveau==="tl"?(n===1?"onderwerp":"onderwerpen"):(n===1?"context":"contexten");
+  const chosen=()=>hc.filter(h=>h.id&&sel.has(h.id)).map(h=>h.id);
+  const upd=()=>{ app.querySelectorAll(".list [data-hc]").forEach(b=>{ const on=sel.has(b.dataset.hc); b.setAttribute("aria-pressed",on); const t=b.querySelector(".tag"); if(t){ t.classList.toggle("on",on); t.textContent=on?"✓ gekozen":"kies"; } });
+    const ids=chosen(), g=app.querySelector("#hcgo"); g.disabled=!ids.length;
+    g.textContent=!ids.length?`Kies eerst een ${word(1)}`:ids.length===1?`Oefenen met ${HCDATA[ids[0]].titel} ›`:`Oefenen met ${ids.length} ${word(2)} ›`; hcSelSet(sel); };
+  app.querySelectorAll(".list [data-hc]").forEach(b=>b.onclick=()=>{ const id=b.dataset.hc; sel.has(id)?sel.delete(id):sel.add(id); upd(); });
+  app.querySelector("#hcall").onclick=()=>{ hc.forEach(h=>{ if(h.id) sel.add(h.id); }); upd(); };
+  app.querySelector("#hcnone").onclick=()=>{ sel.clear(); upd(); };
+  app.querySelector("#hcgo").onclick=()=>{ const ids=chosen(); if(!ids.length) return;
+    if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set([1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
+    hcMenu(); };
+  upd();
   menuScroll("home");
 }
+
+
+/* ---------- Meerdere onderwerpen combineren ---------- */
+const MIXHC={};
+function mkMix(ids){
+  const id="mix:"+ids.join("+"); if(MIXHC[id]) return MIXHC[id];
+  const parts=ids.map(i=>HCDATA[i]);
+  const and=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" en "+a[a.length-1];
+  const nums=parts.flatMap(P=>String(P.jaren||"").match(/\d{3,4}/g)||[]).map(Number);
+  const mapIds=[...new Set(parts.map(P=>P.mapId||"nl"))];
+  const H={id,parts:ids,niveau:parts[0].niveau,titel:and(parts.map(P=>P.titel)),jaren:nums.length?Math.min(...nums)+"–"+Math.max(...nums):"",
+    dv:[],begrippen:[],tijdlijn:[],tlx:{},ketens:[],koppel:[],map:[],gk:[],bext:{},lijkt:{},
+    mapId:mapIds.length===1?mapIds[0]:"world",mapSub:mapIds.length===1&&parts[0].mapSub?parts[0].mapSub:"Klik op de kaart aan waar iets gebeurde"};
+  const nr={}, seenB=new Set(), seenK=new Set(), seenM=new Set(), seenG=new Set(), evY=new Map();
+  parts.forEach(P=>{ const m=nr[P.id]={};
+    P.dv.forEach(d=>{ const n=H.dv.length+1; m[d.nr]=n; H.dv.push({...d,nr:n,src:P.id,srcT:P.titel,srcNr:d.nr}); });
+    const R=x=>({...x,dv:m[x.dv]});
+    P.begrippen.forEach(b=>{ const k=b.b.toLowerCase(); if(!seenB.has(k)){ seenB.add(k); H.begrippen.push(R(b)); } });
+    const X=P.tlx||TLX;
+    P.tijdlijn.forEach(e=>{ const x=X[e.j]||["",""], prev=evY.get(e.j);
+      const nt=t=>t.toLowerCase().replace(/^(het|de|een)\s+/,"");
+      if(prev&&nt(e.t).includes(nt(prev.e.t))){ prev.e.t=e.t; prev.x=[x[0]||prev.x[0],x[1]||prev.x[1]]; H.tlx[e.j]=prev.x; }
+      else if(prev&&nt(prev.e.t).includes(nt(e.t))){ }
+      else if(prev){ prev.e.t+="; "+e.t; prev.x=[[prev.x[0],x[0]].filter(Boolean).join(" "),prev.x[1]||x[1]||""]; H.tlx[e.j]=prev.x; }
+      else { const ne=R(e), o={e:ne,x:[x[0]||"",x[1]||""]}; evY.set(e.j,o); H.tlx[e.j]=o.x; H.tijdlijn.push(ne); } });
+    (P.ketens||[]).forEach(k=>{ if(!seenK.has(k.titel)){ seenK.add(k.titel); H.ketens.push(R(k)); } });
+    (P.koppel||[]).forEach(k=>H.koppel.push(R(k)));
+    (P.map||MAP_HC).forEach(x=>{ const k=x.id||x.plaats+x.t; if(!seenM.has(k)){ seenM.add(k); H.map.push(R(x)); } });
+    (P.gk||GK_STEDEN).forEach(t=>{ if(!seenG.has(t.titel)){ seenG.add(t.titel); H.gk.push(R(t)); } });
+    Object.entries(P.bext||BEXT).forEach(([k,v])=>{ if(!(k in H.bext)) H.bext[k]=v; });
+    Object.entries(P.lijkt||LIJKT).forEach(([k,v])=>{ if(!(k in H.lijkt)) H.lijkt[k]=v; });
+  });
+  H.tijdlijn.sort((a,b)=>a.j-b.j);
+  WBI.forEach(p=>{ if(!p.hc) return; const a=[]; ids.forEach(i=>(p.hc[i]||[]).forEach(n=>{ if(nr[i][n]) a.push(nr[i][n]); })); if(a.length) p.hc[id]=a; });
+  const seenE=new Set(); KW_EVENTS[id]=ids.flatMap(i=>(KW_EVENTS[i]||[]).map(e=>[nr[i][e[0]],...e.slice(1)])).filter(e=>e[0]&&!seenE.has(e[1])&&seenE.add(e[1]));
+  MIXHC[id]=H; return H;
+}
+function hcSelGet(){ const ok=new Set((HCLIST[S.niveau]||[]).map(h=>h.id).filter(Boolean));
+  try{ return new Set(JSON.parse(localStorage.getItem("hcSel-"+S.niveau)||"[]").filter(id=>ok.has(id))); }catch(e){ return new Set(); } }
+function hcSelSet(sel){ try{ localStorage.setItem("hcSel-"+S.niveau,JSON.stringify([...sel])); }catch(e){} }
+function hcSelBtn(h,on){ return `<button class="item" aria-pressed="${on}" data-hc="${h.id}"><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">${S.niveau==="tl"?"Examenstof tl":"Historische context "+S.niveau}, ${h.jaren} · ${hcCount(h.id)} oefeningen</span></span><span class="tag ${on?"on":""}">${on?"✓ gekozen":"kies"}</span></button>`; }
 
 /* ---------- Sleepbare lijst (muis, touch en toetsenbord) ---------- */
 function makeSortable(ol, onChange){
@@ -2716,7 +2782,7 @@ function hcModes(H){ return [["lees","Lees de examenstof",H.niveau==="tl"?"De st
          ["tijdlijn","Tijdlijn","Sleep elke gebeurtenis naar het juiste jaartal"],
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
          ["mc","Meerkeuzevragen","Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen"],
-         ["kruis","Kruiswoordpuzzel","Elke keer een nieuwe puzzel met begrippen, personen, plaatsen en zinnen uit deze context"],
+         ["kruis","Kruiswoordpuzzel","Elke keer een nieuwe puzzel met begrippen, personen, plaatsen en zinnen uit "+(H.parts?"deze stof":"deze context")],
          ["wie","Wie ben ik?","Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten"],
          ["hitster","Hitster","Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!"],
          
@@ -2726,7 +2792,7 @@ function hcModes(H){ return [["lees","Lees de examenstof",H.niveau==="tl"?"De st
          ["gk","Gatenkaas","Sleep begrippen, personen en gebeurtenissen naar de juiste plek in een tekst"],
          ["quiz","Quiz","Allerlei oefeningen door elkaar: begrippen, "+(H.koppel.length?"kenmerkende aspecten, ":"")+"jaartallen, plaatsen, oorzaak en gevolg en gatenkaas"],
          ["klas","Klas Quiz","Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op"],
-         ...(hcExamList(true).length?[["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.niveau==="tl"?"dit onderwerp":"deze context"} (${hcExamList(true).length} vragen)`]]:[])]
+         ...(hcExamList(true).length?[["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.parts?(H.niveau==="tl"?"deze onderwerpen":"deze contexten"):H.niveau==="tl"?"dit onderwerp":"deze context"} (${hcExamList(true).length} vragen)`]]:[])]
         .filter(([m])=>m!=="koppel"||H.koppel.length); }
 function hcCount(id){ const keep=S.hc; S.hc=HCDATA[id]; const n=hcModes(S.hc).length; S.hc=keep; return n; }
 function hcWhy(H,m){
@@ -2743,11 +2809,11 @@ function hcMenu(){ CTX="hc";
   const H=S.hc; sylHC(H);
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
-  <h1 style="font-size:2.2rem">${esc(H.titel)}</h1>
-  <p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a>`:""}</p>
+  <h1 style="font-size:2.2rem">${H.parts?"Meerdere "+(H.niveau==="tl"?"onderwerpen":"contexten"):esc(H.titel)}</h1>
+  ${H.parts?`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: ${esc(H.titel)}. Je oefent de stof door elkaar.</p>`:`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a>`:""}</p>`}
   <section class="section">
     <h2>${H.niveau==="tl"?"Welke onderdelen?":"Welke deelvragen?"}</h2>
-    <div class="list">${H.dv.map(d=>`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
+    <div class="list">${H.dv.map(d=>(H.parts&&(d.nr===1||H.dv[d.nr-2].src!==d.src)?`<p class="dvgrp">${esc(d.srcT)}</p>`:"")+`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
       <span class="txt"><strong>${d.nr}. ${esc(d.vraag)}</strong><span class="sub">${d.periode}, ${d.ka.length?"kenmerkende aspecten "+d.ka.join(", "):esc(d.sub||"")}</span></span>
       <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button>`).join("")}</div>
   </section>
@@ -2763,23 +2829,6 @@ function hcMenu(){ CTX="hc";
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>hcKeten(0),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory})[b.dataset.m]());
   menuScroll("hc:"+S.hc.id);
-}
-
-function hcLees(){
-  const H=S.hc;
-  if(H.niveau==="tl") return tlLees();
-  const D=lnkDict(H);
-  app.innerHTML = `<div class="lnk" id="lnk"><button class="back" id="back">‹ Terug naar oefeningen</button>
-  <h2>${esc(H.titel)}</h2>
-  <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg.</p>
-  ${H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>`<article class="dv" style="--c:${col(d.c)}">
-    <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
-    ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${lnkHtml(esc(kaOf(n).t),D)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
-    ${d.tekst.map(p=>`<p>${lnkHtml(esc(p),D)}</p>`).join("")}
-  </article>`).join("")}
-  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}</div>`;
-  lnkSheet(app.querySelector("#lnk"),D);
-  app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
 
@@ -2844,9 +2893,9 @@ const LNK_OWN={"steden":[["Republiek der Zeven Verenigde Nederlanden",["Republie
 /* woorden die in een context naar een bestaand begrip van die context moeten verwijzen */
 const LNK_BALIAS={"duitsland":{"Republiek":"Republiek van Weimar"},"duitsland-h":{"Republiek":"Republiek van Weimar"}};
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-function lnkDict(H){
+function lnkDict(H,base){
   const items=[], map=new Map(), ev=[], begr=new Map(), pIt=new Map();
-  const mk=(k,t,u,y)=>{ const it={i:items.length,k,t,u,y}; items.push(it); return it; };
+  const mk=(k,t,u,y)=>{ const it={i:(base||0)+items.length,k,t,u,y}; items.push(it); return it; };
   const key=n=>esc(n).toLowerCase().trim();
   const add=(n,it,force)=>{ const k=key(n); if((!force&&k.length<4)||map.has(k)) return; map.set(k,it); };
   const own=WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]), rest=WBI.filter(p=>p.u&&!(p.hc&&p.hc[H.id]));
@@ -2885,8 +2934,14 @@ function lnkSheet(W,D){
   });
   W.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
 }
-function tlLees(){
-  const H=S.hc, D=lnkDict(H), P=[...D.pIt.keys()];
+/* per onderwerp de gekozen onderdelen (bij gecombineerde stof meerdere onderwerpen) */
+function leesGroups(H){
+  if(!H.parts) return [{P:H,dvs:H.dv.filter(d=>S.dvSel.has(d.nr)),nrOf:d=>d.nr}];
+  return H.parts.map(id=>{ const P=HCDATA[id], mine=H.dv.filter(d=>d.src===id&&S.dvSel.has(d.nr));
+    return {P,dvs:mine.map(d=>P.dv[d.srcNr-1]),nrOf:d=>(H.dv.find(x=>x.src===id&&x.srcNr===d.nr)||d).nr}; }).filter(g=>g.dvs.length);
+}
+function tlArticles(H,dvs,D,nrOf){
+  const P=[...D.pIt.keys()];
   const wb=(hay,w)=>(" "+hay+" ").includes(" "+w+" ");
   const findP=t=>{ const l=t.toLowerCase(); for(const f of [n=>n===l,n=>l.endsWith(" "+n)||n.endsWith(" "+l),n=>wb(l,n)||wb(n,l)]){ const p=P.find(p=>f(p.n.toLowerCase())); if(p) return D.pIt.get(p); } return null; };
   const year=h=>h.replace(/\(((?:\d{1,2}-\d{1,2}-|\d{1,2} [a-z]+ |[a-z]+ )?\d{4}(?:-\d{4}| en \d{4})?)\)/g,'(<span class="yr">$1</span>)');
@@ -2913,28 +2968,51 @@ function tlLees(){
       if(b.k==="list"&&b.label&&TLL_PAIR.test(b.label)&&n&&n.k==="list"&&n.label&&TLL_PAIR.test(n.label)){ h+=`<div class="pair"><div>${blk(b,d.nr)}</div><div>${blk(n,d.nr)}</div></div>`; i++; }
       else h+=blk(b,d.nr); }
     return h; };
-  const dvs=H.dv.filter(d=>S.dvSel.has(d.nr));
-  app.innerHTML = `<div class="tll lnk" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
-  <h2>${esc(H.titel)}</h2>
-  <p class="lead">Dit moet je kennen voor het examen: de stofomschrijving uit de syllabus, overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg. Ook personen en jaartallen kun je aantikken. Onder elk onderdeel staan alle begrippen die je nodig hebt om de examenvragen te beantwoorden.</p>
-  ${dvs.map(d=>{ const bs=H.begrippen.filter(b=>b.dv===d.nr&&D.begr.has(b));
-    return `<article class="dv" id="tll-${d.nr}" style="--c:${col(d.c)}">
+  return dvs.map(d=>{ const bs=H.begrippen.filter(b=>b.dv===d.nr&&D.begr.has(b));
+    return `<article class="dv" id="tll-${nrOf(d)}" style="--c:${col(d.c)}">
     <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
     ${d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
     ${body(d)}
     ${bs.length?`<section class="bbox"><h4>Begrippen die je nodig hebt (${bs.length})</h4>
       <p class="bsub">Deze begrippen heb je nodig om examenvragen over dit onderdeel te beantwoorden. Tik op een begrip voor de uitleg.</p>
       <div class="bchips">${bs.map(b=>btn(D.begr.get(b),esc(b.b),"bc")).join("")}</div>
-      <button class="btn ghost" data-fl="${d.nr}">Oefen dit onderdeel met flashcards</button></section>`:""}
+      <button class="btn ghost" data-fl="${nrOf(d)}">Oefen dit onderdeel met flashcards</button></section>`:""}
     <details class="orig"><summary>Originele tekst uit de syllabus</summary>${d.tekst.map(p=>`<p>${esc(p)}</p>`).join("")}</details>
-  </article>`; }).join("")}
-  ${H.url?`<p><a href="${H.url}" target="_blank" rel="noopener">Meer uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:""}</div>`;
+  </article>`; }).join("");
+}
+const leesMeer=P=>P.url?`<p><a href="${P.url}" target="_blank" rel="noopener">Meer uitleg op ${P.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:"";
+function leesBuild(H,art){ const items=[]; let html="";
+  leesGroups(H).forEach(g=>{ const D=lnkDict(g.P,items.length); items.push(...D.items); html+=(H.parts?`<h2 class="lgrp">${esc(g.P.titel)}</h2>`:"")+art(g,D)+leesMeer(g.P); });
+  return {items,html}; }
+function tlLees(){
+  const H=S.hc, L=leesBuild(H,(g,D)=>tlArticles(g.P,g.dvs,D,g.nrOf));
+  app.innerHTML = `<div class="tll lnk" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>${H.parts?"De examenstof van je onderwerpen":esc(H.titel)}</h2>
+  <p class="lead">Dit moet je kennen voor het examen: de stofomschrijving uit de syllabus, overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg. Ook personen en jaartallen kun je aantikken. Onder elk onderdeel staan alle begrippen die je nodig hebt om de examenvragen te beantwoorden.</p>
+  ${L.html}</div>`;
   const W=app.querySelector("#tll");
-  lnkSheet(W,D);
+  lnkSheet(W,{items:L.items});
   W.addEventListener("click",e=>{ const f=e.target.closest("[data-fl]"); if(!f) return;
     const keep=S.dvSel, nr=+f.dataset.fl; S.dvSel=new Set([nr]);
     flashcards({scope:"hc",key:hk("flash"),back:()=>{ hcLees(); const a=document.getElementById("tll-"+nr); if(a) a.scrollIntoView(); }});
     S.dvSel=keep; });
+  app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
+}
+
+function hcArticles(H,dvs,D){ return dvs.map(d=>`<article class="dv" style="--c:${col(d.c)}">
+    <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
+    ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${lnkHtml(esc(kaOf(n).t),D)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
+    ${d.tekst.map(p=>`<p>${lnkHtml(esc(p),D)}</p>`).join("")}
+  </article>`).join(""); }
+function hcLees(){
+  const H=S.hc;
+  if(H.niveau==="tl") return tlLees();
+  const L=leesBuild(H,(g,D)=>hcArticles(g.P,g.dvs,D));
+  app.innerHTML = `<div class="lnk" id="lnk"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>${H.parts?"De examenstof van je onderwerpen":esc(H.titel)}</h2>
+  <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg.</p>
+  ${L.html}</div>`;
+  lnkSheet(app.querySelector("#lnk"),{items:L.items});
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
@@ -4539,7 +4617,7 @@ function exSubMenu(list,title,back,again){
 function kaExam(){ SYL=null; const l=kaExamList(); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken.`,kaMenu,kaExam); }
 function hcExamList(all){
   const H=S.hc; if(!H||!H.id) return [];
-  const base=exData().qs.filter(q=>q.hc.includes(H.examHc||H.id)&&exLvl(q)===(H.niveau||"vwo")); if(all) return base;
+  const base=exData().qs.filter(q=>(H.parts?H.parts.map(i=>HCDATA[i].examHc||i):[H.examHc||H.id]).some(x=>q.hc.includes(x))&&exLvl(q)===(H.niveau||"vwo")); if(all) return base;
   const tvs=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c);
   const sub=base.filter(q=>!q.tv.length||q.tv.some(t=>tvs.includes(t)));
   return sub.length?sub:base;
@@ -5543,7 +5621,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115124407"; let last=0, shown=false;
+  const BUILD="20261115125716"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
