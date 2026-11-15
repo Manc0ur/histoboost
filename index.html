@@ -331,6 +331,8 @@ input[type=checkbox]{width:1.25rem;height:1.25rem;accent-color:var(--ink);flex:n
 @media(max-width:619px){.pool[data-pool]{position:sticky;bottom:0;max-height:38vh;overflow-y:auto;z-index:3;background:var(--bg);border-style:solid;box-shadow:0 -6px 14px rgba(0,0,0,.12)}}
 @media(max-width:480px){.exq{flex-direction:column;gap:.15rem}}
 .hscard .ht,.hslist .ht{overflow-wrap:anywhere;hyphens:auto;min-width:0}
+.newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
+.newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -5049,6 +5051,16 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   const arm=()=>{ if(armed) return; try{ history.pushState({hb:1},""); armed=true; }catch(e){} };
   new MutationObserver(()=>{ if(app.querySelector("#back")) arm(); }).observe(app,{childList:true});
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
+})();
+(function(){
+  const BUILD="20261115081253"; let last=0, shown=false;
+  function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
+    fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
+      const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
+      d.innerHTML='<span>Er is een nieuwe versie van HistoBoost.</span><button type="button">Vernieuwen</button>';
+      d.querySelector("button").onclick=()=>location.reload(); document.body.appendChild(d); }).catch(()=>{}); }
+  window.addEventListener("load",()=>setTimeout(check,3000));
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") check(); });
 })();
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
