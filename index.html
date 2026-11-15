@@ -2568,7 +2568,7 @@ function mcEx({title,qs,back,again,tvGrid,key,ids}){
     if(good&&first) score++; else wrong.push(q);
     if(key) record(key,q.id,good&&first);
     app.querySelectorAll("[data-a]").forEach(b=>{b.disabled=true; const v=b.dataset.a; if(rights.includes(v)) b.classList.add("correct"); else if(v===a) b.classList.add("wrong");});
-    const head = good ? (first?"Goed!":"Goed, in de tweede poging.") : "Helaas, ook niet goed. Het goede antwoord is groen gemaakt.";
+    const head = good ? (first?"Goed!":"Goed, in de tweede poging.") : "Helaas. Het goede antwoord is groen gemaakt.";
     app.querySelector("#fb").innerHTML = `<div class="feedback ${good?"good":"badf"}" role="status"><p><strong>${head}</strong> ${q.uitleg}</p>${q.extra?`<p>${esc(q.extra)}</p>`:""}</div>
     <div class="row" style="margin-top:1rem"><button class="btn" id="next">${i+1<qs.length?"Volgende vraag":"Bekijk je score"}</button></div>`;
     const nx=app.querySelector("#next"); nx.focus(); nx.onclick=()=>{i++; i<qs.length?draw():result();};
@@ -6007,7 +6007,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115194501"; let last=0, shown=false;
+  const BUILD="20261115194811"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
