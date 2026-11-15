@@ -3275,7 +3275,7 @@ function kqFill(gens,n){
 function klasQuiz({scope,back}){
   const gens=()=>scope==="ka"?[...kaMixGens(),mcGensKA()[4]]:hcMixGens();
   const lsG=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:+v; }catch(e){ return d; } }, lsS=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
-  let N=lsG("kqN",15), T=lsG("kqT",20); if(![10,15,20].includes(N)) N=15; if(![0,10,15,20].includes(T)) T=20;
+  let N=lsG("kqN",15), T=lsG("kqT",15); if(![10,15,20].includes(N)) N=15; if(![0,10,15,20].includes(T)) T=15;
   const leave=()=>{ if(kqStop) kqStop(); back(); };
   function setup(msg){
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
@@ -6077,7 +6077,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115222045"; let last=0, shown=false;
+  const BUILD="20261115222522"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
