@@ -450,9 +450,13 @@ body.kqon{overflow:hidden}
 .hcgo{position:sticky;bottom:max(.8rem,env(safe-area-inset-bottom));z-index:5;margin-top:.9rem}
 .hcgo .btn{width:auto;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .hcgo .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+.kalist{list-style:none;padding:0;margin:.4rem 0 1rem}
+.kalist li{margin:.7rem 0;max-width:70ch}
+.kalist .katoel{display:block;color:var(--muted);font-size:.95rem;margin-top:.2rem}
+.tvnames{color:var(--muted);font-size:.95rem;margin:.6rem 0 0;max-width:70ch}
 .dvgrp{margin:.8rem 0 0;font-weight:800;font-size:.95rem;color:var(--muted)}
 .dvgrp:first-child{margin-top:0}
-@media(max-width:560px){.hcgo .btn{width:100%}}
+@media(max-width:560px){.hcgo .btn{width:100%}.chip.pchip{font-size:.82rem;padding:.3rem .6rem}}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
 </style>
@@ -2209,7 +2213,7 @@ function menuScroll(key){
 }
 /* ---------- Startscherm ---------- */
 function home(){ SYL=null;
-  const hc = HCLIST[S.niveau] || [], sel=hcSelGet();
+  const hc = HCLIST[S.niveau] || [], sel=hcSelGet(), tvSel=tvSelGet();
   app.innerHTML = `
   ${band(false)}
   <div class="band-years" aria-hidden="true"><span>–3000</span><span>500</span><span>1000</span><span>1500</span><span>1600</span><span>1700</span><span>1800</span><span>1900</span><span>1950</span><span>nu</span></div>
@@ -2223,12 +2227,14 @@ function home(){ SYL=null;
   </section>
   <section class="section">
     <h2>Kies je stof</h2>
-    ${S.niveau==="tl"?"":`<div class="list">
-      <button class="item" data-go="ka"><span class="txt"><strong>Tijdvakken en kenmerkende aspecten</strong><span class="sub">De 10 tijdvakken en 49 kenmerkende aspecten</span></span><span class="tag">17 oefeningen</span></button>
-    </div>
+    <p class="hchint">${S.niveau==="tl"?"Kies een of meer onderwerpen en klik op Oefenen. Kies je er meer, dan oefen je de stof van al die onderwerpen door elkaar.":"Kies tijdvakken, historische contexten of allebei en klik op Oefenen. Combineer je ze, dan oefen je de contexten door elkaar met de tijdvakken en kenmerkende aspecten als achtergrond."}</p>
+    ${S.niveau==="tl"?"":`<h3 class="hcsub">Tijdvakken en kenmerkende aspecten</h3>
+    <div class="row hcselrow"><button class="linkbtn" id="tvall">Alle tijdvakken</button><button class="linkbtn" id="tvnone">Geen</button></div>
+    <div class="chips" role="group" aria-label="Tijdvakken">${TV.map(t=>`<button class="chip" style="--c:${col(t.n)}" aria-pressed="${tvSel.has(t.n)}" data-htv="${t.n}" title="${esc(t.naam)}">${t.n}</button>`).join("")}</div>
+    <div class="chips" style="margin-top:.6rem" role="group" aria-label="Periodes">${TVPER.map((p,pi)=>`<button class="chip pchip" aria-pressed="false" data-htvper="${pi}" title="Tijdvak ${p[1].join(", ")}">${p[0]}</button>`).join("")}</div>
+    <p class="tvnames" id="tvnames" aria-live="polite"></p>
     <h3 class="hcsub">Historische contexten</h3>`}
-    <p class="hchint">Kies een of meer ${S.niveau==="tl"?"onderwerpen":"contexten"} en klik op Oefenen. Kies je er meer, dan oefen je de stof van al die ${S.niveau==="tl"?"onderwerpen":"contexten"} door elkaar.</p>
-    <div class="row hcselrow"><button class="linkbtn" id="hcall">Alles kiezen</button><button class="linkbtn" id="hcnone">Niets</button></div>
+    <div class="row hcselrow"><button class="linkbtn" id="hcall">${S.niveau==="tl"?"Alles kiezen":"Alle contexten"}</button><button class="linkbtn" id="hcnone">${S.niveau==="tl"?"Niets":"Geen"}</button></div>
     <div class="list" role="group" aria-label="${S.niveau==="tl"?"Onderwerpen":"Historische contexten"}">
       ${hc.map(h=>h.id?hcSelBtn(h,sel.has(h.id)):`<button class="item" disabled><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">Historische context ${S.niveau}, ${h.jaren}</span></span><span class="tag">binnenkort</span></button>`).join("")}
     </div>
@@ -2244,14 +2250,26 @@ function home(){ SYL=null;
   const ev=app.querySelector("[data-go=exv]"); if(ev) ev.onclick=exMenu;
   const word=n=>S.niveau==="tl"?(n===1?"onderwerp":"onderwerpen"):(n===1?"context":"contexten");
   const chosen=()=>hc.filter(h=>h.id&&sel.has(h.id)).map(h=>h.id);
+  const tvList=()=>S.niveau==="tl"?[]:[...tvSel].sort((a,b)=>a-b);
   const upd=()=>{ app.querySelectorAll(".list [data-hc]").forEach(b=>{ const on=sel.has(b.dataset.hc); b.setAttribute("aria-pressed",on); const t=b.querySelector(".tag"); if(t){ t.classList.toggle("on",on); t.textContent=on?"✓ gekozen":"kies"; } });
-    const ids=chosen(), g=app.querySelector("#hcgo"); g.disabled=!ids.length;
-    g.textContent=!ids.length?`Kies eerst een ${word(1)}`:ids.length===1?`Oefenen met ${HCDATA[ids[0]].titel} ›`:`Oefenen met ${ids.length} ${word(2)} ›`; hcSelSet(sel); };
+    app.querySelectorAll("[data-htv]").forEach(b=>b.setAttribute("aria-pressed",tvSel.has(+b.dataset.htv)));
+    app.querySelectorAll("[data-htvper]").forEach(b=>b.setAttribute("aria-pressed",TVPER[+b.dataset.htvper][1].every(n=>tvSel.has(n))));
+    const tvs=tvList(), tn=app.querySelector("#tvnames"); if(tn) tn.textContent=tvs.length?"Gekozen: "+tvs.map(n=>`${n}. ${tvOf(n).naam}`).join(" · "):"Nog geen tijdvak gekozen.";
+    const ids=chosen(), g=app.querySelector("#hcgo"); g.disabled=!ids.length&&!tvs.length;
+    const tvT=tvs.length===1?`tijdvak ${tvs[0]}`:`${tvs.length} tijdvakken`, hcT=ids.length===1?HCDATA[ids[0]].titel:`${ids.length} ${word(2)}`;
+    g.textContent=!ids.length&&!tvs.length?(S.niveau==="tl"?"Kies eerst een onderwerp":"Kies eerst een tijdvak of context"):!ids.length?`Oefenen met ${tvT} ›`:!tvs.length?`Oefenen met ${hcT} ›`:`Oefenen met ${tvT} en ${hcT} ›`;
+    hcSelSet(sel); tvSelSet(tvSel); };
+  app.querySelectorAll("[data-htv]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.htv; tvSel.has(n)?tvSel.delete(n):tvSel.add(n); upd(); });
+  app.querySelectorAll("[data-htvper]").forEach(b=>b.onclick=()=>{ const ns=TVPER[+b.dataset.htvper][1], all=ns.every(n=>tvSel.has(n)); ns.forEach(n=>all?tvSel.delete(n):tvSel.add(n)); upd(); });
+  const ta=app.querySelector("#tvall"); if(ta) ta.onclick=()=>{ TV.forEach(t=>tvSel.add(t.n)); upd(); };
+  const tz=app.querySelector("#tvnone"); if(tz) tz.onclick=()=>{ tvSel.clear(); upd(); };
   app.querySelectorAll(".list [data-hc]").forEach(b=>b.onclick=()=>{ const id=b.dataset.hc; sel.has(id)?sel.delete(id):sel.add(id); upd(); });
   app.querySelector("#hcall").onclick=()=>{ hc.forEach(h=>{ if(h.id) sel.add(h.id); }); upd(); };
   app.querySelector("#hcnone").onclick=()=>{ sel.clear(); upd(); };
-  app.querySelector("#hcgo").onclick=()=>{ const ids=chosen(); if(!ids.length) return;
-    if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set([1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
+  app.querySelector("#hcgo").onclick=()=>{ const ids=chosen(), tvs=tvList(); if(!ids.length&&!tvs.length) return;
+    if(!ids.length){ S.sel=new Set(tvs); kaMenu(); return; }
+    if(tvs.length){ S.hc=mkMix([kaPart(tvs),...ids]); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
+    else if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set([1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
     hcMenu(); };
   upd();
   menuScroll("home");
@@ -2259,10 +2277,34 @@ function home(){ SYL=null;
 
 
 /* ---------- Meerdere onderwerpen combineren ---------- */
-const MIXHC={};
+const MIXHC={}, KAPART={};
+const partOf=id=>HCDATA[id]||KAPART[id];
+function kaPart(tvs){
+  tvs=[...tvs].map(Number).sort((a,b)=>a-b); const id="ka:"+tvs.join(","); if(KAPART[id]) return id;
+  const dvOf={}; tvs.forEach((n,i)=>dvOf[n]=i+1); const sel=n=>n in dvOf;
+  const range=tvs.length>2&&tvs.every((n,i)=>!i||n===tvs[i-1]+1);
+  const P={id,isKa:true,grp:"Tijdvakken en kenmerkende aspecten",niveau:S.niveau,titel:tvs.length===1?`Tijdvak ${tvs[0]}`:range?`Tijdvak ${tvs[0]}–${tvs[tvs.length-1]}`:`Tijdvakken ${tvs.join(", ")}`,
+    jaren:"",mapId:"world",mapSub:"Klik op de wereldkaart aan waar iets gebeurde",
+    dv:tvs.map((n,i)=>{ const t=tvOf(n); return {nr:i+1,c:n,vraag:`Tijdvak ${n}: ${t.naam}`,periode:t.jaren.replace(/\s/g,""),ka:KA.filter(k=>k.tv===n).map(k=>k.n),sub:"",tekst:[],kaPart:true,url:t.url}; }),
+    begrippen:[],tijdlijn:[],tlx:{},ketens:[],koppel:[],map:[],gk:[],bext:{},lijkt:{}};
+  const seen=new Set();
+  kwGapDefs(GK_KA.filter(t=>t.tv.some(sel))).filter(d=>!/\d/.test(d.a)).forEach(d=>{ const g=GK_KA.find(t=>t.titel===d.src), tv=g?g.tv.find(sel):tvs[0], b=d.a.charAt(0).toUpperCase()+d.a.slice(1);
+    if(!seen.has(b.toLowerCase())){ seen.add(b.toLowerCase()); P.begrippen.push({dv:dvOf[tv],b,d:d.q}); } });
+  KA_TL.filter(e=>sel(e.tv)).forEach(e=>{ if(P.tlx[e.j]) return; P.tijdlijn.push({dv:dvOf[e.tv],j:e.j,t:e.t}); P.tlx[e.j]=[e.u||(TLX[e.j]||[])[0]||"",e.h||(TLX[e.j]||[])[1]||""]; });
+  KA_KETENS.filter(k=>sel(k.tv)).forEach(k=>P.ketens.push({...k,dv:dvOf[k.tv]}));
+  MAP_KA.filter(m=>sel(m.tv)).forEach(m=>P.map.push({...m,dv:dvOf[m.tv]}));
+  GK_KA.filter(t=>t.tv.some(sel)).forEach(t=>P.gk.push({...t,dv:dvOf[t.tv.find(sel)]}));
+  KA.filter(k=>sel(k.tv)).forEach(k=>k.vb.forEach(v=>{ if(!OOK[v]) P.koppel.push({dv:dvOf[k.tv],g:v,ka:k.n,uit:(KAX[k.n]||[])[0]||"",hint:(KAX[k.n]||[])[2]||""}); }));
+  WBI.forEach(p=>{ const a=(p.tv||[]).filter(sel).map(n=>dvOf[n]); if(a.length){ if(!p.hc) p.hc={}; p.hc[id]=[...new Set(a)]; } });
+  KW_EVENTS[id]=(KW_EVENTS.ka||[]).filter(e=>sel(e[0])).map(e=>[dvOf[e[0]],e[1],e[2]]);
+  KAPART[id]=P; return id;
+}
+function kaArticle(d,D){ return `<article class="dv" style="--c:${col(d.c)}"><h3>${esc(d.vraag)} (${d.periode})</h3>
+  <ul class="kalist">${d.ka.map(n=>{ const k=kaOf(n); return `<li><strong>Kenmerkend aspect ${n}</strong><br>${lnkHtml(esc(k.t),D)}${k.toel?`<span class="katoel">${lnkHtml(esc(k.toel),D)}</span>`:""}</li>`; }).join("")}</ul>
+  ${d.url?`<p><a href="${d.url}" target="_blank" rel="noopener">Lees de uitleg over tijdvak ${d.c} op geschiedenisvandaag.nu</a></p>`:""}</article>`; }
 function mkMix(ids){
   const id="mix:"+ids.join("+"); if(MIXHC[id]) return MIXHC[id];
-  const parts=ids.map(i=>HCDATA[i]);
+  const parts=ids.map(partOf);
   const and=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" en "+a[a.length-1];
   const nums=parts.flatMap(P=>String(P.jaren||"").match(/\d{3,4}/g)||[]).map(Number);
   const mapIds=[...new Set(parts.map(P=>P.mapId||"nl"))];
@@ -2271,7 +2313,7 @@ function mkMix(ids){
     mapId:mapIds.length===1?mapIds[0]:"world",mapSub:mapIds.length===1&&parts[0].mapSub?parts[0].mapSub:"Klik op de kaart aan waar iets gebeurde"};
   const nr={}, seenB=new Set(), seenK=new Set(), seenM=new Set(), seenG=new Set(), evY=new Map();
   parts.forEach(P=>{ const m=nr[P.id]={};
-    P.dv.forEach(d=>{ const n=H.dv.length+1; m[d.nr]=n; H.dv.push({...d,nr:n,src:P.id,srcT:P.titel,srcNr:d.nr}); });
+    P.dv.forEach(d=>{ const n=H.dv.length+1; m[d.nr]=n; H.dv.push({...d,nr:n,src:P.id,srcT:P.grp||P.titel,srcNr:d.nr}); });
     const R=x=>({...x,dv:m[x.dv]});
     P.begrippen.forEach(b=>{ const k=b.b.toLowerCase(); if(!seenB.has(k)){ seenB.add(k); H.begrippen.push(R(b)); } });
     const X=P.tlx||TLX;
@@ -2283,6 +2325,7 @@ function mkMix(ids){
       else { const ne=R(e), o={e:ne,x:[x[0]||"",x[1]||""]}; evY.set(e.j,o); H.tlx[e.j]=o.x; H.tijdlijn.push(ne); } });
     (P.ketens||[]).forEach(k=>{ if(!seenK.has(k.titel)){ seenK.add(k.titel); H.ketens.push(R(k)); } });
     (P.koppel||[]).forEach(k=>H.koppel.push(R(k)));
+    if(P.id==="steden"&&typeof BRONKOPPEL!=="undefined") BRONKOPPEL.forEach(k=>H.koppel.push(R(k)));
     (P.map||MAP_HC).forEach(x=>{ const k=x.id||x.plaats+x.t; if(!seenM.has(k)){ seenM.add(k); H.map.push(R(x)); } });
     (P.gk||GK_STEDEN).forEach(t=>{ if(!seenG.has(t.titel)){ seenG.add(t.titel); H.gk.push(R(t)); } });
     Object.entries(P.bext||BEXT).forEach(([k,v])=>{ if(!(k in H.bext)) H.bext[k]=v; });
@@ -2295,6 +2338,8 @@ function mkMix(ids){
 }
 function hcSelGet(){ const ok=new Set((HCLIST[S.niveau]||[]).map(h=>h.id).filter(Boolean));
   try{ return new Set(JSON.parse(localStorage.getItem("hcSel-"+S.niveau)||"[]").filter(id=>ok.has(id))); }catch(e){ return new Set(); } }
+function tvSelGet(){ try{ return new Set(JSON.parse(localStorage.getItem("tvSel")||"[]").map(Number).filter(n=>n>=1&&n<=10)); }catch(e){ return new Set(); } }
+function tvSelSet(sel){ try{ localStorage.setItem("tvSel",JSON.stringify([...sel])); }catch(e){} }
 function hcSelSet(sel){ try{ localStorage.setItem("hcSel-"+S.niveau,JSON.stringify([...sel])); }catch(e){} }
 function hcSelBtn(h,on){ return `<button class="item" aria-pressed="${on}" data-hc="${h.id}"><span class="txt"><strong>${esc(h.titel)}</strong><span class="sub">${S.niveau==="tl"?"Examenstof tl":"Historische context "+S.niveau}, ${h.jaren} · ${hcCount(h.id)} oefeningen</span></span><span class="tag ${on?"on":""}">${on?"✓ gekozen":"kies"}</span></button>`; }
 
@@ -2646,7 +2691,7 @@ function simPlaces(m,all,n){
 }
 function simWords(a,cands,n,ctx){ return pickSim({w:a},cands.map(w=>({w})),n,{text:x=>x.w,ctx:x=>x===undefined?"":(ctx&&ctx[x.w])||""}).map(x=>x.w); }
 
-function kaMenu(){ CTX="ka"; sylKA();
+function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
   const count = KA.filter(k=>S.sel.has(k.tv)).length;
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
@@ -2809,8 +2854,8 @@ function hcMenu(){ CTX="hc";
   const H=S.hc; sylHC(H);
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
-  <h1 style="font-size:2.2rem">${H.parts?"Meerdere "+(H.niveau==="tl"?"onderwerpen":"contexten"):esc(H.titel)}</h1>
-  ${H.parts?`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: ${esc(H.titel)}. Je oefent de stof door elkaar.</p>`:`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a>`:""}</p>`}
+  <h1 style="font-size:2.2rem">${H.parts?(H.parts.some(i=>KAPART[i])?"Tijdvakken en contexten":"Meerdere "+(H.niveau==="tl"?"onderwerpen":"contexten")):esc(H.titel)}</h1>
+  ${H.parts?`<p class="lead">${H.parts.some(i=>KAPART[i])?`${esc(H.titel)}. Je oefent de contexten door elkaar, met de tijdvakken en kenmerkende aspecten als achtergrond.`:`${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: ${esc(H.titel)}. Je oefent de stof door elkaar.`}</p>`:`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"geschiedenisvandaag.nu"}</a>`:""}</p>`}
   <section class="section">
     <h2>${H.niveau==="tl"?"Welke onderdelen?":"Welke deelvragen?"}</h2>
     <div class="list">${H.dv.map(d=>(H.parts&&(d.nr===1||H.dv[d.nr-2].src!==d.src)?`<p class="dvgrp">${esc(d.srcT)}</p>`:"")+`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
@@ -2937,7 +2982,7 @@ function lnkSheet(W,D){
 /* per onderwerp de gekozen onderdelen (bij gecombineerde stof meerdere onderwerpen) */
 function leesGroups(H){
   if(!H.parts) return [{P:H,dvs:H.dv.filter(d=>S.dvSel.has(d.nr)),nrOf:d=>d.nr}];
-  return H.parts.map(id=>{ const P=HCDATA[id], mine=H.dv.filter(d=>d.src===id&&S.dvSel.has(d.nr));
+  return H.parts.map(id=>{ const P=partOf(id), mine=H.dv.filter(d=>d.src===id&&S.dvSel.has(d.nr));
     return {P,dvs:mine.map(d=>P.dv[d.srcNr-1]),nrOf:d=>(H.dv.find(x=>x.src===id&&x.srcNr===d.nr)||d).nr}; }).filter(g=>g.dvs.length);
 }
 function tlArticles(H,dvs,D,nrOf){
@@ -2982,7 +3027,7 @@ function tlArticles(H,dvs,D,nrOf){
 }
 const leesMeer=P=>P.url?`<p><a href="${P.url}" target="_blank" rel="noopener">Meer uitleg op ${P.urlLabel||"geschiedenisvandaag.nu"}</a></p>`:"";
 function leesBuild(H,art){ const items=[]; let html="";
-  leesGroups(H).forEach(g=>{ const D=lnkDict(g.P,items.length); items.push(...D.items); html+=(H.parts?`<h2 class="lgrp">${esc(g.P.titel)}</h2>`:"")+art(g,D)+leesMeer(g.P); });
+  leesGroups(H).forEach(g=>{ const D=lnkDict(g.P,items.length); items.push(...D.items); html+=(H.parts?`<h2 class="lgrp">${esc(g.P.grp||g.P.titel)}</h2>`:"")+art(g,D)+leesMeer(g.P); });
   return {items,html}; }
 function tlLees(){
   const H=S.hc, L=leesBuild(H,(g,D)=>tlArticles(g.P,g.dvs,D,g.nrOf));
@@ -2999,7 +3044,7 @@ function tlLees(){
   app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
-function hcArticles(H,dvs,D){ return dvs.map(d=>`<article class="dv" style="--c:${col(d.c)}">
+function hcArticles(H,dvs,D){ return dvs.map(d=>d.kaPart?kaArticle(d,D):`<article class="dv" style="--c:${col(d.c)}">
     <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
     ${d.ka.length?`<p class="kas">${d.ka.map(n=>`KA ${n}: ${lnkHtml(esc(kaOf(n).t),D)}`).join("<br>")}</p>`:d.sub?`<p class="kas">${esc(d.sub)}</p>`:""}
     ${d.tekst.map(p=>`<p>${lnkHtml(esc(p),D)}</p>`).join("")}
@@ -3377,7 +3422,7 @@ function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
   const BX=H.bext||BEXT, LK=H.lijkt||LIJKT;
   const qs=pickRound(hk("begrip"),pool,b=>b.b).map(b=>{
-    const like=((H===STEDEN||H===BRITS)?(LK[b.b]||[]).map(n=>H.begrippen.find(x=>x.b===n)).filter(Boolean):[]).slice(0,2);
+    const like=((H===STEDEN||H===BRITS||H.parts)?(LK[b.b]||[]).map(n=>H.begrippen.find(x=>x.b===n)).filter(Boolean):[]).slice(0,2);
     const others=[...like,...simBegrippen(b,H.begrippen.filter(x=>!like.includes(x)),3-like.length)];
     return {id:b.b,extra:BX[b.b]?.[0],hint:BX[b.b]?.[1],ask:"Wat betekent dit begrip?",q:b.b,c:H.dv[b.dv-1].c,right:b.b,
       opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
@@ -4617,7 +4662,8 @@ function exSubMenu(list,title,back,again){
 function kaExam(){ SYL=null; const l=kaExamList(); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken.`,kaMenu,kaExam); }
 function hcExamList(all){
   const H=S.hc; if(!H||!H.id) return [];
-  const base=exData().qs.filter(q=>(H.parts?H.parts.map(i=>HCDATA[i].examHc||i):[H.examHc||H.id]).some(x=>q.hc.includes(x))&&exLvl(q)===(H.niveau||"vwo")); if(all) return base;
+  const ids=H.parts||[H.id], hcIds=ids.filter(i=>HCDATA[i]).map(i=>HCDATA[i].examHc||i), kaTv=ids.filter(i=>KAPART[i]).flatMap(i=>KAPART[i].dv.map(d=>d.c));
+  const base=exData().qs.filter(q=>(hcIds.some(x=>q.hc.includes(x))&&exLvl(q)===(H.niveau||"vwo"))||(kaTv.length&&exOfNiv(q)&&q.tv.some(t=>kaTv.includes(t)))); if(all) return base;
   const tvs=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c);
   const sub=base.filter(q=>!q.tv.length||q.tv.some(t=>tvs.includes(t)));
   return sub.length?sub:base;
@@ -5621,7 +5667,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115125716"; let last=0, shown=false;
+  const BUILD="20261115131003"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
