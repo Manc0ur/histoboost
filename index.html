@@ -3058,7 +3058,7 @@ function kqFill(gens,n){
 function klasQuiz({scope,back}){
   const gens=()=>scope==="ka"?[...kaMixGens(),mcGensKA()[4]]:hcMixGens();
   const lsG=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:+v; }catch(e){ return d; } }, lsS=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
-  let N=lsG("kqN",15), T=lsG("kqT",30);
+  let N=lsG("kqN",15), T=lsG("kqT",30); if(![10,15,20].includes(N)) N=15; if(![0,10,20,30].includes(T)) T=30;
   const leave=()=>{ if(kqStop) kqStop(); back(); };
   function setup(msg){
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
@@ -3067,7 +3067,7 @@ function klasQuiz({scope,back}){
     <div class="kqlegend" aria-label="Kleuren en nummers">${KQ_COL.map(([n,c,bg,fg,v])=>`<span style="background:${bg};color:${fg}"><b>${n}</b><span>${c}<small>of ${v}</small></span></span>`).join("")}</div>
     <div class="kqset">
       <h3>Aantal vragen</h3><div class="chips">${[10,15,20].map(n=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${N===n}" data-n="${n}">${n} vragen</button>`).join("")}</div>
-      <h3>Bedenktijd per vraag</h3><div class="chips">${[[0,"Geen timer"],[20,"20 seconden"],[30,"30 seconden"],[60,"1 minuut"]].map(([t,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${T===t}" data-t="${t}">${l}</button>`).join("")}</div>
+      <h3>Bedenktijd per vraag</h3><div class="chips">${[[0,"Geen timer"],[10,"10 seconden"],[20,"20 seconden"],[30,"30 seconden"]].map(([t,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${T===t}" data-t="${t}">${l}</button>`).join("")}</div>
     </div>
     ${msg?`<p class="note" style="margin-top:1rem">${msg}</p>`:""}
     <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start de Klas Quiz</button></div>
@@ -5543,7 +5543,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115122420"; let last=0, shown=false;
+  const BUILD="20261115124407"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
