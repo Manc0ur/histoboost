@@ -2280,8 +2280,8 @@ function home(){ SYL=null;
     app.querySelectorAll("[data-htvper]").forEach(b=>b.setAttribute("aria-pressed",TVPER[+b.dataset.htvper][1].every(n=>tvSel.has(n))));
     const tvs=tvList(), tn=app.querySelector("#tvnames"); if(tn) tn.textContent=tvs.length?"Gekozen: "+tvs.map(n=>`${n}. ${tvOf(n).naam}`).join(" · "):"Nog geen tijdvak gekozen.";
     const ids=chosen(), g=app.querySelector("#hcgo"); g.disabled=!ids.length&&!tvs.length;
-    const tvT=tvs.length===1?`tijdvak ${tvs[0]}`:`${tvs.length} tijdvakken`, hcT=ids.length===1?HCDATA[ids[0]].titel:`${ids.length} ${word(2)}`;
-    g.textContent=!ids.length&&!tvs.length?(S.niveau==="tl"?"Kies eerst een onderwerp":"Kies eerst een tijdvak of context"):!ids.length?`Oefenen met ${tvT} ›`:!tvs.length?`Oefenen met ${hcT} ›`:`Oefenen met ${tvT} en ${hcT} ›`;
+    const nv=S.niveau==="tl"?"TL":S.niveau==="vwo"?"VWO":"HAVO"; const tvT=tvs.length===1?`tijdvak ${tvs[0]}`:`${tvs.length} tijdvakken`, hcT=ids.length===1?HCDATA[ids[0]].titel:`${ids.length} ${word(2)}`;
+    g.textContent=!ids.length&&!tvs.length?(S.niveau==="tl"?"Kies eerst een onderwerp":"Kies eerst een tijdvak of context"):!ids.length?`${nv}: Oefenen met ${tvT} ›`:!tvs.length?`${nv}: Oefenen met ${hcT} ›`:`${nv}: Oefenen met ${tvT} en ${hcT} ›`;
     hcSelSet(sel); tvSelSet(tvSel); };
   app.querySelectorAll("[data-htv]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.htv; tvSel.has(n)?tvSel.delete(n):tvSel.add(n); upd(); });
   app.querySelectorAll("[data-htvper]").forEach(b=>b.onclick=()=>{ const ns=TVPER[+b.dataset.htvper][1], all=ns.every(n=>tvSel.has(n)); ns.forEach(n=>all?tvSel.delete(n):tvSel.add(n)); upd(); });
@@ -5724,7 +5724,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115141004"; let last=0, shown=false;
+  const BUILD="20261115141117"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
