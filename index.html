@@ -4836,7 +4836,7 @@ function peSelect(pool,target){
     const first=ch.length?ch[Math.floor(Math.random()*ch.length)]:null;
     const out=first?[first]:[]; let tot=first?first.cv.max:0;
     const G={}, got={};
-    shuffle(pool.filter(x=>x!==first)).forEach(q=>{ const k=peKey(q); (G[k]=G[k]||[]).push(q); got[k]=0; });
+    shuffle(pool.filter(x=>x!==first&&!(first&&exType(x)==="Chronologie"))).forEach(q=>{ const k=peKey(q); (G[k]=G[k]||[]).push(q); got[k]=0; });
     while(tot<target){
       let cand=Object.keys(G).filter(k=>G[k].some(q=>tot+q.cv.max<=target));
       if(!cand.length) break;
@@ -6018,7 +6018,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115183859"; let last=0, shown=false;
+  const BUILD="20261115192254"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
