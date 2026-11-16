@@ -5055,7 +5055,7 @@ const exLvl = q => q.ex[0]==="h" ? "havo" : q.ex[0]==="t" ? "tl" : "vwo";
 const exOfNiv = q => exLvl(q)===exNiv();
 const exNames = () => exNiv()==="vwo" ? HCNAMES_V : exNiv()==="tl" ? HCNAMES_T : HCNAMES_H;
 const PERIODES=["Door de tijd heen","Prehistorie en oudheid","De middeleeuwen","Vroegmoderne tijd","Moderne tijd"];
-const EXF={hc:"",dv:new Set(),per:new Set(),tv:new Set(),vt:"",ex:"",open:false};
+const EXF={hc:new Set(),dv:new Map(),per:new Set(),tv:new Set(),vt:"",ex:"",open:false};
 /* Deelvragen (deelcontexten) per historische context. Het examen geeft ze niet aan, dus we leiden ze af uit de jaartallen
    in de vraag (of anders het tijdvak) en de kenmerkende aspecten. Een vraag kan bij meerdere deelvragen horen. */
 const exHcData = id => HCDATA[id==="duitsland"&&exNiv()==="havo"?"duitsland-h":id];
@@ -5101,11 +5101,11 @@ function exFresh(q){
 }
 function exFiltered(){
   const D=exData();
-  return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc||q.hc.includes(EXF.hc)||(EXF.hc==="_door"&&q.sec==="Door de tijd heen"))&&(!EXF.dv.size||(()=>{ const d=exDvOf(q,EXF.hc); return [...EXF.dv].some(n=>d.has(n)); })())&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
+  return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc.size||[...EXF.hc].some(h=>(q.hc.includes(h)||(h==="_door"&&q.sec==="Door de tijd heen"))&&(!(EXF.dv.get(h)||{size:0}).size||(()=>{ const d=exDvOf(q,h); return [...EXF.dv.get(h)].some(n=>d.has(n)); })())))&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
 }
 function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   const D=exData(), list=exFiltered(), mine=D.qs.filter(exOfNiv);
-  if(EXF.hc && !(EXF.hc in exNames())) { EXF.hc=""; EXF.dv.clear(); return exMenu(); }
+  if([...EXF.hc].some(h=>!(h in exNames()))) { EXF.hc.clear(); EXF.dv.clear(); return exMenu(); }
   if(EXF.ex && !mine.some(q=>q.ex===EXF.ex)) { EXF.ex=""; return exMenu(); }
   const exams=[...new Set(mine.map(q=>q.ex))];
   const vts=["Meerkeuze","Zonder bron","Met tekstbron","Met beeldbron","Chronologie"].filter(v=>mine.some(q=>exType(q)===v));
@@ -5117,10 +5117,11 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <p class="lead">Echte vragen uit de centrale examens ${isTL?"gl/tl":exNiv()} van 2022 tot en met 2025, met bronnen en correctievoorschrift. Schrijf je antwoord op, kijk het na met het correctievoorschrift en geef jezelf punten.</p>
   <p style="color:var(--muted);font-size:.93rem">Je hebt ${done} van de ${mine.length} vragen nagekeken.</p>
   <section class="section"><h2>${isTL?"Onderwerp":"Historische context"}</h2>
-    <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${EXF.hc===k}" data-hc="${k}">${esc(v)}</button>`).join("")}</div></section>
-  ${(()=>{ const dvs=EXF.hc?exDvs(EXF.hc):[]; if(!dvs.length) return ""; return `<section class="section"><h2>Deelcontext</h2>
-    <div class="list" role="group" aria-label="Deelcontexten">${dvs.map(d=>{ const on=EXF.dv.has(d.nr); return `<button class="item" aria-pressed="${on}" data-edv="${d.nr}"><span class="txt"><strong>Deelcontext ${d.nr} · ${esc(d.periode)}</strong><span class="sub">${esc(d.vraag)}</span></span><span class="tag ${on?"on":""}">${on?"✓ gekozen":"kies"}</span></button>`; }).join("")}</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Niets gekozen betekent alle deelcontexten.</p></section>`; })()}
+    <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${k===""?!EXF.hc.size:EXF.hc.has(k)}" data-hc="${k}">${esc(v)}</button>`).join("")}</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Je kunt er meer dan één kiezen. Niets gekozen betekent alle vragen.</p></section>
+  ${Object.keys(exNames()).filter(h=>EXF.hc.has(h)).map(h=>{ const dvs=exDvs(h); if(!dvs.length) return ""; const sel=EXF.dv.get(h)||new Set(); return `<section class="section"><h2>Deelcontext${EXF.hc.size>1?" · "+esc(exNames()[h]):""}</h2>
+    <div class="list" role="group" aria-label="Deelcontexten ${esc(exNames()[h])}">${dvs.map(d=>{ const on=sel.has(d.nr); return `<button class="item" aria-pressed="${on}" data-edv="${d.nr}" data-edvh="${h}"><span class="txt"><strong>Deelcontext ${d.nr} · ${esc(d.periode)}</strong><span class="sub">${esc(d.vraag)}</span></span><span class="tag ${on?"on":""}">${on?"✓ gekozen":"kies"}</span></button>`; }).join("")}</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.5rem">Niets gekozen betekent alle deelcontexten van deze context.</p></section>`; }).join("")}
   ${isTL?"":`<section class="section"><h2>Periode</h2>
     <div class="chips">${PERIODES.filter(p=>mine.some(q=>q.sec===p)).map(p=>`<button class="chip" style="--c:var(--t6)" aria-pressed="${EXF.per.has(p)}" data-per="${esc(p)}">${esc(p)}</button>`).join("")}</div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Niets gekozen betekent alle perioden.</p></section>
@@ -5141,8 +5142,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
   </section>`;
   app.querySelector("#back").onclick=home;
-  app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{EXF.hc=b.dataset.hc;EXF.dv.clear();exMenu();});
-  app.querySelectorAll("[data-edv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.edv;EXF.dv.has(n)?EXF.dv.delete(n):EXF.dv.add(n);exMenu();});
+  app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{const k=b.dataset.hc; if(!k){EXF.hc.clear();EXF.dv.clear();} else if(EXF.hc.has(k)){EXF.hc.delete(k);EXF.dv.delete(k);} else EXF.hc.add(k); exMenu();});
+  app.querySelectorAll("[data-edv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.edv,h=b.dataset.edvh; if(!EXF.dv.has(h)) EXF.dv.set(h,new Set()); const t=EXF.dv.get(h); t.has(n)?t.delete(n):t.add(n); exMenu();});
   app.querySelectorAll("[data-etv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.etv;EXF.tv.has(n)?EXF.tv.delete(n):EXF.tv.add(n);exMenu();});
   app.querySelectorAll("[data-per]").forEach(b=>b.onclick=()=>{const p=b.dataset.per;EXF.per.has(p)?EXF.per.delete(p):EXF.per.add(p);exMenu();});
   app.querySelector("#vt").onchange=e=>{EXF.vt=e.target.value;exMenu();};
@@ -6077,7 +6078,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261115222522"; let last=0, shown=false;
+  const BUILD="20261116073729"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
