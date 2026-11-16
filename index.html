@@ -2947,7 +2947,7 @@ function hcUitleg(){
   let last=0, map="";
   for(const x of ps){ if(x.hf!==last){ last=x.hf; map+=`<span class="lzsep">Hoofdstuk ${x.hf}: ${esc(x.hoofd)}</span>`; } map+=`<button data-n="${x.n}" class="${done.has(x.n)?"done":""} ${!all&&x===next?"next":""}" title="Deel ${x.n}">${done.has(x.n)?"✓ ":""}${x.n}</button>`; }
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-  <h2><span class="lzbook">📖</span> Lees en beantwoord</h2>
+  <h2><span class="lzbook">📖</span> Lees en beantwoord (test)</h2>
   <p class="lead">De tekst komt van <strong>${esc(ps[0].bron)}</strong>: ‘${esc(ps[0].titel)}’. Je leest de tekst deel voor deel, in de goede volgorde. Na elk deel beantwoord je vragen. Klopt je antwoord niet, dan krijg je een hint uit de tekst.</p>
   <p class="lzsrc">${ps.length} delen. Kies een deel, of ga verder waar je gebleven was.</p>
   <div class="lzmap">${map}</div>
@@ -2985,7 +2985,7 @@ function lzVragen(pr,ps){
   const nx=ps.find(x=>x.n>pr.n);
   mcEx({title:"📖 "+pos,qs,back:hcUitleg,again:()=>nx?lzDeel(nx,ps):hcUitleg()});
 }
-function hcModes(H){ return [...(lzPass(H).length?[["uitleg","📖 Lees en beantwoord","Lees de tekst van geschiedenisvandaag.nu deel voor deel, op volgorde, en beantwoord vragen met hints als het niet klopt"]]:[]),["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
+function hcModes(H){ return [...(lzPass(H).length?[["uitleg","📖 Lees en beantwoord (test)","Lees de tekst van geschiedenisvandaag.nu deel voor deel, op volgorde, en beantwoord vragen met hints als het niet klopt"]]:[]),["lees","Lees de examenstof",H.niveau==="tl"?"De stofomschrijving per onderdeel":"De syllabustekst per deelvraag, met de kenmerkende aspecten"],
          ["flash","Flashcards","Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist"],
          ["koppelb","Begrippen koppelen","Sleep de juiste omschrijving naar elk begrip"],
          ["galgje","Galgje","Raad het begrip, de persoon of de gebeurtenis letter voor letter"],
@@ -6183,7 +6183,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116133732"; let last=0, shown=false;
+  const BUILD="20261116133916"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
