@@ -3880,7 +3880,6 @@ const MAP_HC = [
  [2,"In deze stad begon Geert Grote de Moderne Devotie.","Deventer",52.25,6.16,15,"Deventer ligt in Overijssel, aan de IJssel."],
  [2,"Deze stad nam in de 15e en 16e eeuw de centrale positie van Brugge over, en verloor die in 1585.","Antwerpen",51.22,4.40,15,"Antwerpen ligt aan de Schelde, die toegankelijk was voor grote zeeschepen."],
  [2,"Filips de Goede stelde in deze stad de Rekenkamer in voor de centrale belastingen.","Brussel",50.85,4.35,15,"Brussel ligt in Brabant, tussen Antwerpen en Henegouwen."],
- [2,"In deze stad zetelde de raad van juristen die Filips de Goede instelde.","Mechelen",51.03,4.48,15,"Mechelen ligt tussen Antwerpen en Brussel."],
  [2,"De Watergeuzen namen deze stad in 1572 in: het eerste succes van de opstand.","Den Briel",51.90,4.16,15,"Den Briel ligt op Voorne, aan de monding van de Maas."],
  [2,"In deze stad sloten de noordelijke gewesten in 1579 een unie.","Utrecht",52.09,5.12,15,"De Unie van Utrecht werd in de stad Utrecht gesloten."],
  [2,"De zuidelijke gewesten sloten in 1579 een unie in deze stad en sloten zich weer aan bij Spanje.","Atrecht (Arras)",50.29,2.78,15,"De Unie van Atrecht werd gesloten in de hoofdstad van Artesië."],
@@ -6199,7 +6198,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116154536"; let last=0, shown=false;
+  const BUILD="20261116154657"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
