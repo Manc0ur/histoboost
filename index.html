@@ -4967,7 +4967,29 @@ let PE=null;
 const peFmtMin=m=>(Number.isInteger(m)?String(m):String(m).replace(".",","))+" minuten";
 const peClock=sec=>{ const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), x=sec%60; return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(x).padStart(2,"0"); };
 const peLeft=()=>Math.max(0,Math.ceil((PE.end-Date.now())/1000));
-function pePool(scope){ return scope==="ex"?exFiltered():scope==="ka"?kaExamList():hcExamList(false); }
+/* Zijn er historische contexten én tijdvakken/perioden gekozen? Dan is peCls een functie die elke vraag indeelt:
+   "H" = vraag over een gekozen historische context, "T" = tijdvakvraag (geen context), "X" = vraag over een andere context in de gekozen tijdvakken.
+   Het proefexamen kiest dan 2 contextvragen per tijdvakvraag, zoals op het echte CE (60-70% contextvragen). */
+function peCls(scope){
+  if(scope==="ex"){
+    if(exNiv()==="tl"||!EXF.hc.size||!(EXF.per.size||EXF.tv.size)) return null;
+    return q=>exHcOk(q)?"H":q.hc.length?"X":"T";
+  }
+  if(scope==="hc"){
+    const H=S.hc; if(!H||!H.parts||!H.parts.some(i=>KAPART[i])||!H.parts.some(i=>HCDATA[i])) return null;
+    const hcIds=H.parts.filter(i=>HCDATA[i]).map(i=>HCDATA[i].examHc||i), niv=H.niveau||"vwo";
+    return q=>hcIds.some(x=>q.hc.includes(x))&&exLvl(q)===niv?"H":q.hc.length?"X":"T";
+  }
+  return null;
+}
+function pePool(scope){
+  if(scope==="ex"){
+    if(!peCls("ex")) return exFiltered();
+    /* Contextvragen (los van tijdvak/periode) plus vragen uit de gekozen tijdvakken/perioden. */
+    return exData().qs.filter(q=>exOfNiv(q)&&exRestOk(q)&&(exHcOk(q)||exTvOk(q)));
+  }
+  return scope==="ka"?kaExamList():hcExamList(false);
+}
 function peTvOf(q){ if(q.tv&&q.tv.length) return q.tv; const o=Object.keys(HCNAMES), r=Math.min(...(q.hc||[]).map(h=>o.indexOf(h)).filter(i=>i>=0)); return [isFinite(r)?r:99]; }
 function peOrder(list,first){
   return list.slice().sort((a,b)=>{
@@ -4977,24 +4999,31 @@ function peOrder(list,first){
   });
 }
 function peKey(q){ const t=peTvOf(q), sc=(typeof EXSCOPE!=="undefined"&&EXSCOPE&&EXSCOPE.size)?[...EXSCOPE].map(Number):[], i=t.filter(x=>sc.includes(x)); return Math.min(...(i.length?i:t)); }
-function peSelect(pool,target){
+function peSelect(pool,target,cls){
+  cls=cls||(()=>"H");
+  const mixed=pool.some(q=>cls(q)==="H")&&pool.some(q=>cls(q)!=="H");
+  const dev=(h,n)=>n?Math.abs(h/n-2/3):1;
   let best=null;
   const ch=pool.filter(q=>exType(q)==="Chronologie"&&q.cv.max<=target);
   for(let t=0;t<80;t++){
     const first=ch.length?ch[Math.floor(Math.random()*ch.length)]:null;
-    const out=first?[first]:[]; let tot=first?first.cv.max:0;
-    const G={}, got={};
-    shuffle(pool.filter(x=>x!==first&&!(first&&exType(x)==="Chronologie"))).forEach(q=>{ const k=peKey(q); (G[k]=G[k]||[]).push(q); got[k]=0; });
+    const out=first?[first]:[]; let tot=first?first.cv.max:0, nH=first&&cls(first)==="H"?1:0, nT=first&&cls(first)!=="H"?1:0;
+    const G={H:{},T:{},X:{}}, got={};
+    shuffle(pool.filter(x=>x!==first&&!(first&&exType(x)==="Chronologie"))).forEach(q=>{ const c=cls(q), k=peKey(q); (G[c][k]=G[c][k]||[]).push(q); got[k]=0; });
+    const fits=c=>Object.keys(G[c]).filter(k=>G[c][k].some(q=>tot+q.cv.max<=target));
     while(tot<target){
-      let cand=Object.keys(G).filter(k=>G[k].some(q=>tot+q.cv.max<=target));
-      if(!cand.length) break;
+      /* Verhouding 2:1. Zijn er geen vragen (meer) van de gewenste soort, dan nemen we de andere soort. */
+      const order=!mixed||nH<2*nT?["H","T","X"]:["T","X","H"];
+      const c=order.find(c=>fits(c).length); if(!c) break;
+      let cand=fits(c);
       const m=Math.min(...cand.map(k=>got[k])); cand=cand.filter(k=>got[k]===m);
-      const k=cand[Math.floor(Math.random()*cand.length)], ix=G[k].findIndex(q=>tot+q.cv.max<=target), q=G[k].splice(ix,1)[0];
-      out.push(q); tot+=q.cv.max; got[k]+=q.cv.max;
-      if(!G[k].length) delete G[k];
+      const k=cand[Math.floor(Math.random()*cand.length)], ix=G[c][k].findIndex(q=>tot+q.cv.max<=target), q=G[c][k].splice(ix,1)[0];
+      out.push(q); tot+=q.cv.max; got[k]+=q.cv.max; if(c==="H") nH++; else nT++;
+      if(!G[c][k].length) delete G[c][k];
     }
-    if(!best||tot>best.tot||(tot===best.tot&&out.length>best.out.length)) best={out,tot,first};
-    if(tot===target) break;
+    const d=mixed?dev(nH,out.length):0;
+    if(!best||tot>best.tot||(tot===best.tot&&(d<best.d-1e-9||(Math.abs(d-best.d)<1e-9&&out.length>best.out.length)))) best={out,tot,first,d};
+    if(tot===target&&d<=0.08) break;
   }
   return peOrder(best.out,best.first);
 }
@@ -5009,7 +5038,7 @@ function proefMenu(scope){
   const def=sizes.includes(30)?30:sizes[sizes.length-1];
   app.innerHTML=`<button class="back" id="back">‹ Terug naar ${scope==="ex"?"examenvragen":"oefeningen"}</button>
   <h2>Proefexamen</h2>
-  <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat de tijdvakken (of hoofdstukken) ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste. Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
+  <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat de tijdvakken (of hoofdstukken) ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste.${peCls(scope)?` Je hebt historische contexten én ${scope==="ex"?"tijdvakken of perioden":"tijdvakken"} gekozen. Net als op het echte examen gaan ongeveer twee op de drie vragen over de historische contexten: voor elke vraag over de tijdvakken krijg je twee contextvragen (zolang die er zijn).`:""} Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
   <section class="section"><h3>Hoe lang?</h3>
    <div class="row" style="margin-top:.6rem"><label>Aantal punten <select id="pn" class="sel">${sizes.map(n=>`<option value="${n}" ${n===def?"selected":""}>${n} punten · ${peFmtMin(n*2.5)}${n===72?" (zo lang als het echte examen)":""}${n===tot&&tot<=72&&![10,20,30,40,50,60,72].includes(n)?" (alle vragen)":""}</option>`).join("")}</select></label></div>
    <p style="color:var(--muted);margin:.5rem 0 0">Zoals op het examen: <strong>1 punt = 2,5 minuut</strong>, dus 2 punten = 5 minuten. Er zijn ${pool.length} vragen beschikbaar (${tot} punten).</p>
@@ -5017,7 +5046,7 @@ function proefMenu(scope){
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start het proefexamen</button></div>
   </section>`;
   app.querySelector("#back").onclick=back;
-  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value); if(!list.length) return; peStart(scope,list,app.querySelector("#pt").checked); };
+  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope)); if(!list.length) return; peStart(scope,list,app.querySelector("#pt").checked); };
   window.scrollTo(0,0);
 }
 function peStart(scope,list,timed){
@@ -5214,9 +5243,11 @@ function exFresh(q){
   exSave(q, done?{done:true,last:old.score??old.last}:{});
   try{ localStorage.removeItem(`exh:${q.ex}:${q.nr}`); }catch(e){}
 }
+const exHcOk=q=>!EXF.hc.size||[...EXF.hc].some(h=>(q.hc.includes(h)||(h==="_door"&&q.sec==="Door de tijd heen"))&&(!(EXF.dv.get(h)||{size:0}).size||(()=>{ const d=exDvOf(q,h); return [...EXF.dv.get(h)].some(n=>d.has(n)); })()));
+const exTvOk=q=>(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)));
+const exRestOk=q=>(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q));
 function exFiltered(){
-  const D=exData();
-  return D.qs.filter(q=>exOfNiv(q)&&(!EXF.hc.size||[...EXF.hc].some(h=>(q.hc.includes(h)||(h==="_door"&&q.sec==="Door de tijd heen"))&&(!(EXF.dv.get(h)||{size:0}).size||(()=>{ const d=exDvOf(q,h); return [...EXF.dv.get(h)].some(n=>d.has(n)); })())))&&(!EXF.per.size||EXF.per.has(q.sec))&&(!EXF.tv.size||q.tv.some(t=>EXF.tv.has(t)))&&(!EXF.vt||exType(q)===EXF.vt)&&(!EXF.ex||q.ex===EXF.ex)&&(!EXF.open||!exDoneQ(q)));
+  return exData().qs.filter(q=>exOfNiv(q)&&exHcOk(q)&&exTvOk(q)&&exRestOk(q));
 }
 function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   const D=exData(), list=exFiltered(), mine=D.qs.filter(exOfNiv);
@@ -5252,8 +5283,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <section class="section">
     <p><strong>${list.length} ${list.length===1?"vraag":"vragen"}</strong> passen bij je keuze.</p>
     <div class="row"><button class="btn" id="rand" ${list.length?"":"disabled"}>Start in willekeurige volgorde</button><button class="btn ghost" id="seq" ${list.length?"":"disabled"}>Start in examenvolgorde</button></div>
-    <div class="row" style="margin-top:.8rem"><button class="btn ghost" id="pex" ${list.length?"":"disabled"}>Maak een proefexamen met deze selectie</button></div>
-    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Een proefexamen met een timer: vragen uit je selectie, op volgorde van tijd, zoals op het examen. Je kijkt pas na het inleveren na.</p>
+    <div class="row" style="margin-top:.8rem"><button class="btn ghost" id="pex" ${pePool("ex").length?"":"disabled"}>Maak een proefexamen met deze selectie</button></div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Een proefexamen met een timer: vragen uit je selectie, op volgorde van tijd, zoals op het examen. Je kijkt pas na het inleveren na.${peCls("ex")?" Kies je historische contexten én tijdvakken of perioden, dan bestaat het proefexamen voor ongeveer twee derde uit vragen over je contexten en voor een derde uit vragen over je tijdvakken of perioden, zoals op het echte examen.":""}</p>
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
   </section>`;
   app.querySelector("#back").onclick=home;
@@ -6198,7 +6229,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116190745"; let last=0, shown=false;
+  const BUILD="20261116192504"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
