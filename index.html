@@ -643,8 +643,9 @@ const STEDEN = {
    [2,"Bedelorden","Kloosterorden die naar het voorbeeld van Franciscus van Assisi armoede en bedelen tot ideaal maakten."],
    [2,"Centralisatie","Regeren vanuit één punt met ambtenaren, zoals de Bourgondische hertogen en later Karel V probeerden."],
    [2,"Landvoogdes","Vrouw die namens de koning een gebied bestuurt, zoals Margaretha van Parma in de Nederlanden namens Filips II."],
-   [2,"Smeekschrift der Edelen","Verzoekschrift van edelen aan landvoogdes Margaretha van Parma in april 1566, met de vraag om de vervolging van protestanten te matigen."],
+   [2,"Smeekschrift der Edelen","Verzoekschrift van edelen aan landvoogdes Margaretha van Parma in april 1566, met de vraag om de vervolging van calvinistische protestanten te verminderen."],
    [2,"Beeldenstorm","Vernielingen in kerken vanaf augustus 1566, na hagenpreken van radicale predikanten."],
+   [2,"Raad van Beroerten","Opsporingsrechtbank om Beeldenstormers te bestraffen, opgericht door Alva."],
    [2,"Confederatie","Statenbond waarin de gewesten veel eigen bevoegdheden hadden en het overkoepelend bestuur, de Staten-Generaal, zwak was."],
    [3,"Regenten","Rijke burgers die in de Republiek steden en gewesten bestuurden."],
    [3,"Stadhouder","Opperbevelhebber van de Republiek, meestal een Oranje, die de Staten-Generaal moest gehoorzamen."],
@@ -661,6 +662,7 @@ const STEDEN = {
   tijdlijn:[
    [1,1302,"Vlaamse ambachtslieden en boeren verslaan de ridders van Filips IV in de Guldensporenslag"],
    [2,1566,"Edelen bieden het Smeekschrift der Edelen aan landvoogdes Margaretha van Parma; hagenpreken leiden tot de Beeldenstorm"],
+   [2,1567,"Alva komt naar de Nederlanden en richt de Raad van Beroerten op om Beeldenstormers te bestraffen"],
    [2,1572,"De inname van Den Briel is het eerste succes van de opstand"],
    [2,1576,"Na de Spaanse Furie sluiten de gewesten de Pacificatie van Gent"],
    [2,1579,"De noordelijke gewesten vormen de Unie van Utrecht"],
@@ -773,7 +775,8 @@ const BEXT = {
 "Centralisatie":["Filips de Goede stelde de Rekenkamer in Brussel, een raad van juristen in Mechelen en de Staten-Generaal in. Karel V zette dat door en bepaalde zelf de benoeming van schepenen.","Het tegenovergestelde van particularisme."],
 "Beeldenstorm":["Na de Beeldenstorm kwam de hertog van Alva naar de Nederlanden. Zijn Raad van Beroerten veroordeelde meer dan elfduizend opstandelingen.","Dit gebeurde in 1566 in kerken."],
 "Landvoogdes":["Margaretha van Parma was landvoogdes van de Nederlanden. Zij bestuurde de gewesten namens Filips II, die zelf in Spanje woonde.","Zij was de vertegenwoordiger van de koning."],
-"Smeekschrift der Edelen":["De edelen vroegen de landvoogdes om minder streng op te treden tegen protestanten. Kort daarna volgden de hagenpreken en de Beeldenstorm.","Dit gebeurde in 1566, vóór de Beeldenstorm."],
+"Smeekschrift der Edelen":["De edelen vroegen de landvoogdes om de vervolging van calvinistische protestanten te verminderen. Het Smeekschrift ging vooraf aan de Beeldenstorm.","Dit gebeurde in 1566, vóór de Beeldenstorm."],
+"Raad van Beroerten":["Alva richtte de Raad van Beroerten op om Beeldenstormers op te sporen en te straffen. De raad veroordeelde duizenden mensen.","Alva richtte deze rechtbank op nadat hij in 1567 naar de Nederlanden was gekomen."],
 "Confederatie":["De Republiek der Zeven Verenigde Nederlanden (1588) was een confederatie. De Staten-Generaal ging over buitenlandse zaken en oorlog; de gewesten regelden de rest.","Een verbond van gewesten met veel eigen macht."],
 "Regenten":["Regenten zagen particularisme en gewetensvrijheid als voorwaarden voor welvaart.","Wie bestuurden de steden in de Republiek?"],
 "Stadhouder":["Tot 1584 was Willem van Oranje stadhouder. Na de dood van Willem II besloten de staatsgezinden geen nieuwe stadhouder aan te stellen.","Denk aan het huis Oranje-Nassau."],
@@ -5726,7 +5729,8 @@ const WBI = WBI_RAW.map((a,i)=>({id:"p"+i,n:a[0],tv:a[1],hc:Object.fromEntries(a
   BEGR.forEach(([t,b,dd])=>{ let hit=0; [t,...(t==="duitsland"?["duitsland-h"]:[])].forEach(id=>{ const x=HCDATA[id]&&HCDATA[id].begrippen.find(y=>y.b===b); if(x){ x.d=dd; hit++; } }); if(!hit) miss.push("begrip "+t+" "+b); });
   EVU.forEach(([t,j,u])=>{ if(t==="KA"){ const e=KA_TL.find(e=>e.j===j); if(e&&e.u) e.u=u; else if(TLX[j]) TLX[j][0]=u; else miss.push("KA "+j); } else { const X=HCDATA[t].tlx||TLX; if(X[j]) X[j][0]=u; else miss.push("ev "+t+" "+j); } });
   { const S0=HCDATA.steden; if(S0&&!S0.tlx){ S0.tlx={}; Object.keys(TLX).forEach(k=>S0.tlx[k]=[TLX[k][0],TLX[k][1]]); }
-    if(S0&&S0.tlx){ S0.tlx[1566]=["Edelen boden landvoogdes Margaretha van Parma het Smeekschrift aan en vroegen haar om minder streng op te treden tegen protestanten. Daarna hielden radicale predikanten hagenpreken en vernielden protestanten en profiteurs kerken. Filips II stuurde daarop Alva.","Dit gebeurde vlak voor de komst van Alva."];
+    if(S0&&S0.tlx){ S0.tlx[1566]=["Edelen boden landvoogdes Margaretha van Parma het Smeekschrift aan en vroegen haar om de vervolging van calvinistische protestanten te verminderen. Daarna hielden radicale predikanten hagenpreken en vernielden protestanten en profiteurs kerken. Filips II stuurde daarop Alva.","Dit gebeurde vlak voor de komst van Alva."];
+      S0.tlx[1567]=["Alva kwam in opdracht van Filips II naar de Nederlanden. Hij richtte de Raad van Beroerten op, een rechtbank die Beeldenstormers moest opsporen en straffen.","Dit gebeurde een jaar na de Beeldenstorm."];
       S0.tlx[1602]=[(S0.tlx[1602]||TLX[1602]||[""])[0],"Dit is het einde van deelvraag 2 en het begin van deelvraag 3."]; } }
   window.__inhMiss=miss; })();
 /* ---------- Wie ben ik? ---------- */
@@ -6106,7 +6110,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116104201"; let last=0, shown=false;
+  const BUILD="20261116104540"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
