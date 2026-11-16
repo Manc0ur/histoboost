@@ -454,6 +454,9 @@ body.kqon{overflow:hidden}
 .kqgo{background:#FFC400;color:#16233A;border:0;border-radius:10px;font:inherit;font-weight:800;font-size:clamp(1rem,.8vw + 1vh,1.6rem);padding:.65em 1.4em;cursor:pointer;box-shadow:0 4px 0 #B88B00}
 .kqup{align-self:center;background:#FFC400;color:#16233A;font-weight:800;border-radius:999px;padding:.3em 1.2em;font-size:clamp(1.1rem,1vw + 1.3vh,2rem);animation:kqpulse 1s ease-in-out infinite alternate}
 @keyframes kqpulse{to{transform:scale(1.06)}}
+.kqopts{position:relative}
+.kqupwrap{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;justify-content:center;pointer-events:none;z-index:5}
+.kqupwrap .kqup{box-shadow:0 6px 22px rgba(0,0,0,.45);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.kqup{animation:none}.kqo{transition:none}}
 .kqend{background:#fff;color:#16233A;border-radius:16px;padding:clamp(1rem,3vh,2rem) clamp(1rem,3vw,2.5rem)}
 .kqend h2{font-family:"Bricolage Grotesque",sans-serif;font-size:clamp(1.6rem,2vw + 2vh,3rem);margin:0 0 .5rem}
@@ -3423,7 +3426,7 @@ function klasQuiz({scope,back}){
         let left=T; const t=ov.querySelector("#kqtime"), bar=ov.querySelector("#kqbar");
         requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition=`width ${T}s linear`; bar.style.width="0%"; }));
         iv=setInterval(()=>{ left--; t.textContent=Math.max(0,left);
-          if(left<=0){ clearInterval(iv); t.textContent="Tijd!"; t.classList.add("up"); const s=ov.querySelector("#kqupslot"); if(s) s.outerHTML=`<span class="kqup">Kaartjes omhoog!</span>`; } },1000);
+          if(left<=0){ clearInterval(iv); t.textContent="Tijd!"; t.classList.add("up"); const g=ov.querySelector(".kqopts"); if(g) g.insertAdjacentHTML("beforeend",`<div class="kqupwrap"><span class="kqup">Antwoorden omhoog!</span></div>`); } },1000);
       }
     }
     draw();
@@ -6190,7 +6193,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116140211"; let last=0, shown=false;
+  const BUILD="20261116150926"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
