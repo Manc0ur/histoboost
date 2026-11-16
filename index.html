@@ -3011,7 +3011,7 @@ function hcModes(H){ return [...(lzPass(H).length?[["uitleg","Lees en beantwoord
          ["gk","Gatenkaas","Sleep begrippen, personen en gebeurtenissen naar de juiste plek in een tekst"],
          ["quiz","Quiz","Allerlei oefeningen door elkaar: begrippen, "+(H.koppel.length?"kenmerkende aspecten, ":"")+"jaartallen, plaatsen, oorzaak en gevolg en gatenkaas"],
          ["klas","Klas Quiz","Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op"],
-         ...(hcExamList(true).length?[["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.parts?(H.niveau==="tl"?"deze onderwerpen":"deze contexten"):H.niveau==="tl"?"dit onderwerp":"deze context"} (${hcExamList(true).length} vragen)`],["proef","Proefexamen",PESUB]]:[])]
+         ...(hcExamList(true).length?[["exam","Examenvragen",`Echte vragen uit de centrale examens ${H.niveau==="tl"?"gl/tl":H.niveau||"vwo"} over ${H.parts?(H.niveau==="tl"?"deze onderwerpen":"deze contexten"):H.niveau==="tl"?"dit onderwerp":"deze context"} (${(()=>{ const t=hcExamList(true).length, n=S.dvSel.size&&S.dvSel.size<H.dv.length?hcExamList(false).length:t; return n<t?`${n} vragen bij je ${H.niveau==="tl"?"gekozen onderdelen":"gekozen deelvragen"}, ${t} in totaal`:`${t} vragen`; })()})`],["proef","Proefexamen",PESUB]]:[])]
         .filter(([m])=>m!=="koppel"||H.koppel.length); }
 function hcCount(id){ const keep=S.hc; S.hc=HCDATA[id]; const n=hcModes(S.hc).length; S.hc=keep; return n; }
 function hcWhy(H,m){
@@ -6190,7 +6190,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116135743"; let last=0, shown=false;
+  const BUILD="20261116140211"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
