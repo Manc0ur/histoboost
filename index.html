@@ -2714,7 +2714,9 @@ function qGat(t,c){
   // zin rond het gat, met de andere gaten ingevuld
   let txt=""; let hole=0;
   P.parts.forEach(p=>{ if(typeof p==="string") txt+=p; else if(p.g===gi){ hole=txt.length; txt+="§§§"; } else txt+=P.gaps[p.g].a; });
-  const sents=txt.split(/(?<=[.!?])\s+/); const s=sents.find(x=>x.includes("§§§"))||txt;
+  const sents=txt.split(/(?<=[.!?])\s+/); let si=sents.findIndex(x=>x.includes("§§§")); if(si<0) si=0;
+  /* zin begint met een verwijswoord (Daarna, Hij, Dit...) of is heel kort: neem de zin ervoor mee, anders weet je niet waar het over gaat */
+  let s=sents[si]||txt; if(si>0&&(/^(Daarna|Hierna|Daarop|Vervolgens|Toen|Later|Eerder|Ook|Hij|Zij|Ze|Het|Dat|Dit|Deze|Die|Daar|Hier|Daardoor|Hierdoor|Daarom|Dus|Zo|Maar|En|Of|Want|Terwijl|Intussen|Inmiddels|Tegelijk)\b/.test(s)||s.length<45)) s=sents[si-1]+" "+s;
   const own=[...new Set(g.d)].filter(a=>a!==g.a).slice(0,3);
   const ds=gkDist(g,allA,own,s,gkNear(t));
   if(ds.length<3) return null;
@@ -6197,7 +6199,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116153127"; let last=0, shown=false;
+  const BUILD="20261116153331"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
