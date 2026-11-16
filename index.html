@@ -3837,7 +3837,12 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
   const toXY=(lat,lon)=>[M.c*(M.tx+lon*RAD*M.s), M.ty-lat*RAD*M.s];
   const toLL=(x,y)=>[(M.ty-y)/(RAD*M.s), (x/M.c-M.tx)/(RAD*M.s)];
   const round=pickRound(key,items,x=>x.id,8);
-  let i=0,total=0,guess=null,checked=false,vb={x:0,y:0,w:M.W,h:M.H};
+  const startVB=()=>{ const full={x:0,y:0,w:M.W,h:M.H}; let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    items.forEach(q=>{ const pts=(q.area&&AREAS[q.area])?AREAS[q.area].flat():[[q.lon,q.lat]]; pts.forEach(([lo,la])=>{ if(typeof lo!=="number"||typeof la!=="number") return; const [x,y]=toXY(la,lo); x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y); }); });
+    if(!(x1>x0||y1>y0)) return full;
+    const w=Math.max((x1-x0)*2.2,(y1-y0)*2.2*M.W/M.H,M.W/(mapId==="nl"?2.6:5)); if(w>=M.W*.85) return full;
+    const h=w*M.H/M.W; return {w,h,x:Math.max(0,Math.min(M.W-w,(x0+x1)/2-w/2)),y:Math.max(0,Math.min(M.H-h,(y0+y1)/2-h/2))}; };
+  let i=0,total=0,guess=null,checked=false,vb=startVB();
   let val="",bc=false;
   const parseY=()=>{ const s=val.trim().toLowerCase(); const m=s.match(/^(-)?\s*(\d{1,4})\s*(v\.?\s*c\.?|v\.?\s*chr\.?)?$/); if(!m) return null; let y=+m[2]; if(m[1]||m[3]||bc) y=-y; return y; };
   const canCheck=()=>!!guess&&(!tm||parseY()!==null);
@@ -3871,7 +3876,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     if(tm&&!checked){ const inp=app.querySelector("#jaar"); const upd=()=>{ val=inp.value; const c2=app.querySelector("#check"); if(c2) c2.disabled=!canCheck(); };
       inp.addEventListener("input",upd); inp.addEventListener("keydown",e=>{ if(e.key==="Enter"&&canCheck()) check(); });
       const bx=app.querySelector("#bc"); if(bx) bx.onchange=()=>{ bc=bx.checked; upd(); }; }
-    const n=app.querySelector("#next"); if(n) n.onclick=()=>{ i++; guess=null; checked=false; val=""; bc=false; vb={x:0,y:0,w:M.W,h:M.H}; if(i<round.length){draw();window.scrollTo(0,0);} else result(); };
+    const n=app.querySelector("#next"); if(n) n.onclick=()=>{ i++; guess=null; checked=false; val=""; bc=false; vb=startVB(); if(i<round.length){draw();window.scrollTo(0,0);} else result(); };
   }
   function setVB(svg){ svg.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); renderMarks(); }
   function clampVB(){ vb.w=Math.min(M.W,Math.max(M.W/60,vb.w)); vb.h=vb.w*M.H/M.W; vb.x=Math.max(-vb.w*.25,Math.min(M.W-vb.w*.75,vb.x)); vb.y=Math.max(-vb.h*.25,Math.min(M.H-vb.h*.75,vb.y)); }
@@ -6116,7 +6121,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116125524"; let last=0, shown=false;
+  const BUILD="20261116130356"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
