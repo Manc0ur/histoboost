@@ -3482,6 +3482,24 @@ function hcGalgje(seen){
 }
 /* ---------- Feit of fictie ---------- */
 function onePart(t){ const p=String(t).split(/;\s*/).filter(x=>x&&!/^de oorlog begint$/i.test(x)); const x=p[Math.floor(Math.random()*p.length)]||t; return x.charAt(0).toUpperCase()+x.slice(1); }
+
+/* Feit of fictie: begrip + omschrijving als lopende zin */
+const BG_C=new Set(["Aristocratisering","Verstedelijking","Onderduiken","Inflatie","Gelijkschakeling","Indoctrinatie","Afschrikking","Luchtbrug","Revolutiepoging van Troelstra","Soevereiniteitsoverdracht","Gedwongen tewerkstelling","Neutraliteit","SS","Collectivisatie","Regeerakkoord","Constitutie","Stempelen","Werkverschaffing","Patriciaat","Begijnhof","Beeldenstorm","Code Napoléon","Internationaal terrorisme","Uitbreiding van de NAVO","Verzorgingsstaat ter discussie","Individualisering","Ministeriële verantwoordelijkheid","Politiek onschendbaar","Indirecte verkiezingen","Demilitarisatie","Mobilisatie","Kabinet","Vijandbeelden","Bill of Rights"]);
+const BG_CF=/^(engeland|vrachtvliegtuigen|kernwapens|zelfstandige|werklozen|op|in|steeds|je|geld|begon|rijke kooplieden|afspraken|de staat bepaalt|de sovjet-unie sloot|het koningshuis|de vijftien|de economieën|het europees parlement heeft|de slechte|het volk kiest|de koning kan)\b/i;
+const BG_P=new Set(["Stadsrechten","Bedelorden","Regenten","Staatsgezinden","Oranjegezinden","Bania’s","Sepoys","Jakobijnen","Sociaaldemocraten","Opiumoorlogen","Ongelijke verdragen","Ambtenarenexamens","Militaire machthebbers","Rode gardisten","Herstelbetalingen","Heimatvertriebene","Rooms-rode regeringen","Nozems","Provo's","Gastarbeiders","Kruisraketten","Klassieke grondrechten","Sociale grondrechten","Oppositiepartijen","Centralen","Geallieerden","Loopgraven","Bonkaarten","Handelsbelemmeringen","Bondgenootschappen","Gaskamers","Untermenschen","Landverraders","Politionele acties","Invloedssferen","Satellietstaten","Niet-gebonden landen","Nieuwe staten","Moslimfundamentalisten","Committees of correspondence","Het gemeen","Factory Acts","Natuurrechten","SA","Neurenberger rassenwetten","Nieuwe media","Mogolvorsten","Bezettingszones"]);
+const BG_P1=new Set(["Pilgrim Fathers","Chartisten"]);
+const BG_W={"Sun Yat-sen":"de","Chiang Kai-shek":"de"};
+const BG_NOART=/^(het|de|een|beleid|handel|verheerlijking|vijandigheid|controle|overgave|vertrek|kiesrecht|politiek|productie|openheid|samenwerking|samenwerken|volksverzet|regeren|iemand|iedereen|alleenheerschappij|ontkerkelijking|overleg|overlegeconomie|bezuinigingsbeleid|gedwongen zwaar|economisch beleid|sterke liefde|meer ruimte|amerikaanse steun|duitse oorlogvoering|britse politiek|gorbatsjovs|wat|werk dat|algemene|europese|partai|koninklijk|nationaal-socialistische)\b/i;
+const BG_KEEP=new Set(["Partai","Koninklijk","Algemene","Europese","Nationaal-Socialistische","Duits","Duitse","Duitsers","Duitsland","Amerikaans","Amerikaanse","Britse","Indiase","Engelse","Chinese","Groot-Brittannië","Geallieerde","Nederlandse","Russische","VN-raad","Gorbatsjovs","Nederlanders"]);
+function begrForm(b){ const t=b.b,d=b.d; if(BG_C.has(t)||BG_CF.test(d)) return "c"; if(BG_P1.has(t)) return "p1"; if(BG_P.has(t)) return "p"; if(BG_W[t]) return "w"; return BG_NOART.test(d)?"s0":"s1"; }
+function begrSent(b,d){ const f=begrForm(b); if(f==="c") return b.b+": "+d;
+  const fw=d.split(/[\s,]/)[0]; const rest=BG_KEEP.has(fw)?d:d.charAt(0).toLowerCase()+d.slice(1);
+  if(f==="w") return b.b+" was "+BG_W[b.b]+" "+rest;
+  if(f==="p") return b.b+" zijn "+rest; if(f==="p1") return b.b+" zijn "+(/^een\b/i.test(d)?"":"een ")+rest;
+  if(f==="s1") return b.b+" is een "+rest;
+  return b.b+" is "+rest; }
+function begrSentH(b,d){ const t=begrSent(b,d); return "<strong>"+esc(b.b)+"</strong>"+esc(t.slice(b.b.length)); }
+function begrKey(b){ const f=begrForm(b); return f==="p1"?"p":f; }
 function hcFabel(){
   const H=S.hc, dvOf=nr=>H.dv.find(d=>d.nr===nr), selDv=H.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.nr);
   const inSel=x=>!selDv.length||selDv.includes(x.dv);
@@ -3496,10 +3514,10 @@ function hcFabel(){
   evs.forEach(e0=>{ const e=Object.assign({},e0,{t:onePart(e0.t)}); const t=Math.random()<.5;
     if(t) gens.push(()=>mk("y"+e.j+e.t,`In ${fmtY(e.j)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis"));
     else { const o=yrs.filter(y=>y!==e.j).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`In ${fmtY(w)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde in <strong>${fmtY(e.j)}</strong>, niet in ${fmtY(w)}.`,"Gebeurtenis"); }); } });
-  // 2. betekenis van een begrip
+  // 2. betekenis van een begrip (lopende zin)
   begs.forEach(b=>{ const t=Math.random()<.5;
-    if(t) gens.push(()=>mk("b"+b.b,`${b.b}: ${b.d}`,true,`Dat klopt. <strong>${esc(b.b)}</strong>: ${esc(b.d)}`,"","Begrip"));
-    else { const o=simBegrippen(b,H.begrippen.filter(x=>x.d!==b.d),2); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("b"+b.b+w.b,`${b.b}: ${w.d}`,false,"",`Dat klopt niet. <strong>${esc(b.b)}</strong> betekent: ${esc(b.d)}<br>De omschrijving in de uitspraak hoort bij <strong>${esc(w.b)}</strong>.`,"Begrip"); }); } });
+    if(t) gens.push(()=>mk("b"+b.b,begrSent(b,b.d),true,`Dat klopt. ${begrSentH(b,b.d)}`,"","Begrip"));
+    else { const pool=H.begrippen.filter(x=>x.d!==b.d&&(begrForm(b)==="c"||begrKey(x)===begrKey(b))); const o=simBegrippen(b,pool,2); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("b"+b.b+w.b,begrSent(b,w.d),false,"",`Dat klopt niet. ${begrSentH(b,b.d)}<br>De omschrijving in de uitspraak hoort bij <strong>${esc(w.b)}</strong>.`,"Begrip"); }); } });
   // 3. uitspraak over een persoon
   pers.forEach(p=>{ const t=Math.random()<.5, rest=p.u.slice(p.n.length);
     if(t) gens.push(()=>mk("p"+p.n,p.u,true,`Dat klopt: ${esc(p.u)}`,"","Persoon"));
@@ -6078,7 +6096,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116075536"; let last=0, shown=false;
+  const BUILD="20261116080337"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
