@@ -642,6 +642,7 @@ const STEDEN = {
    [2,"Begijnhof","Woningen voor alleenstaanden, betaald door rijke burgers via testamenten, waar de bewoners zich aan gedragsregels hielden."],
    [2,"Bedelorden","Kloosterorden die naar het voorbeeld van Franciscus van Assisi armoede en bedelen tot ideaal maakten."],
    [2,"Centralisatie","Regeren vanuit één punt met ambtenaren, zoals de Bourgondische hertogen en later Karel V probeerden."],
+   [2,"Vrede van Augsburg","Religievrede uit 1555 in het Duitse Rijk: wiens gebied, diens godsdienst. De vorst bepaalt het geloof van zijn onderdanen."],
    [2,"Landvoogdes","Vrouw die namens de koning een gebied bestuurt, zoals Margaretha van Parma in de Nederlanden namens Filips II."],
    [2,"Smeekschrift der Edelen","Verzoekschrift van edelen aan landvoogdes Margaretha van Parma in april 1566, met de vraag om de vervolging van calvinistische protestanten te verminderen."],
    [2,"Beeldenstorm","Vernielingen in kerken vanaf augustus 1566, na hagenpreken van radicale predikanten."],
@@ -661,6 +662,7 @@ const STEDEN = {
   ].map(a=>({dv:a[0],b:a[1],d:a[2]})),
   tijdlijn:[
    [1,1302,"Vlaamse ambachtslieden en boeren verslaan de ridders van Filips IV in de Guldensporenslag"],
+   [2,1555,"De Vrede van Augsburg: religievrede in het Duitse Rijk (wiens gebied, diens godsdienst), waarna Karel V aftreedt"],
    [2,1566,"Edelen bieden het Smeekschrift der Edelen aan landvoogdes Margaretha van Parma; hagenpreken leiden tot de Beeldenstorm"],
    [2,1567,"Alva komt naar de Nederlanden en richt de Raad van Beroerten op om Beeldenstormers te bestraffen"],
    [2,1572,"De inname van Den Briel is het eerste succes van de opstand"],
@@ -697,7 +699,8 @@ const STEDEN = {
    [3,"De Gewestelijke Staten beheerden belastingen, godsdienst en rechtspraak; de Staten-Generaal ging over buitenlandse zaken en oorlog.",24],
    [3,"Kunstenaars als Rembrandt en schrijvers als Vondel profiteerden van de vraag naar luxe.",24],
    [3,"Amsterdam nam de stapelmarktfunctie van Antwerpen over.",25],
-   [3,"De VOC kreeg in 1602 het monopolie op de handel in Azië en mocht forten bouwen en oorlog voeren.",25]
+   [3,"De VOC kreeg in 1602 het monopolie op de handel in Azië en mocht forten bouwen en oorlog voeren.",25],
+   [2,"In het Duitse Rijk bepaalde de vorst het geloof van zijn gebied: wiens gebied, diens godsdienst.",21]
   ].map(a=>({dv:a[0],g:a[1],ka:a[2]}))
 };
 /* ---------- Extra uitleg (bij goed) en hints (bij fout) ---------- */
@@ -774,6 +777,7 @@ const BEXT = {
 "Bedelorden":["Franciscus van Assisi was de zoon van een rijke lakenkoopman. Hij deed afstand van zijn rijkdom en leefde van bedelen.","Denk aan Franciscus van Assisi."],
 "Centralisatie":["Filips de Goede stelde de Rekenkamer in Brussel, een raad van juristen in Mechelen en de Staten-Generaal in. Karel V zette dat door en bepaalde zelf de benoeming van schepenen.","Het tegenovergestelde van particularisme."],
 "Beeldenstorm":["Na de Beeldenstorm kwam de hertog van Alva naar de Nederlanden. Zijn Raad van Beroerten veroordeelde meer dan elfduizend opstandelingen.","Dit gebeurde in 1566 in kerken."],
+"Vrede van Augsburg":["In het Duitse Rijk bepaalde de vorst voortaan het geloof van zijn onderdanen. Het was een vrede tussen katholieke en lutherse vorsten. Daarna trad Karel V af.","Dit gebeurde in 1555, ruim voor de Beeldenstorm."],
 "Landvoogdes":["Margaretha van Parma was landvoogdes van de Nederlanden. Zij bestuurde de gewesten namens Filips II, die zelf in Spanje woonde.","Zij was de vertegenwoordiger van de koning."],
 "Smeekschrift der Edelen":["De edelen vroegen de landvoogdes om de vervolging van calvinistische protestanten te verminderen. Het Smeekschrift ging vooraf aan de Beeldenstorm.","Dit gebeurde in 1566, vóór de Beeldenstorm."],
 "Raad van Beroerten":["Alva richtte de Raad van Beroerten op om Beeldenstormers op te sporen en te straffen. De raad veroordeelde duizenden mensen.","Alva richtte deze rechtbank op nadat hij in 1567 naar de Nederlanden was gekomen."],
@@ -804,7 +808,8 @@ const KOPX = [
  ["Een land zonder vorst, waarin de gewesten veel macht hadden, was in de 17e eeuw bijzonder: de bijzondere staatkundige plaats van de Republiek.","Wat was er bijzonder aan de bestuursvorm van de Republiek?"],
  ["De vraag naar kunst en literatuur laat de culturele bloei van de Republiek zien.","Gaat het hier om handel, of om kunst en cultuur?"],
  ["Amsterdam werd het centrum van een handelsnetwerk over de hele wereld: wereldwijde handelscontacten en het begin van een wereldeconomie.","Hoe groot was het handelsnetwerk waar het hier om gaat?"],
- ["De VOC verbond Europa met Azië: wereldhandel en handelskapitalisme.","Denk aan de schaal: hoe ver reikte deze handel?"]
+ ["De VOC verbond Europa met Azië: wereldhandel en handelskapitalisme.","Denk aan de schaal: hoe ver reikte deze handel?"],
+ ["Na de Vrede van Augsburg (1555) bepaalde de vorst het geloof van zijn onderdanen. Dit hoort bij de Reformatie en de godsdienstvrede.","Gaat het hier om geloof en kerk, of om handel?"]
 ];
 // Gebeurtenissen tijdlijn: jaar -> [uitleg, hint]
 const TLX = {
@@ -5730,6 +5735,7 @@ const WBI = WBI_RAW.map((a,i)=>({id:"p"+i,n:a[0],tv:a[1],hc:Object.fromEntries(a
   EVU.forEach(([t,j,u])=>{ if(t==="KA"){ const e=KA_TL.find(e=>e.j===j); if(e&&e.u) e.u=u; else if(TLX[j]) TLX[j][0]=u; else miss.push("KA "+j); } else { const X=HCDATA[t].tlx||TLX; if(X[j]) X[j][0]=u; else miss.push("ev "+t+" "+j); } });
   { const S0=HCDATA.steden; if(S0&&!S0.tlx){ S0.tlx={}; Object.keys(TLX).forEach(k=>S0.tlx[k]=[TLX[k][0],TLX[k][1]]); }
     if(S0&&S0.tlx){ S0.tlx[1566]=["Edelen boden landvoogdes Margaretha van Parma het Smeekschrift aan en vroegen haar om de vervolging van calvinistische protestanten te verminderen. Daarna hielden radicale predikanten hagenpreken en vernielden protestanten en profiteurs kerken. Filips II stuurde daarop Alva.","Dit gebeurde vlak voor de komst van Alva."];
+      S0.tlx[1555]=["In het Duitse Rijk mocht de vorst voortaan het geloof van zijn onderdanen bepalen: wiens gebied, diens godsdienst. Het was een religievrede tussen katholieke en lutherse vorsten. Daarna trad Karel V af.","Dit gebeurde ruim voor de Beeldenstorm."];
       S0.tlx[1567]=["Alva kwam in opdracht van Filips II naar de Nederlanden. Hij richtte de Raad van Beroerten op, een rechtbank die Beeldenstormers moest opsporen en straffen.","Dit gebeurde een jaar na de Beeldenstorm."];
       S0.tlx[1602]=[(S0.tlx[1602]||TLX[1602]||[""])[0],"Dit is het einde van deelvraag 2 en het begin van deelvraag 3."]; } }
   window.__inhMiss=miss; })();
@@ -6110,7 +6116,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116104540"; let last=0, shown=false;
+  const BUILD="20261116125524"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
