@@ -2646,9 +2646,9 @@ function qChrono(evs,c,tag,X){
   // vier gebeurtenissen met verschillende jaren: welke was het eerst?
   const pool=[]; for(const e of shuffle(evs)){ if(!pool.some(p=>p.j===e.j)) pool.push(e); if(pool.length===4) break; }
   if(pool.length<3) return null;
-  const first=pool.reduce((a,b)=>a.j<b.j?a:b), x=X?X(first):null;
-  return {id:"chr"+pool.map(p=>p.j).join("-"),ask:QTAG(tag)+"Welke gebeurtenis was het eerst?",q:"Kies de gebeurtenis die het vroegst plaatsvond.",k:"-",c:c(first),right:"e"+first.j,
-    opts:pool.map(p=>({id:"e"+p.j,label:p.t})),hint:"Zoek de gebeurtenis die bij de vroegste periode hoort.",
+  const late=Math.random()<.5, first=pool.reduce((a,b)=>(late?a.j>b.j:a.j<b.j)?a:b), x=X?X(first):null;
+  return {id:"chr"+(late?"L":"")+pool.map(p=>p.j).join("-"),ask:QTAG(tag)+(late?"Welke gebeurtenis was het laatst?":"Welke gebeurtenis was het eerst?"),q:late?"Kies de gebeurtenis die het laatst plaatsvond.":"Kies de gebeurtenis die het vroegst plaatsvond.",k:"-",c:c(first),right:"e"+first.j,
+    opts:pool.map(p=>({id:"e"+p.j,label:p.t})),hint:late?"Zoek de gebeurtenis die bij de jongste periode hoort.":"Zoek de gebeurtenis die bij de vroegste periode hoort.",
     uitleg:`${esc(first.t)}: <strong>${fmtY(first.j)}</strong>. De andere: ${pool.filter(p=>p!==first).sort((a,b)=>a.j-b.j).map(p=>`${esc(p.t)} (${fmtY(p.j)})`).join("; ")}.`,extra:x?x[0]:""};
 }
 function qJaar(e,evs,c,tag,X){
@@ -2686,8 +2686,9 @@ function gkPool(){ if(GKPOOL) return GKPOOL; const m=new Map();
   [typeof GK_KA!=="undefined"?GK_KA:[],typeof GK_STEDEN!=="undefined"?GK_STEDEN:[]].forEach(x=>x.forEach(add));
   Object.values(HCDATA).forEach(H=>(H&&H.gk||[]).forEach(add));
   GKH=Object.fromEntries(m); GKPOOL=[...m.keys()]; return GKPOOL; }
-function gkDist(g,allA,own,sent){
-  const pool=gkPool(), cls=GKCLS(g.a), ds=[...own], used=new Set([g.a,...own].map(dNorm)), ng=dNorm(g.a);
+function gkNear(t){ const ls=[typeof GK_KA!=="undefined"?GK_KA:[],typeof GK_STEDEN!=="undefined"?GK_STEDEN:[],...Object.values(HCDATA).map(H=>(H&&H.gk)||[])]; const l=ls.find(x=>x.includes(t)); if(!l) return []; const m=new Set(); l.forEach(x=>{ try{ parseGk(x.tekst).gaps.forEach(g=>m.add(g.a)); }catch(e){} }); return [...m]; }
+function gkDist(g,allA,own,sent,near){
+  near=near||[]; const pool=gkPool(), cls=GKCLS(g.a), ds=[...own], used=new Set([g.a,...own].map(dNorm)), ng=dNorm(g.a);
   GKH[g.a]=g.h;
   const ns=dNorm(sent||""), ok=a=>{ const n=dNorm(a); return n&&!used.has(n)&&!n.includes(ng)&&!ng.includes(n)&&!(" "+ns+" ").includes(" "+n+" "); }, cat=cls==="c"?GKCAT(g.h):"", same=a=>GKCLS(a)===cls&&(!cat||GKCAT(GKH[a])===cat);
   const take=(arr,same)=>{ for(const a of arr){ if(ds.length>=3) break; if(ok(a)&&(!same||GKCLS(a)===cls)){ ds.push(a); used.add(dNorm(a)); } } };
@@ -2698,6 +2699,8 @@ function gkDist(g,allA,own,sent){
     for(const d of [10,-10,25,-25,50,-50,5,-5]){ if(ds.length>=3) break; const c=String(y+d); if(y+d>0&&ok(c)){ ds.push(c); used.add(dNorm(c)); } }
   } else {
     take(simWords(g.a,local.filter(a=>ok(a)&&same(a)),3,GKH),true);
+    if(ds.length<3) take(simWords(g.a,near.filter(a=>ok(a)&&same(a)),3-ds.length,GKH),true);
+    if(ds.length<3) take(simWords(g.a,near.filter(a=>ok(a)&&GKCLS(a)===cls),3-ds.length,GKH),true);
     if(ds.length<3) take(simWords(g.a,pool.filter(a=>ok(a)&&same(a)),3-ds.length,GKH),true);
     if(ds.length<3) take(simWords(g.a,pool.filter(a=>ok(a)&&GKCLS(a)===cls),3-ds.length,GKH),true);
   }
@@ -2713,7 +2716,7 @@ function qGat(t,c){
   P.parts.forEach(p=>{ if(typeof p==="string") txt+=p; else if(p.g===gi){ hole=txt.length; txt+="§§§"; } else txt+=P.gaps[p.g].a; });
   const sents=txt.split(/(?<=[.!?])\s+/); const s=sents.find(x=>x.includes("§§§"))||txt;
   const own=[...new Set(g.d)].filter(a=>a!==g.a).slice(0,3);
-  const ds=gkDist(g,allA,own,s);
+  const ds=gkDist(g,allA,own,s,gkNear(t));
   if(ds.length<3) return null;
   return {id:"gk"+t.titel+gi,ask:QTAG("Gatenkaas")+"Welk woord hoort op de plek van de puntjes?",q:s.replace("§§§","……"),k:g.a,c:c(t),right:"a",
     opts:shuffle([{id:"a",label:g.a},...ds.map((d,j)=>({id:"d"+j,label:d}))]),hint:g.h,
@@ -6194,7 +6197,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116152605"; let last=0, shown=false;
+  const BUILD="20261116153127"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
