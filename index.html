@@ -4909,14 +4909,14 @@ function proefMenu(scope){
   EXSCOPE=scope==="ex"?(EXF.tv.size?new Set(EXF.tv):null):scope==="ka"?new Set(S.sel):new Set(S.hc.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c).filter(c=>typeof c==="number"));
   const pool=pePool(scope), tot=pool.reduce((a,q)=>a+q.cv.max,0), back=scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu;
   if(!pool.length) return back();
-  const sizes=[10,20,30,40,50,60].filter(n=>n<=tot); if(tot<=60&&!sizes.includes(tot)) sizes.push(tot);
+  const sizes=[10,20,30,40,50,60,72].filter(n=>n<=tot); if(tot<=72&&!sizes.includes(tot)) sizes.push(tot);
   sizes.sort((a,b)=>a-b);
   const def=sizes.includes(30)?30:sizes[sizes.length-1];
   app.innerHTML=`<button class="back" id="back">‹ Terug naar ${scope==="ex"?"examenvragen":"oefeningen"}</button>
   <h2>Proefexamen</h2>
   <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat de tijdvakken (of hoofdstukken) ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste. Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
   <section class="section"><h3>Hoe lang?</h3>
-   <div class="row" style="margin-top:.6rem"><label>Aantal punten <select id="pn" class="sel">${sizes.map(n=>`<option value="${n}" ${n===def?"selected":""}>${n} punten · ${peFmtMin(n*2.5)}${n===tot&&tot<=60&&![10,20,30,40,50,60].includes(n)?" (alle vragen)":""}</option>`).join("")}</select></label></div>
+   <div class="row" style="margin-top:.6rem"><label>Aantal punten <select id="pn" class="sel">${sizes.map(n=>`<option value="${n}" ${n===def?"selected":""}>${n} punten · ${peFmtMin(n*2.5)}${n===72?" (zo lang als het echte examen)":""}${n===tot&&tot<=72&&![10,20,30,40,50,60,72].includes(n)?" (alle vragen)":""}</option>`).join("")}</select></label></div>
    <p style="color:var(--muted);margin:.5rem 0 0">Zoals op het examen: <strong>1 punt = 2,5 minuut</strong>, dus 2 punten = 5 minuten. Er zijn ${pool.length} vragen beschikbaar (${tot} punten).</p>
    <label class="row" style="gap:.5rem;flex-wrap:nowrap;align-items:flex-start;margin-top:.8rem"><input type="checkbox" id="pt" checked> Met timer</label>
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start het proefexamen</button></div>
@@ -6098,7 +6098,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116083023"; let last=0, shown=false;
+  const BUILD="20261116102204"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
