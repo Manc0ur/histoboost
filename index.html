@@ -3342,6 +3342,7 @@ let kqStop=null;
 const kqTxt=o=>(o.label!=null?String(o.label):String(o.html||"").replace(/<[^>]*>/g,"")).trim();
 function kqNorm(q){
   if(!q||!Array.isArray(q.opts)) return null;
+  if(!String(q.q||"").replace(/<[^>]*>/g,"").trim()&&!/<img|<svg|<canvas/.test(String(q.qhtml||""))&&!String(q.qhtml||"").replace(/<[^>]*>/g,"").trim()) return null;
   const r=[].concat(q.right).map(String); if(r.length!==1) return null;
   const good=q.opts.find(o=>String(o.id)===r[0]); if(!good) return null;
   const seen=new Set([kqTxt(good).toLowerCase()]);
@@ -6193,7 +6194,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116150926"; let last=0, shown=false;
+  const BUILD="20261116151807"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
