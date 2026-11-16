@@ -2807,8 +2807,8 @@ function simBegrippen(b,all,n){ return pickSim(b,all.filter(x=>x!==b),n,{text:x=
 function simSteps(k,stepIdx,correct,allKetens,n){
   // stappen uit dezelfde keten (behalve vraag en goed antwoord) en uit vergelijkbare ketens
   const q=k.stappen[stepIdx], pool=[];
-  k.stappen.forEach((s,i)=>{ if(s!==q&&s!==correct) pool.push({s,near:1}); });
-  allKetens.filter(o=>o!==k).forEach(o=>o.stappen.forEach(s=>pool.push({s,near:(o.dv&&o.dv===k.dv)||(o.tv&&o.tv===k.tv)?.5:0})));
+  /* geen stappen uit dezelfde keten: die zijn ook (verdere) oorzaak/gevolg en dus dubbelzinnig */
+  allKetens.filter(o=>o!==k).forEach(o=>o.stappen.filter(s=>!k.stappen.includes(s)).forEach(s=>pool.push({s,near:(o.dv&&o.dv===k.dv)||(o.tv&&o.tv===k.tv)?.5:0})));
   return pickSim({s:correct,near:1},pool,n,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
 }
 function simPlaces(m,all,n){
@@ -6194,7 +6194,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116151807"; let last=0, shown=false;
+  const BUILD="20261116152246"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
