@@ -685,6 +685,7 @@ const STEDEN = {
    [1,1302,"Vlaamse ambachtslieden en boeren verslaan de ridders van Filips IV in de Guldensporenslag"],
    [2,1555,"De Vrede van Augsburg: religievrede in het Duitse Rijk (wiens gebied, diens godsdienst), waarna Karel V aftreedt"],
    [2,1565.99,"Edelen bieden het Smeekschrift der Edelen aan landvoogdes Margaretha van Parma"],
+   [2,1565.995,"Margaretha van Parma versoepelt de vervolgingen van protestanten"],
    [2,1566,"Hagenpreken leiden tot de Beeldenstorm"],
    [2,1567,"Alva komt naar de Nederlanden en richt de Raad van Beroerten op om Beeldenstormers te bestraffen"],
    [2,1572,"De inname van Den Briel is het eerste succes van de opstand"],
@@ -837,7 +838,8 @@ const KOPX = [
 // Gebeurtenissen tijdlijn: jaar -> [uitleg, hint]
 const TLX = {
 1302:["De Vlaamse autonomie werd versterkt en het patriciaat, dat de Franse koning steunde, verloor macht aan de gilden. Met deze slag eindigt deelvraag 1.","Deze slag sluit de eerste periode van de context af."],
-1565.99:["Edelen vroegen landvoogdes Margaretha van Parma om de vervolging van protestanten te verminderen. Zij versoepelde de vervolging.","Dit gebeurde eerder dan de hagenpreken en de Beeldenstorm."],
+1565.99:["Edelen vroegen landvoogdes Margaretha van Parma om de vervolging van protestanten te verminderen.","Dit gebeurde eerder dan de versoepeling, de hagenpreken en de Beeldenstorm."],
+1565.995:["Margaretha van Parma versoepelde de vervolging van protestanten. Daardoor kwamen er meer hagenpreken. Dat liep uiteindelijk uit de hand in de Beeldenstorm.","Dit gebeurde na het Smeekschrift en voor de hagenpreken en de Beeldenstorm."],
 1566:["Radicale predikanten hielden hagenpreken. Daarna vernielden protestanten en profiteurs kerken. Filips II stuurde daarop Alva.","Dit gebeurde vlak voor de komst van Alva."],
 1572:["Tot 1572 had de opstand weinig succes. Na Den Briel sloten steden in Holland en Zeeland zich aan.","Dit gebeurde vier jaar na het begin van de opstand in 1568."],
 1576:["Niet-betaalde huursoldaten plunderden. Daarna kozen ook katholieke gewesten de kant van de opstand en spraken ze godsdienstvrijheid af.","Dit kwam vóór de splitsing tussen noord en zuid in 1579."],
@@ -6170,7 +6172,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117102032"; let last=0, shown=false;
+  const BUILD="20261117102317"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
