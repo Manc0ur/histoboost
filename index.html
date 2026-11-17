@@ -2883,7 +2883,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
     <div class="list">
       <button class="item" data-m="ka2tv" ${count?"":"disabled"}><span class="txt"><strong>In welk tijdvak?</strong><span class="sub">Je ziet een kenmerkend aspect en kiest het tijdvak</span></span></button>
       <button class="item" data-m="vb2ka" ${count?"":"disabled"}><span class="txt"><strong>Herken het kenmerkend aspect</strong><span class="sub">Je ziet een historisch voorbeeld of een bron uit het examen en kiest het kenmerkend aspect dat erbij past</span></span></button>
-      <button class="item" data-m="chrono" ${KA_TL.some(e=>S.sel.has(e.tv))?"":"disabled"}><span class="txt"><strong>Chronologie</strong><span class="sub">Zet zes gebeurtenissen in de goede volgorde</span></span></button>
+      <button class="item" data-m="chrono" ${KA_TL.filter(e=>S.sel.has(e.tv)).length>=3?"":"disabled"}><span class="txt"><strong>Chronologie</strong><span class="sub">${KA_TL.filter(e=>S.sel.has(e.tv)).length>=3?"Zet zes gebeurtenissen in de goede volgorde":"Kies meer tijdvakken: er zijn te weinig gebeurtenissen"}</span></span></button>
       <button class="item" data-m="tl" ${KA_TL.some(e=>S.sel.has(e.tv))?"":"disabled"}><span class="txt"><strong>Tijdlijn</strong><span class="sub">Sleep gebeurtenissen naar het juiste jaartal</span></span></button>
       <button class="item" data-m="memory" ${count?"":"disabled"}><span class="txt"><strong>Memory</strong><span class="sub">Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving</span></span></button>
       <button class="item" data-m="mc" ${count?"":"disabled"}><span class="txt"><strong>Meerkeuzevragen</strong><span class="sub">Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen</span></span></button>
@@ -3682,7 +3682,7 @@ function hcBegrip(){
 
 function kaTijd(){
   const all=KA_TL.filter(e=>S.sel.has(e.tv));
-  const pool=shuffle(all.length>=6?all:KA_TL).slice(0,6).sort((a,b)=>a.j-b.j);
+  const pool=shuffle(all).slice(0,6).sort((a,b)=>a.j-b.j);
   orderEx({title:"Chronologie",intro:"Zet de gebeurtenissen van vroeg (boven) naar laat (onder). Na controleren zie je de jaartallen.",
     items:pool.map(e=>({id:"j"+e.j,label:e.t,detail:fmtY(e.j),c:col(e.tv),uitleg:e.u,hint:e.h})),back:kaMenu,
     nextLabel:"Nieuwe ronde",onNext:kaTijd});
@@ -6218,7 +6218,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117160541"; let last=0, shown=false;
+  const BUILD="20261117185545"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
