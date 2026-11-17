@@ -2406,6 +2406,13 @@ function kaPart(tvs){
 function kaArticle(d,D){ return `<article class="dv" style="--c:${col(d.c)}"><h3>${esc(d.vraag)} (${d.periode})</h3>
   <ul class="kalist">${d.ka.map(n=>{ const k=kaOf(n); return `<li><strong>Kenmerkend aspect ${n}</strong><br>${lnkHtml(esc(k.t),D)}${k.toel?`<span class="katoel">${lnkHtml(esc(k.toel),D)}</span>`:""}</li>`; }).join("")}</ul>
   ${d.url?`<p><a href="${d.url}" target="_blank" rel="noopener">Lees de uitleg over tijdvak ${d.c} op geschiedenisvandaag.nu</a></p>`:""}</article>`; }
+/* bijna-dubbele gebeurtenissen (zelfde jaar, andere formulering) bij het combineren van onderwerpen: niet aan elkaar plakken */
+const ND_STOP=new Set("wordt worden werd zijn heeft hebben door voor naar tegen tussen eerste nieuwe tot aan uit over deze onder zich hun haar".split(" "));
+const ndTok=t=>[...new Set(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>=4&&!ND_STOP.has(w)).map(w=>w.slice(0,6)))];
+function nearDup(a,b){ const wd=t=>[...new Set(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>=4&&!ND_STOP.has(w)))];
+  const A=wd(a), B=wd(b); if(!A.length||!B.length) return false; const m=Math.min(A.length,B.length);
+  const sh=A.filter(w=>B.some(v=>v===w||(w.slice(0,6)===v.slice(0,6)&&Math.abs(w.length-v.length)<=3))).length;
+  return (sh>=2&&sh/m>=.4)||(m<=3&&sh>=1&&sh/m>=.33); }
 function mkMix(ids){
   const id="mix:"+ids.join("+"); if(MIXHC[id]) return MIXHC[id];
   const parts=ids.map(partOf);
@@ -2425,6 +2432,7 @@ function mkMix(ids){
       const nt=t=>t.toLowerCase().replace(/^(het|de|een)\s+/,"");
       if(prev&&nt(e.t).includes(nt(prev.e.t))){ prev.e.t=e.t; prev.x=[x[0]||prev.x[0],x[1]||prev.x[1]]; H.tlx[e.j]=prev.x; }
       else if(prev&&nt(prev.e.t).includes(nt(e.t))){ }
+      else if(prev&&prev.e.t.split("; ").some(q=>nearDup(q,e.t))){ prev.x=[prev.x[0]||x[0]||"",prev.x[1]||x[1]||""]; H.tlx[e.j]=prev.x; }
       else if(prev){ prev.e.t+="; "+e.t; prev.x=[[prev.x[0],x[0]].filter(Boolean).join(" "),prev.x[1]||x[1]||""]; H.tlx[e.j]=prev.x; }
       else { const ne=R(e), o={e:ne,x:[x[0]||"",x[1]||""]}; evY.set(e.j,o); H.tlx[e.j]=o.x; H.tijdlijn.push(ne); } });
     (P.ketens||[]).forEach(k=>{ if(!seenK.has(k.titel)){ seenK.add(k.titel); H.ketens.push(R(k)); } });
@@ -6172,7 +6180,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117110927"; let last=0, shown=false;
+  const BUILD="20261117112826"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
