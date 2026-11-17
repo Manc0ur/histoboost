@@ -4108,6 +4108,7 @@ function hcKoppel(){
 /* ---------- Tijdlijn: gebeurtenissen naar jaartallen slepen ---------- */
 // Tijdlijn bij de tijdvakken: [tijdvak, jaar (negatief = v.C.), gebeurtenis, uitleg, hint]
 const KA_TL = [
+ [1,-40000,"De laatste Neanderthalers verdwijnen","De Neanderthalers stierven uit. De homo sapiens bleef als enige menssoort over.","Dit gebeurde lang vóór het einde van de laatste ijstijd."],
  [1,-10000,"De laatste ijstijd is voorbij","Het klimaat werd warmer en de ijskappen trokken zich terug. De mensen bleven als jagers-verzamelaars in kleine groepen rondtrekken.","Dit gebeurde vóór het ontstaan van de landbouw."],
  [1,-9000,"In de Vruchtbare Halvemaan gaan mensen landbouw bedrijven","In het gebied van het Nijldal tot Irak verbouwden mensen gerst en tarwe en gingen op een vaste plek wonen. Dit was het begin van de landbouwsamenlevingen.","Dit gebeurde kort na het einde van de laatste ijstijd."],
  [1,-8000,"De eerste boeren gaan aan veeteelt doen","Boeren temden runderen, geiten en schapen. Naast het verbouwen van gewassen werd veeteelt een vast onderdeel van het boerenbestaan.","Dit gebeurde in de eeuwen na het begin van de landbouw."],
@@ -6223,7 +6224,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117191804"; let last=0, shown=false;
+  const BUILD="20261117192133"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
