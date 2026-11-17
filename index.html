@@ -2824,10 +2824,10 @@ function pickSim(target,cands,n,o){
 const tvNear=(a,b)=>{ const d=Math.min(...a.flatMap(x=>b.map(y=>Math.abs(x-y)))); return d===0?1:d===1?.45:d===2?.15:0; };
 const D_ROLES=["koning","keizer","vorst","paus","denker","filosoof","schilder","wetenschap","onderzoek","ontdekkingsreiziger","veroveraar","generaal","militair","politicus","minister","president","bondskanselier","leider","schrijf","priester","monnik","hertog","edelman","regent","feministe","fabrikant","uitvinder","kunstenaar","geleerde","humanist","profeet","rijkscommissaris","troonopvolger"];
 const dRoles=q=>{ const t=dNorm(q.h.join(" ")); return new Set(D_ROLES.filter(r=>t.includes(r))); };
-function simPersons(p,cands,n,scopeId){
+function simPersons(p,cands,n,scopeId,extra){
   const pr=dRoles(p);
   return pickSim(p,cands.filter(q=>q.n!==p.n),n,{text:q=>q.n,ctx:q=>q.h.slice(1).join(" ")+" "+q.u.split(q.n).join(" "),
-    near:q=>tvNear(p.tv,q.tv)+([...dRoles(q)].some(r=>pr.has(r))?.9:0)+(scopeId&&p.hc[scopeId]&&q.hc[scopeId]?(q.hc[scopeId].some(d=>p.hc[scopeId].includes(d))?.8:.4):0)});
+    near:q=>tvNear(p.tv,q.tv)+([...dRoles(q)].some(r=>pr.has(r))?.9:0)+(scopeId&&p.hc[scopeId]&&q.hc[scopeId]?(q.hc[scopeId].some(d=>p.hc[scopeId].includes(d))?.8:.4):0)+(extra?extra(q):0)});
 }
 
 /* Wie ben ik: afleiders die bij hint 1 passen (zelfde periode en regio), pas daarna de rest */
@@ -2850,7 +2850,7 @@ function wbiSim(p,cands,n,scopeId){
     const g=wbiGap(pe,wbiEra(q.h[0])); let t=tvNear(p.tv,q.tv);
     if(g!==null){ if(g>90){ tiers[3].push(q); return; } t=g<=40?Math.max(t,1):Math.max(t,.45); }
     tiers[t>=1?0:t>=.45?1:2].push(q); });
-  let out=[]; for(const T of tiers){ if(out.length>=n) break; out=out.concat(simPersons(p,T,n-out.length,scopeId)); }
+  let out=[]; for(const T of tiers){ if(out.length>=n) break; out=out.concat(simPersons(p,T,n-out.length,scopeId,q=>{ const g=wbiGap(pe,wbiEra(q.h[0])); return (g===null?0:1.0*Math.max(0,1-g/90))+.7*Object.keys(q.hc).filter(k=>p.hc[k]).length/Math.max(1,Object.keys(p.hc).length)+(/sovjet|rusland/.test(dNorm(p.h.join()))&&/sovjet|rusland/.test(dNorm(q.h.join()))?.8:0); })); }
   return out; }
 function simBegrippen(b,all,n){ return pickSim(b,all.filter(x=>x!==b),n,{text:x=>x.b,ctx:x=>x.d,near:x=>x.dv===b.dv?1:0}); }
 function simSteps(k,stepIdx,correct,allKetens,n){
@@ -6214,7 +6214,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117151847"; let last=0, shown=false;
+  const BUILD="20261117153440"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
