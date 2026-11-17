@@ -5550,7 +5550,7 @@ function verplicht(t){
   const hits=ws.filter(hitW), prop=ws.filter((w,i)=>/^[A-Z]{2,}$/.test(w)||(/^[A-ZÀ-Ý]/.test(w)&&toks.indexOf(w)>0));
   if(ws.length===1) return hits.length===1;
   const longest=ws.reduce((a,b)=>b.length>a.length?b:a);
-  return hits.length/ws.length>=0.5 && (hits.includes(longest)||prop.some(w=>hits.includes(w)));
+  return hits.length/ws.length>=0.5 && hits.includes(longest);
 }
 const STARTIP="Staat in de stofomschrijving: dit moet je kennen";
 const starHtml=()=>`<span class="star" role="img" tabindex="0" aria-label="verplichte stof" title="${STARTIP}" data-tip="${STARTIP}">★</span>`;
@@ -6214,7 +6214,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117153440"; let last=0, shown=false;
+  const BUILD="20261117154926"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
