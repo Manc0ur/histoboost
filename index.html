@@ -3120,17 +3120,18 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="klas" ${count?"":"disabled"}><span class="txt"><strong>Klas Quiz</strong><span class="sub">Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op</span></span></button>
       <button class="item" data-m="exam" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken (${kaExamList().length} vragen)</span></span></button>
       <button class="item" data-m="proef" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Proefexamen</strong><span class="sub">${PESUB}</span></span></button>
+      <button class="item" data-m="ov" ${count?"":"disabled"}><span class="txt"><strong>Begrippen, personen en gebeurtenissen</strong><span class="sub">Per tijdvak een lijst met begrippen, personen en een tijdlijn, elk met een korte uitleg</span></span></button>
       <button class="item" data-m="cards" ${count?"":"disabled"}><span class="txt"><strong>Leerkaarten</strong><span class="sub">Lees het kenmerkend aspect, draai de kaart om voor tijdvak, toelichting en voorbeelden</span></span></button>
       <button class="item" data-m="flash" ${count?"":"disabled"}><span class="txt"><strong>Flashcards</strong><span class="sub">Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist</span></span></button>
     </div>
   </section>`;
-  sorteerMenu(["cards","flash","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","klas","exam","proef"]);
+  sorteerMenu(["ov","cards","flash","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","klas","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-tv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.tv; S.sel.has(n)?S.sel.delete(n):S.sel.add(n); kaMenu();});
   app.querySelectorAll("[data-tvper]").forEach(b=>b.onclick=()=>{const tvs=TVPER[+b.dataset.tvper][1]; if(tvs.every(n=>S.sel.has(n))) tvs.forEach(n=>S.sel.delete(n)); else tvs.forEach(n=>S.sel.add(n)); kaMenu();});
   app.querySelector("#all").onclick=()=>{S.sel=new Set(TV.map(t=>t.n)); kaMenu();};
   app.querySelector("#none").onclick=()=>{S.sel=new Set(); kaMenu();};
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({order:tvOrder,klas:()=>klasQuiz({scope:"ka",back:kaMenu}),ka2tv:()=>kaQuiz("ka2tv"),vb2ka:()=>kaQuiz("vb2ka"),cards:cards,flash:()=>flashcards({scope:"ka",key:"flash-ka",back:kaMenu}),gk:kaGatenkaas,keten:()=>ocMenu("ka"),tijdmachine:kaTijdmachine,tl:kaTijdlijn,chrono:kaTijd,exam:kaExam,proef:()=>proefMenu("ka"),quiz:kaMix,hitster:kaHitster,wie:kaWie,kruis:kaKruis,mc:kaMC,memory:kaMemory})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({ov:kaOverzicht,order:tvOrder,klas:()=>klasQuiz({scope:"ka",back:kaMenu}),ka2tv:()=>kaQuiz("ka2tv"),vb2ka:()=>kaQuiz("vb2ka"),cards:cards,flash:()=>flashcards({scope:"ka",key:"flash-ka",back:kaMenu}),gk:kaGatenkaas,keten:()=>ocMenu("ka"),tijdmachine:kaTijdmachine,tl:kaTijdlijn,chrono:kaTijd,exam:kaExam,proef:()=>proefMenu("ka"),quiz:kaMix,hitster:kaHitster,wie:kaWie,kruis:kaKruis,mc:kaMC,memory:kaMemory})[b.dataset.m]());
   menuScroll("ka");
 }
 
@@ -3522,6 +3523,25 @@ function hcLees(){
 let LEESOV=false;
 function ovToggle(){ return `<div class="seg ovseg" role="group" aria-label="Weergave"><button type="button" data-ov="0" aria-pressed="${!LEESOV}">Stofomschrijving</button><button type="button" data-ov="1" aria-pressed="${LEESOV}">Begrippen, personen en gebeurtenissen</button></div>`; }
 function bindOv(){ app.querySelectorAll("[data-ov]").forEach(b=>b.onclick=()=>{ LEESOV=b.dataset.ov==="1"; hcLees(); }); }
+function kaOverzicht(){
+  const tvs=TV.filter(t=>S.sel.has(t.n));
+  const pHtml=p=>{ const u=esc(p.u), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
+  const body=tvs.map(t=>{
+    const seen=new Set(), B=kwGapDefs(GK_KA.filter(x=>x.tv.includes(t.n))).filter(d=>d.a&&d.q&&!/\d/.test(d.a)&&!seen.has(d.a)&&seen.add(d.a)).sort((a,b)=>a.a.localeCompare(b.a,"nl"));
+    const P=WBI.filter(p=>p.u&&p.tv.includes(t.n)).sort((a,b)=>a.n.localeCompare(b.n,"nl")), E=KA_TL.filter(e=>e.tv===t.n).sort((a,b)=>a.j-b.j);
+    return `<article class="dv ovdv" style="--c:${col(t.n)}">
+      <h3>Tijdvak ${t.n}: ${esc(t.naam)} (${t.jaren})</h3>
+      ${B.length?`<h4 class="ovh">Begrippen</h4><dl class="ovdl">${B.map(b=>`<dt>${esc(b.a==="zuilen"?"De vijf zuilen van de islam":b.a.charAt(0).toUpperCase()+b.a.slice(1))}</dt><dd>${esc(b.q)}</dd>`).join("")}</dl>`:""}
+      ${P.length?`<h4 class="ovh">Personen</h4><ul class="ovul">${P.map(p=>`<li>${pHtml(p)}</li>`).join("")}</ul>`:""}
+      ${E.length?`<h4 class="ovh">Gebeurtenissen</h4><ol class="ovtl">${E.map(e=>{ const u=(e.u||(TLX[e.j]||[])[0]||"").trim(); return `<li><span class="yc">${fmtY(e.j)}</span><span><strong>${esc(e.t)}</strong>${u?`<span class="ovu"> ${esc(u)}</span>`:""}</span></li>`; }).join("")}</ol>`:""}
+    </article>`; }).join("");
+  app.innerHTML=`<div class="lnk tll" id="ovp"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>Begrippen, personen en gebeurtenissen</h2>
+  <p class="lead">Per tijdvak: de begrippen met een korte omschrijving, de personen die je moet kennen en de gebeurtenissen op een rij, van oud naar nieuw.</p>
+  ${body||'<p class="note">Er zijn geen tijdvakken gekozen.</p>'}</div>`;
+  app.querySelector("#back").onclick=kaMenu; window.scrollTo(0,0);
+}
+
 function leesOverzicht(){
   const H=S.hc, dvs=H.dv.filter(d=>S.dvSel.has(d.nr)), X=H.tlx||TLX;
   const pers=d=>WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]&&p.hc[H.id].includes(d.nr));
@@ -6722,7 +6742,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118004150"; let last=0, shown=false;
+  const BUILD="20261118004746"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
