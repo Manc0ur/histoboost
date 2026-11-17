@@ -3602,17 +3602,22 @@ function hcGalgje(seen){
     </div>
     ${done?`<div class="feedback ${win&&!lost?"good":"badf"}" role="status"><p><strong>${win&&!lost?"Goed gedaan!":"Helaas."}</strong> Het antwoord is <strong>${esc(item.w)}</strong>.</p>${item.tag!=="Gebeurtenis"?`<p>${esc(item.clue)}</p>`:""}</div>
       <div class="row" style="margin-top:1rem"><button class="btn" id="next">Volgend woord</button></div>`
-    :`<div class="galkeys" role="group" aria-label="Letters">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}" ${guessed.has(l)?"disabled":""} class="${guessed.has(l)?(target.includes(l)?"ok":"no"):""}">${l}</button>`).join("")}</div>`}`;
+    :`<div class="galkeys" role="group" aria-label="Letters">${"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(l=>`<button data-l="${l}" ${guessed.has(l)?"disabled":""} class="${guessed.has(l)?(target.includes(l)?"ok":"no"):""}">${l}</button>`).join("")}</div>
+    <form id="gform" class="row" style="margin-top:1rem;gap:.5rem;align-items:center" autocomplete="off"><input id="gin" type="text" aria-label="Weet je het hele woord? Typ het hier" placeholder="Weet je het woord? Typ het hier" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1 1 14rem;min-width:0;padding:.65rem .8rem;border-radius:10px;border:1px solid var(--line,#33415c);background:var(--card,#1b2535);color:inherit;font:inherit"><button class="btn" type="submit">Raad het woord</button></form><div id="gmsg" role="status" class="note" style="margin-top:.5rem"></div>`}`;
     app.querySelector("#back").onclick=()=>{ document.removeEventListener("keydown",kd); hcMenu(); };
     const nx=app.querySelector("#next"); if(nx) nx.onclick=()=>{ document.removeEventListener("keydown",kd); hcGalgje(seen); };
     app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>guess(b.dataset.l));
+    const gf=app.querySelector("#gform"); if(gf) gf.onsubmit=e=>{ e.preventDefault(); guessWord(app.querySelector("#gin").value); };
     if(done){ document.removeEventListener("keydown",kd); }
   }
   let recorded=false;
   function guess(l){ if(done||guessed.has(l)) return; guessed.add(l); if(!target.includes(l)) wrong++;
     if((won()||wrong>=MAX)&&!recorded){ recorded=true; record(key,item.w,won()&&wrong<MAX); }
     draw(); }
-  const kd=e=>{ if(!document.querySelector(".galkeys")){ document.removeEventListener("keydown",kd); return; } if(e.ctrlKey||e.metaKey||e.altKey) return; const u=norm(e.key||""); if(u.length===1&&isLetter(u)) guess(u); };
+  function guessWord(v){ if(done) return; const g=norm(v||"").replace(/[^A-Z]/g,""); if(!g) return;
+    if(g===letters.join("")||g===target.replace(/[^A-Z]/g,"")){ letters.forEach(l=>guessed.add(l)); if(!recorded){ recorded=true; record(key,item.w,wrong<MAX); } draw(); return; }
+    wrong++; if(wrong>=MAX&&!recorded){ recorded=true; record(key,item.w,false); } draw(); const m=app.querySelector("#gmsg"); if(m) m.textContent="Dat is niet het woord. Dat kost een fout."; }
+  const kd=e=>{ if(!document.querySelector(".galkeys")){ document.removeEventListener("keydown",kd); return; } if(e.ctrlKey||e.metaKey||e.altKey) return; if(e.target&&e.target.tagName==="INPUT") return; const u=norm(e.key||""); if(u.length===1&&isLetter(u)) guess(u); };
   if(window.__galKd) document.removeEventListener("keydown",window.__galKd); window.__galKd=kd;
   document.addEventListener("keydown",kd);
   draw();
@@ -6256,7 +6261,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117195422"; let last=0, shown=false;
+  const BUILD="20261117200028"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
