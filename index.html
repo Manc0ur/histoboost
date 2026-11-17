@@ -4125,69 +4125,6 @@ const fmtY = y => { const r=Math.round(y); return r<0 ? `${-r} v.C.` : String(r)
 // Hoeveel jaar ernaast nog 100 punten oplevert hangt af van hoe lang geleden het was
 const jaarR = y => y < -1000 ? 200 : y < 0 ? 25 : y < 1000 ? 10 : y < 1500 ? 5 : 3;
 const jaarPoints = (d,r) => d<=r ? 100 : Math.max(0, Math.round(100*(1-(d-r)/(4*r))));
-function jaarGame({key,items,back,again,title,vc}){
-  if(!items.length) return leeg(title,back,"gebeurtenissen");
-  const round=pickRound(key,items,x=>x.j,8);
-  let i=0,total=0,checked=false,bc=false,val="";
-  const results=[];
-  function draw(){
-    const q=round[i];
-    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
-    <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${round.length} · ${total} punten</span></div>
-    <div class="progress"><i style="width:${i/round.length*100}%"></i></div>
-    <div class="qcard" ${q.tv?`style="--c:${col(q.tv)}"`:""}><p class="ask">In welk jaar gebeurde dit?</p><p class="q">${esc(q.t)}</p></div>
-    <div class="jaarin">
-      <label for="jaar" class="sr">Jaartal</label>
-      <input id="jaar" type="text" inputmode="numeric" autocomplete="off" placeholder="Jaartal" value="${esc(val)}" ${checked?"disabled":""}>
-      ${vc?`<label class="vcbox"><input type="checkbox" id="bc" ${bc?"checked":""} ${checked?"disabled":""}> v.C.</label>`:""}
-    </div>
-    <div id="jfb"></div>
-    <div class="row" style="margin-top:1rem">${checked?`<button class="btn" id="next">${i+1<round.length?"Volgende vraag":"Bekijk je score"}</button>`:`<button class="btn" id="check" disabled>Controleer</button>`}</div>`;
-    app.querySelector("#back").onclick=back;
-    const inp=app.querySelector("#jaar"), c=app.querySelector("#check");
-    if(!checked){
-      const upd=()=>{ val=inp.value; c.disabled=parse()===null; };
-      inp.addEventListener("input",upd); upd();
-      inp.addEventListener("keydown",e=>{ if(e.key==="Enter"&&parse()!==null) check(); });
-      const b=app.querySelector("#bc"); if(b) b.onchange=()=>{bc=b.checked;};
-      c.onclick=check; inp.focus();
-    } else showFeedback();
-    const n=app.querySelector("#next"); if(n){ n.onclick=()=>{ i++; checked=false; bc=false; val=""; if(i<round.length){draw();window.scrollTo(0,0);} else result(); }; n.focus(); }
-  }
-  function parse(){
-    const s=val.trim().toLowerCase(); const m=s.match(/^(-)?\s*(\d{1,4})\s*(v\.?\s*c\.?|v\.?\s*chr\.?)?$/);
-    if(!m) return null; let y=+m[2]; if(m[1]||m[3]||bc) y=-y; return y;
-  }
-  function check(){
-    const q=round[i], g=parse(); if(g===null) return;
-    const d=Math.abs(g-Math.round(q.j)), r=jaarR(q.j), p=jaarPoints(d,r);
-    total+=p; results.push({q,g,d,p,r}); record(key,q.j,p>=50); checked=true; draw();
-  }
-  function showFeedback(){
-    const x=results[results.length-1], good=x.p>=80, ok=x.p>0;
-    app.querySelector("#jfb").innerHTML=`<div class="feedback ${good?"good":ok?"":"badf"}" style="${!good&&ok?"background:var(--surface);border:1px solid var(--line)":""}" role="status">
-      <p><strong>${fmtY(x.q.j)}</strong>: ${x.d===0?"precies goed!":`je zei ${fmtY(x.g)}, dat is ${x.d} ${x.d===1?"jaar":"jaar"} ernaast.`} <strong>${x.p} ${x.p===1?"punt":"punten"}</strong></p>
-      ${x.q.u?`<p>${esc(x.q.u)}</p>`:""}
-      ${x.p<100&&x.q.h?`<p><strong>Geheugensteun:</strong> ${esc(x.q.h)}</p>`:""}
-      <p class="cvnote">Tot ${x.r} jaar ernaast krijg je 100 punten. Bij ${x.r*5} jaar of meer ernaast krijg je 0 punten. Hoe langer geleden, hoe ruimer de marge.</p></div>`;
-  }
-  function result(){
-    const max=round.length*100;
-    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-    <p class="score">${total}/${max}</p>
-    <h2 style="margin-top:.5rem">${total>=max*.8?"Je kent je jaartallen!":total>=max*.5?"Goed bezig.":"Blijf oefenen."}</h2>
-    <div class="review"><ul>${results.map(x=>`<li>${esc(x.q.t)}: <strong>${fmtY(x.q.j)}</strong>. Jij zei ${fmtY(x.g)}, ${x.p} punten</li>`).join("")}</ul></div>
-    ${statusLine(key,items.map(x=>x.j))}
-    <div class="row" style="margin-top:1.5rem"><button class="btn" id="again">Nieuwe ronde</button><button class="btn ghost" id="menu">Andere oefening</button></div>`;
-    app.querySelector("#back").onclick=back; app.querySelector("#menu").onclick=back;
-    app.querySelector("#again").onclick=again;
-    window.scrollTo(0,0);
-  }
-  draw(); window.scrollTo(0,0);
-}
-function kaJaar(){ const it=KA_TL.filter(e=>S.sel.has(e.tv)); jaarGame({key:"jaar-ka",items:it.length?it:KA_TL,back:kaMenu,again:kaJaar,title:"Wanneer gebeurde het?",vc:true}); }
-function hcJaar(){ const it=S.hc.tijdlijn.filter(e=>S.dvSel.has(e.dv)).map(e=>({...e,u:(S.hc.tlx||TLX)[e.j]?.[0],h:(S.hc.tlx||TLX)[e.j]?.[1]})); jaarGame({key:hk("jaar-hc"),items:it,back:hcMenu,again:hcJaar,title:"Wanneer gebeurde het?",vc:false}); }
-
 function hcTijdlijn(){ tlEx({all:S.hc.tijdlijn.filter(e=>S.dvSel.has(e.dv)),key:hk("tijdlijn"),back:hcMenu,again:hcTijdlijn,X:id=>(S.hc.tlx||TLX)[id]}); }
 function kaTijdlijn(){ tlEx({all:KA_TL.filter(e=>S.sel.has(e.tv)),key:"katl",back:kaMenu,again:kaTijdlijn,X:id=>{const e=KA_TL.find(x=>x.j===id); return e?[e.u,e.h]:null;},tv:true}); }
 function tlEx({all,key,back,again,X,tv}){
@@ -6233,7 +6170,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117101807"; let last=0, shown=false;
+  const BUILD="20261117102032"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
