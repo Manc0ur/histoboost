@@ -3904,7 +3904,7 @@ const MAP_HC = [
  [3,"In deze Westfaalse stad werd in 1648 de vrede getekend die de Tachtigjarige Oorlog beëindigde.","Münster",51.96,7.63,20,"Münster ligt in Duitsland, niet ver van de grens met Twente."],
  [3,"Deze stad was in de Republiek een centrum van de lakenindustrie.","Leiden",52.16,4.49,15,"Leiden ligt in Zuid-Holland, tussen Den Haag en Haarlem."],
  [3,"In deze streek stonden veel houtzaagmolens voor de scheepsbouw.","Zaanstreek",52.45,4.81,15,"De Zaanstreek ligt in Noord-Holland, ten noorden van Amsterdam."]
-].map((a,i)=>({id:"mh"+i,dv:a[0],t:a[1],plaats:a[2],lat:a[3],lon:a[4],r:a[5],uit:a[6]}));
+].map((a,i)=>({id:"mh"+(i<7?i:i+1),dv:a[0],t:a[1],plaats:a[2],lat:a[3],lon:a[4],r:a[5],uit:a[6]})); /* id 7 (Mechelen) is vervallen; de ids blijven gelijk omdat de Tijdmachine-gegevens (TM) erop verwijzen */
 // Historische wateren (gebieden die later zijn ingepolderd), als [lon,lat]
 const HISTWATER = [
  [[5.03,52.94],[5.11,52.77],[5.29,52.70],[5.07,52.64],[5.05,52.51],[4.97,52.42],[4.88,52.38],[5.02,52.36],[5.07,52.33],[5.25,52.30],[5.45,52.31],[5.62,52.35],[5.84,52.45],[5.90,52.56],[5.95,52.68],[5.80,52.79],[5.70,52.84],[5.36,52.88],[5.39,53.05],[5.41,53.17],[5.20,53.12],[5.03,52.94]],
@@ -6183,7 +6183,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117113654"; let last=0, shown=false;
+  const BUILD="20261117113915"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
