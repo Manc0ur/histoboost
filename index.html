@@ -84,8 +84,9 @@ button{font:inherit;color:inherit}
 .progress i{display:block;height:100%;background:var(--ink);transition:width .25s}
 .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.93rem}
 .qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.3rem;border-top:6px solid var(--c,var(--ink))}
-.qcard .ask{color:var(--muted);font-size:.95rem;margin:0 0 .5rem}
-.qcard .q{font-size:1.25rem;font-weight:700;margin:0}
+.qcard .ask{color:var(--ink);font-size:1.25rem;font-weight:700;line-height:1.35;margin:0 0 .6rem}
+.qcard .ask .qtag{font-size:1em;font-weight:700;padding:.05rem .65rem;color:var(--ink);vertical-align:.05em}
+.qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--focus)}
 .opts{display:grid;gap:.5rem;margin-top:1rem}
 .opts.tv{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:.75rem .9rem;cursor:pointer}
@@ -2098,7 +2099,8 @@ const TL_INTER = mkHC({
    [3,"NSB","Nationaal-Socialistische Beweging in Nederland, onder leiding van Mussert."]
   ],
   tijdlijn:[
-   [1,1919,"Verdrag van Versailles en oprichting van de Republiek van Weimar","Duitsland moest herstelbetalingen doen, gebied afstaan en het leger verkleinen.","Een jaar na de wapenstilstand."],
+   [1,1918,"De Republiek van Weimar ontstaat","Na het aftreden van de keizer werd Duitsland een parlementaire republiek. Door tegenstand van de conservatieve elite en extremisten was zij vanaf het begin wankel.","Dit gebeurde aan het einde van de Eerste Wereldoorlog."],
+   [1,1919,"Het Verdrag van Versailles wordt gesloten","Duitsland moest herstelbetalingen doen, gebied afstaan en het leger verkleinen.","Een jaar na de wapenstilstand."],
    [2,1922,"Mussolini komt in Italië aan de macht","Hij werd minister-president en maakte Italië fascistisch.","Begin jaren twintig."],
    [1,1923,"Frankrijk bezet het Ruhrgebied; inflatie en mislukte staatsgreep van Hitler","Duitsland wilde de betalingen stoppen.","Hetzelfde jaar als de mislukte staatsgreep."],
    [1,1924,"Het Dawesplan","Goedkope Amerikaanse leningen voor Duitsland.","Een jaar na de inflatie."],
@@ -6675,7 +6677,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117225038"; let last=0, shown=false;
+  const BUILD="20261117225329"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
