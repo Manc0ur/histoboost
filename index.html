@@ -2756,7 +2756,8 @@ function saveSt(key,st){ SCHED_MEM[key]=st; try{localStorage.setItem("s:"+key,JS
 function pickRound(key,items,idOf,n=10){
   const st=loadSt(key), byId=new Map(items.map(x=>[String(idOf(x)),x])), all=[...byId.keys()];
   n=Math.min(n,all.length);
-  const picked=shuffle(st.wrong.filter(id=>byId.has(id))).slice(0,Math.ceil(n/2));
+  const wslots=n===1?(Math.random()<.34?1:0):Math.ceil(n/2); /* bij één item per keer niet altijd de herhaallijst: anders blijven foute teksten steeds terugkomen */
+  const picked=shuffle(st.wrong.filter(id=>byId.has(id))).slice(0,wslots);
   const take=c=>{ for(const id of shuffle(c)){ if(picked.length>=n) break; if(!picked.includes(id)){ picked.push(id); if(!st.seen.includes(id)) st.seen.push(id); } } };
   take(all.filter(id=>!st.seen.includes(id)));
   if(picked.length<n){ st.seen=st.seen.filter(id=>!byId.has(id)); take(all); }
@@ -6685,7 +6686,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117235002"; let last=0, shown=false;
+  const BUILD="20261117235617"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
