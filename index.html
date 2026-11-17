@@ -2693,7 +2693,7 @@ function qKeten(k,all,c){
   const i=Math.floor(Math.random()*(k.stappen.length-1)), nxt=k.stappen[i+1];
   const others=simSteps(k,i,nxt,all,3);
   if(others.length<3) return null;
-  return {id:"kt"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hierna?":"Wat was het gevolg hiervan?"),q:k.stappen[i],c:c(k),right:"a",
+  return {id:"kt"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hierna?":"Wat was het directe gevolg hiervan?"),q:k.stappen[i],c:c(k),right:"a",
     opts:shuffle([{id:"a",label:nxt},...others.map((s,j)=>({id:"d"+j,label:s}))]),hint:k.hint||"",
     uitleg:`Uit ${ktVerloop(k)?"het verloop":"de keten"} ‘${esc(k.titel)}’: ${ktVerloop(k)?"hierna gebeurde":"het gevolg was"} <strong>${esc(nxt)}</strong>.`,extra:k.uit||""};
 }
@@ -2857,8 +2857,10 @@ function simSteps(k,stepIdx,correct,allKetens,n){
   // stappen uit dezelfde keten (behalve vraag en goed antwoord) en uit vergelijkbare ketens
   const q=k.stappen[stepIdx], pool=[];
   /* geen stappen uit dezelfde keten: die zijn ook (verdere) oorzaak/gevolg en dus dubbelzinnig */
-  allKetens.filter(o=>o!==k).forEach(o=>o.stappen.filter(s=>!k.stappen.includes(s)).forEach(s=>pool.push({s,near:(o.dv&&o.dv===k.dv)||(o.tv&&o.tv===k.tv)?.5:0})));
-  return pickSim({s:correct,near:1},pool,n,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
+  /* ook stappen uit ketens over hetzelfde onderwerp (zelfde deelvraag of tijdvak) kunnen een eerdere oorzaak zijn: liever stappen uit andere ketens */
+  const far=[]; allKetens.filter(o=>o!==k).forEach(o=>o.stappen.filter(s=>!k.stappen.includes(s)).forEach(s=>{ const same=(o.dv&&o.dv===k.dv)||(o.tv&&o.tv===k.tv); (same?pool:far).push({s,near:same?.5:0}); }));
+  const use=far.length>=n+3?far:pool.concat(far);
+  return pickSim({s:correct,near:1},use,n,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
 }
 function simPlaces(m,all,n){
   return pickSim(m,all.filter(x=>x.plaats!==m.plaats),n,{text:x=>x.plaats,ctx:x=>x.t,
@@ -4878,7 +4880,7 @@ function qOorz(k,all,c,dir){
   const others=simSteps(k,i,cor,all,9).filter(x=>!bad.has(x)).slice(0,3);
   if(others.length<3) return null;
   const shown=k.stappen[i];
-  return {id:"oc"+(dir<0?"o":"g")+k.titel+i,ask:QTAG(dir<0?"Oorzaak":"Gevolg")+(dir<0?"Wat was de oorzaak hiervan?":"Wat was het gevolg hiervan?"),q:shown,c:c(k),right:"a",
+  return {id:"oc"+(dir<0?"o":"g")+k.titel+i,ask:QTAG(dir<0?"Oorzaak":"Gevolg")+(dir<0?"Wat was de directe oorzaak hiervan?":"Wat was het directe gevolg hiervan?"),q:shown,c:c(k),right:"a",
     opts:shuffle([{id:"a",label:cor},...others.map((x,j)=>({id:"d"+j,label:x}))]),hint:k.hint||"",
     uitleg:`Uit de keten ‘${esc(k.titel)}’: ${dir<0?"de oorzaak was":"het gevolg was"} <strong>${esc(cor)}</strong>. ${dir<0?"Een oorzaak komt altijd vóór het gevolg.":"Een gevolg komt altijd ná de oorzaak."}`,extra:k.uit||""};
 }
@@ -6118,7 +6120,7 @@ function mcWat(e,evs,c,X){
 function mcOorzaak(k,all,c){
   const i=1+Math.floor(Math.random()*(k.stappen.length-1)), prev=k.stappen[i-1];
   const others=simSteps(k,i,prev,all,3); if(others.length<3) return null;
-  return {id:"oz"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hier vlak voor?":"Wat was de oorzaak hiervan?"),q:k.stappen[i],c,right:"a",
+  return {id:"oz"+k.titel+i,ask:QTAG(ktSoort(k))+(ktVerloop(k)?"Wat gebeurde hier vlak voor?":"Wat was de directe oorzaak hiervan?"),q:k.stappen[i],c,right:"a",
     opts:shuffle([{id:"a",label:prev},...others.map((s,j)=>({id:"d"+j,label:s}))]),hint:k.hint||"",
     uitleg:`Uit ${ktVerloop(k)?"het verloop":"de keten"} ‘${esc(k.titel)}’: ${ktVerloop(k)?"eerst gebeurde":"de oorzaak was"} <strong>${esc(prev)}</strong>.`,extra:k.uit||""};
 }
@@ -6224,7 +6226,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117192303"; let last=0, shown=false;
+  const BUILD="20261117194109"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
