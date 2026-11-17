@@ -2829,6 +2829,29 @@ function simPersons(p,cands,n,scopeId){
   return pickSim(p,cands.filter(q=>q.n!==p.n),n,{text:q=>q.n,ctx:q=>q.h.slice(1).join(" ")+" "+q.u.split(q.n).join(" "),
     near:q=>tvNear(p.tv,q.tv)+([...dRoles(q)].some(r=>pr.has(r))?.9:0)+(scopeId&&p.hc[scopeId]&&q.hc[scopeId]?(q.hc[scopeId].some(d=>p.hc[scopeId].includes(d))?.8:.4):0)});
 }
+
+/* Wie ben ik: afleiders die bij hint 1 passen (zelfde periode en regio), pas daarna de rest */
+const WBI_DEC={twintig:1920,dertig:1930,veertig:1940,vijftig:1950,zestig:1960,zeventig:1970,tachtig:1980,negentig:1990};
+function wbiEra(h){ const t=dNorm(h); let a=null,b=null; const add=(x,y)=>{ a=a===null?x:Math.min(a,x); b=b===null?y:Math.max(b,y); };
+  let m=t.match(/van (\d{4}) tot (\d{4})/); if(m){ add(+m[1],+m[2]); return [a,b]; }
+  if(/eeuwwisseling/.test(t)) add(1985,2015);
+  const jr=t.match(/jaren ((?:[a-z]+)(?: en [a-z]+)*)/); if(jr){ jr[1].split(" en ").forEach(w=>{ if(WBI_DEC[w]) add(WBI_DEC[w],WBI_DEC[w]+9); }); }
+  const ee=t.match(/(begin|eind|midden|eerste helft|tweede helft)?\s*(?:van )?(?:de )?(\d{1,2})e eeuw/);
+  if(ee&&a===null){ const st=(+ee[2]-1)*100, k=ee[1]; const r=k==="begin"?[st,st+33]:k==="midden"?[st+33,st+66]:k==="eind"?[st+66,st+100]:k==="eerste helft"?[st,st+50]:k==="tweede helft"?[st+50,st+100]:[st,st+100]; add(r[0],r[1]); }
+  else if(/eerste eeuw/.test(t)&&a===null) add(0,100);
+  return a===null?null:[a,b]; }
+const wbiGap=(r,q)=>!r||!q?null:Math.abs((r[0]+r[1])/2-(q[0]+q[1])/2);
+const WBI_REG=[["eu",/europa|duitsland|zwitserland|frankrijk|groot britannie|italie|nederland|republiek|balkan|engeland|spanje|rusland|sovjet|berlijn|parijs|londen/],["as",/china|azie|japan|indie|indonesie/],["am",/atlantische|amerika|verenigde staten|washington|new york/]];
+function wbiReg(q){ const f=t=>new Set(WBI_REG.filter(r=>r[1].test(dNorm(t))).map(r=>r[0])); const a=f(q.h[0]); return a.size?a:f(q.h.join(" ")); }
+function wbiSim(p,cands,n,scopeId){
+  const pe=wbiEra(p.h[0]), pr=wbiReg(p), tiers=[[],[],[],[]];
+  cands.filter(q=>q.n!==p.n).forEach(q=>{
+    const qr=wbiReg(q); if(pr.size&&qr.size&&![...pr].some(x=>qr.has(x))){ tiers[3].push(q); return; }
+    const g=wbiGap(pe,wbiEra(q.h[0])); let t=tvNear(p.tv,q.tv);
+    if(g!==null){ if(g>90){ tiers[3].push(q); return; } t=g<=40?Math.max(t,1):Math.max(t,.45); }
+    tiers[t>=1?0:t>=.45?1:2].push(q); });
+  let out=[]; for(const T of tiers){ if(out.length>=n) break; out=out.concat(simPersons(p,T,n-out.length,scopeId)); }
+  return out; }
 function simBegrippen(b,all,n){ return pickSim(b,all.filter(x=>x!==b),n,{text:x=>x.b,ctx:x=>x.d,near:x=>x.dv===b.dv?1:0}); }
 function simSteps(k,stepIdx,correct,allKetens,n){
   // stappen uit dezelfde keten (behalve vraag en goed antwoord) en uit vergelijkbare ketens
@@ -5822,7 +5845,7 @@ function wieBenIk({pool,others,key,back,again}){
   const near=(p,q)=>Math.min(...p.tv.flatMap(a=>q.tv.map(b=>Math.abs(a-b))));
   function makeOpts(p){
     const cands=[...new Set([...pool,...others])].filter(q=>q!==p&&q.n!==p.n);
-    return shuffle([p,...simPersons(p,cands,NOPT-1,S.hc&&S.hc.id)]);
+    return shuffle([p,...wbiSim(p,cands,NOPT-1,S.hc&&S.hc.id)]);
   }
   function draw(){
     const p=round[i];
@@ -6191,7 +6214,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117145413"; let last=0, shown=false;
+  const BUILD="20261117151847"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
