@@ -2586,7 +2586,7 @@ function home(){ SYL=null;
   app.querySelector("#hcgo").onclick=()=>{ const ids=chosen(), tvs=tvList(); if(!ids.length&&!tvs.length) return;
     if(!ids.length){ S.sel=new Set(tvs); kaMenu(); return; }
     if(tvs.length){ S.hc=mkMix([kaPart(tvs),...ids]); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
-    else if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set([1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
+    else if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set(S.hc.niveau==="tl"?S.hc.dv.map(d=>d.nr):[1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
     hcMenu(); };
   upd();
   menuScroll("home");
@@ -3292,16 +3292,17 @@ function hcWhy(H,m){
 }
 function hcMenu(){ CTX="hc";
   const H=S.hc; sylHC(H);
+  if(H.niveau==="tl") S.dvSel=new Set(H.dv.map(d=>d.nr));
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
   <h1 style="font-size:2.2rem">${H.parts?(H.parts.some(i=>KAPART[i])?"Tijdvakken en contexten":"Meerdere "+(H.niveau==="tl"?"onderwerpen":"contexten")):esc(H.titel)}</h1>
   ${H.parts?`<p class="lead">${H.parts.some(i=>KAPART[i])?`${esc(H.titel)}. Je oefent de contexten door elkaar, met de tijdvakken en kenmerkende aspecten als achtergrond.`:`${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: ${esc(H.titel)}. Je oefent de stof door elkaar.`}</p>`:`<p class="lead">${H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"de bron"}</a>`:""}</p>`}
-  <section class="section">
-    <h2>${H.niveau==="tl"?"Welke onderdelen?":"Welke deelvragen?"}</h2>
+  ${H.niveau==="tl"?"":`<section class="section">
+    <h2>Welke deelvragen?</h2>
     <div class="list">${H.dv.map(d=>(H.parts&&(d.nr===1||H.dv[d.nr-2].src!==d.src)?`<p class="dvgrp">${esc(d.srcT)}</p>`:"")+`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
       <span class="txt"><strong>${d.nr}. ${esc(d.vraag)}</strong><span class="sub">${d.periode}, ${d.ka.length?"kenmerkende aspecten "+d.ka.join(", "):esc(d.sub||"")}</span></span>
       <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button>`).join("")}</div>
-  </section>
+  </section>`}
   <section class="section">
     <h2>Kies een oefening</h2>
     <div class="list">
@@ -6680,7 +6681,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117230250"; let last=0, shown=false;
+  const BUILD="20261117230451"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
