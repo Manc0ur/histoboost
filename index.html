@@ -2409,6 +2409,8 @@ function kaArticle(d,D){ return `<article class="dv" style="--c:${col(d.c)}"><h3
 /* bijna-dubbele gebeurtenissen (zelfde jaar, andere formulering) bij het combineren van onderwerpen: niet aan elkaar plakken */
 const ND_STOP=new Set("wordt worden werd zijn heeft hebben door voor naar tegen tussen eerste nieuwe tot aan uit over deze onder zich hun haar".split(" "));
 const ndTok=t=>[...new Set(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>=4&&!ND_STOP.has(w)).map(w=>w.slice(0,6)))];
+const ND_ALIAS=[["plakkaat van verlatinghe","opstandige gewesten verwerpen"]];
+const aliasDup=(a,b)=>{ a=a.toLowerCase(); b=b.toLowerCase(); return ND_ALIAS.some(([x,y])=>(a.includes(x)&&b.includes(y))||(a.includes(y)&&b.includes(x))); };
 function nearDup(a,b){ const wd=t=>[...new Set(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>=4&&!ND_STOP.has(w)))];
   const A=wd(a), B=wd(b); if(!A.length||!B.length) return false; const m=Math.min(A.length,B.length);
   const sh=A.filter(w=>B.some(v=>v===w||(w.slice(0,6)===v.slice(0,6)&&Math.abs(w.length-v.length)<=3))).length;
@@ -2428,13 +2430,12 @@ function mkMix(ids){
     const R=x=>({...x,dv:m[x.dv]});
     P.begrippen.forEach(b=>{ const k=b.b.toLowerCase(); if(!seenB.has(k)){ seenB.add(k); H.begrippen.push(R(b)); } });
     const X=P.tlx||TLX;
-    P.tijdlijn.forEach(e=>{ const x=X[e.j]||["",""], prev=evY.get(e.j);
+    P.tijdlijn.forEach(e=>{ const x=X[e.j]||["",""], list=evY.get(e.j)||[];
       const nt=t=>t.toLowerCase().replace(/^(het|de|een)\s+/,"");
-      if(prev&&nt(e.t).includes(nt(prev.e.t))){ prev.e.t=e.t; prev.x=[x[0]||prev.x[0],x[1]||prev.x[1]]; H.tlx[e.j]=prev.x; }
-      else if(prev&&nt(prev.e.t).includes(nt(e.t))){ }
-      else if(prev&&prev.e.t.split("; ").some(q=>nearDup(q,e.t))){ prev.x=[prev.x[0]||x[0]||"",prev.x[1]||x[1]||""]; H.tlx[e.j]=prev.x; }
-      else if(prev){ prev.e.t+="; "+e.t; prev.x=[[prev.x[0],x[0]].filter(Boolean).join(" "),prev.x[1]||x[1]||""]; H.tlx[e.j]=prev.x; }
-      else { const ne=R(e), o={e:ne,x:[x[0]||"",x[1]||""]}; evY.set(e.j,o); H.tlx[e.j]=o.x; H.tijdlijn.push(ne); } });
+      let hit=null, kind=0;
+      for(const o of list){ if(nt(e.t).includes(nt(o.e.t))){ hit=o; kind=1; break; } if(nt(o.e.t).includes(nt(e.t))||nearDup(o.e.t,e.t)||aliasDup(o.e.t,e.t)){ hit=o; kind=2; break; } }
+      if(hit){ if(kind===1){ hit.e.t=e.t; hit.x=[x[0]||hit.x[0],x[1]||hit.x[1]]; } else hit.x=[hit.x[0]||x[0]||"",hit.x[1]||x[1]||""]; H.tlx[hit.e.j]=hit.x; }
+      else { const ne=R(e); if(list.length){ ne.j=e.j+0.001*list.length; ne.nt=1; list.forEach(o=>o.e.nt=1); } const o={e:ne,x:[x[0]||"",x[1]||""]}; list.push(o); evY.set(e.j,list); H.tlx[ne.j]=o.x; H.tijdlijn.push(ne); } });
     (P.ketens||[]).forEach(k=>{ if(!seenK.has(k.titel)){ seenK.add(k.titel); H.ketens.push(R(k)); } });
     (P.koppel||[]).forEach(k=>H.koppel.push(R(k)));
     if(P.id==="steden"&&typeof BRONKOPPEL!=="undefined") BRONKOPPEL.forEach(k=>H.koppel.push(R(k)));
@@ -2658,7 +2659,7 @@ const QTAG = t => `<span class="qtag">${t}</span> `;
 const pickN = (arr,n) => shuffle(arr).slice(0,n);
 function qChrono(evs,c,tag,X){
   // vier gebeurtenissen met verschillende jaren: welke was het eerst?
-  const pool=[]; for(const e of shuffle(evs)){ if(!pool.some(p=>p.j===e.j)) pool.push(e); if(pool.length===4) break; }
+  const pool=[]; for(const e of shuffle(evs)){ if(!pool.some(p=>p.j===e.j||ntClash(p,e))) pool.push(e); if(pool.length===4) break; }
   if(pool.length<3) return null;
   const late=Math.random()<.5, first=pool.reduce((a,b)=>(late?a.j>b.j:a.j<b.j)?a:b), x=X?X(first):null;
   return {id:"chr"+(late?"L":"")+pool.map(p=>p.j).join("-"),ask:QTAG(tag)+(late?"Welke gebeurtenis was het laatst?":"Welke gebeurtenis was het eerst?"),q:late?"Kies de gebeurtenis die het laatst plaatsvond.":"Kies de gebeurtenis die het vroegst plaatsvond.",k:"-",c:c(first),right:"e"+first.j,
@@ -3658,7 +3659,7 @@ function kaTijd(){
     nextLabel:"Nieuwe ronde",onNext:kaTijd});
 }
 function hcTijd(){
-  const H=S.hc, pool=shuffle(H.tijdlijn.filter(e=>S.dvSel.has(e.dv))).slice(0,6).sort((a,b)=>a.j-b.j);
+  const H=S.hc, pool=ntDedupe(shuffle(H.tijdlijn.filter(e=>S.dvSel.has(e.dv)))).slice(0,6).sort((a,b)=>a.j-b.j);
   orderEx({title:"Chronologie",intro:"Zet de gebeurtenissen van vroeg (boven) naar laat (onder). Na controleren zie je de jaartallen.",
     items:pool.map(e=>({id:"j"+e.j,label:e.t,detail:fmtY(e.j),c:e.c||H.dv[e.dv-1].c,uitleg:(H.tlx||TLX)[e.j]?.[0],hint:(H.tlx||TLX)[e.j]?.[1]})),back:hcMenu,
     nextLabel:"Nieuwe ronde",onNext:hcTijd});
@@ -4130,6 +4131,8 @@ const KA_TL = [
  [10,1985,"Het Schengenakkoord","Reizen zonder grenscontroles werd mogelijk.","Dit gebeurde in het midden van de jaren tachtig."],
  [10,1989,"De Berlijnse Muur valt","Het einde van de verdeling van Europa kwam in zicht.","Dit gebeurde aan het eind van de jaren tachtig."]
 ].map(a=>({tv:a[0],j:a[1],t:a[2],u:a[3],h:a[4]}));
+const ntClash=(a,b)=>Math.round(a.j)===Math.round(b.j)&&(a.nt||b.nt);
+const ntDedupe=arr=>{ const out=[]; for(const e of arr){ if(!out.some(p=>ntClash(p,e))) out.push(e); } return out; };
 const fmtY = y => { const r=Math.round(y); return r<0 ? `${-r} v.C.` : String(r); };
 /* ---------- Wanneer gebeurde het? Jaartal raden ---------- */
 // Hoeveel jaar ernaast nog 100 punten oplevert hangt af van hoe lang geleden het was
@@ -4139,7 +4142,7 @@ function hcTijdlijn(){ tlEx({all:S.hc.tijdlijn.filter(e=>S.dvSel.has(e.dv)),key:
 function kaTijdlijn(){ tlEx({all:KA_TL.filter(e=>S.sel.has(e.tv)),key:"katl",back:kaMenu,again:kaTijdlijn,X:id=>{const e=KA_TL.find(x=>x.j===id); return e?[e.u,e.h]:null;},tv:true}); }
 function tlEx({all,key,back,again,X,tv}){
   if(all.length<2) return leeg("Tijdlijn",back,"gebeurtenissen");
-  const evs=pickRound(key,all,e=>e.j,7).sort((a,b)=>a.j-b.j);
+  const evs=ntDedupe(pickRound(key,all,e=>e.j,7)).sort((a,b)=>a.j-b.j);
   const years=evs.map(e=>e.j), order=shuffle(years);
   const place={}; years.forEach(y=>place[y]=null);
   let sel=null, checked=false, shown=false, recorded=false;
@@ -5609,7 +5612,7 @@ Object.assign(ICONS,{
 /* ---------- Hitster: leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn ---------- */
 function hitster({pool,key,back,again,cf,X}){
   const evs=[], seen=new Set();
-  for(const e of shuffle(pool)){ if(seen.has(e.j)) continue; seen.add(e.j); evs.push(e); }
+  for(const e of shuffle(pool)){ if(seen.has(e.j)||evs.some(p=>ntClash(p,e))) continue; seen.add(e.j); evs.push(e); }
   const goal=Math.min(10,evs.length-1);
   const bestKey="hs-"+key;
   const best=()=>{ try{ return +localStorage.getItem(bestKey)||0; }catch(e){ return 0; } };
@@ -6180,7 +6183,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117112826"; let last=0, shown=false;
+  const BUILD="20261117113654"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
