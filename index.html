@@ -276,7 +276,13 @@ body.lzhide .lzsticky .lzscroll{display:none}
 @keyframes wbin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .wbiopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin-top:1rem}
 @media(min-width:640px){.wbiopts{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.wbiopts .opt{text-align:center;padding:.65rem .5rem}
+.wbiopts .opt{text-align:center;padding:.65rem 1.9rem .65rem .45rem;width:100%;height:100%}
+.wbiop{position:relative;display:flex}
+.wbiop .wbix{position:absolute;top:50%;right:.35rem;transform:translateY(-50%);width:1.6rem;height:1.6rem;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:.85rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.wbiop .wbix:hover{color:var(--bad);border-color:var(--bad)}
+.wbiop.gone .opt{opacity:.45;text-decoration:line-through}
+.wbiop.gone .wbix:hover{color:var(--ink);border-color:var(--ink)}
+.wbitip{margin:.2rem 0 0;font-size:.9rem;color:var(--muted)}
 .kwwrap{overflow-x:auto;padding-bottom:.3rem}
 .kwgrid{display:grid;gap:2px;width:max-content;margin:0 auto}
 .kwx{background:transparent}
@@ -5811,7 +5817,7 @@ function wieBenIk({pool,others,key,back,again}){
   if(pool.length<1){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Wie ben ik?</h2><p class="note">Bij deze keuze horen nog geen personen. Kies andere ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
   const NOPT=8, NH=5;
   const round=pickRound(key,pool,x=>x.id,6);
-  let i=0,total=0,shown=1,done=false,wrong=new Set(),opts=[];
+  let i=0,total=0,shown=1,done=false,wrong=new Set(),gone=new Set(),opts=[];
   const results=[];
   const near=(p,q)=>Math.min(...p.tv.flatMap(a=>q.tv.map(b=>Math.abs(a-b))));
   function makeOpts(p){
@@ -5826,11 +5832,13 @@ function wieBenIk({pool,others,key,back,again}){
       <div class="qcard wbi"><p class="ask">Wie ben ik? Hoe minder hints je nodig hebt, hoe meer punten.</p>
         <ol class="wbihints">${p.h.slice(0,shown).map((h,k)=>`<li${k===shown-1&&!done?' class="new"':""}>${esc(h)}</li>`).join("")}</ol>
         ${!done&&shown<NH?`<button class="btn ghost" id="hint">Nog een hint (${shown} van ${NH})</button>`:""}
-        <div class="opts wbiopts">${opts.map(o=>`<button class="opt ${done&&o===p?"correct":wrong.has(o.id)?"wrong":""}" data-p="${o.id}" ${done||wrong.has(o.id)?"disabled":""}>${esc(o.n)}</button>`).join("")}</div>
+        ${!done?'<p class="wbitip">Weet je dat iemand het niet is? Klik op het kruisje om die persoon uit te sluiten.</p>':""}
+        <div class="opts wbiopts">${opts.map(o=>{ const g=gone.has(o.id)&&!done; return `<div class="wbiop${g?" gone":""}"><button class="opt ${done&&o===p?"correct":wrong.has(o.id)?"wrong":""}" data-p="${o.id}" ${done||wrong.has(o.id)||g?"disabled":""}>${esc(o.n)}</button>${!done&&!wrong.has(o.id)?`<button class="wbix" data-x="${o.id}" title="${g?"Terugzetten":"Uitsluiten"}" aria-label="${g?"Zet "+esc(o.n)+" terug":"Sluit "+esc(o.n)+" uit"}">${g?"↺":"✕"}</button>`:""}</div>`; }).join("")}</div>
       </div><div id="fb"></div>`;
     app.querySelector("#back").onclick=back;
     const h=app.querySelector("#hint"); if(h) h.onclick=()=>{ shown++; draw(); };
     app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>answer(b.dataset.p));
+    app.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{ const id=b.dataset.x; if(gone.has(id)) gone.delete(id); else gone.add(id); const y=window.scrollY; draw(); window.scrollTo(0,y); });
     if(done) feedback();
   }
   function answer(id){
@@ -5847,7 +5855,7 @@ function wieBenIk({pool,others,key,back,again}){
       <div class="row" style="margin-top:1rem"><button class="btn" id="next">${i+1<round.length?"Volgende persoon":"Bekijk je score"}</button></div>`;
     const n=app.querySelector("#next"); n.focus(); n.onclick=()=>{ i++; if(i<round.length) start(); else result(); };
   }
-  function start(){ shown=1; done=false; wrong=new Set(); last=null; opts=makeOpts(round[i]); draw(); window.scrollTo(0,0); }
+  function start(){ shown=1; done=false; wrong=new Set(); gone=new Set(); last=null; opts=makeOpts(round[i]); draw(); window.scrollTo(0,0); }
   function result(){
     const max=round.length*NH;
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
@@ -6183,7 +6191,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117113915"; let last=0, shown=false;
+  const BUILD="20261117145413"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
