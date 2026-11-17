@@ -3781,7 +3781,7 @@ function hcGalgje(seen){
   const mask=(txt,words)=>{ let o=txt; words.filter(w=>w&&w.length>=3&&!STOPW.has(w.toLowerCase())).sort((a,b)=>b.length-a.length).forEach(w=>{ o=o.replace(new RegExp("(^|[^\\p{L}])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+(w.length>=5?"\\p{L}*":"")+"(?=$|[^\\p{L}])","giu"),"$1…"); }); return o; };
   const pool=[];
   H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>pool.push({tag:"Begrip",w:b.b,clue:mask(b.d,[b.b,...b.b.split(/\s+/)])}));
-  WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(p=>pool.push({tag:"Persoon",w:p.n,clue:mask(p.u,[p.n,...p.n.split(/\s+/)])}));
+  WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(p=>pool.push({tag:"Persoon",w:p.n,clue:mask(p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""),[p.n,...p.n.split(/\s+/)])}));
   H.tijdlijn.filter(inSel).forEach(e=>{ const t=onePart(e.t).replace(/[.]$/,""); pool.push({tag:"Gebeurtenis",w:t,clue:"Deze gebeurtenis vond plaats in "+fmtY(e.j)+"."}); });
   const ok=pool.filter(x=>{ const n=norm(x.w).replace(/[^A-Z]/g,"").length; return n>=3&&n<=30; });
   let fresh=ok.filter(x=>!seen.has(x.w)); if(!fresh.length){ seen.clear(); fresh=ok; }
@@ -6560,7 +6560,7 @@ function mcWie(p,cands,c){
   let others=wbiSim(p,same,3,S.hc&&S.hc.id);
   if(others.length<3) others=others.concat(wbiSim(p,cands.filter(x=>x.n!==p.n&&!others.includes(x)),3-others.length,S.hc&&S.hc.id));
   if(others.length<3) return null;
-  const blank=p.u.split(p.n).join("……");
+  const blank=p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").split(p.n).join("……");
   return {id:"wie"+p.id,ask:QTAG("Wie?")+"Wie hoort op de puntjes?",q:blank,k:p.n,c,right:p.id,
     opts:shuffle([p,...others]).map(o=>({id:o.id,label:o.n})),hint:p.h[1],uitleg:`Het is <strong>${esc(p.n)}</strong>.`,extra:p.h[4]};
 }
@@ -6681,7 +6681,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117231947"; let last=0, shown=false;
+  const BUILD="20261117233243"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
