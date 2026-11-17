@@ -684,10 +684,12 @@ const STEDEN = {
   tijdlijn:[
    [1,1302,"Vlaamse ambachtslieden en boeren verslaan de ridders van Filips IV in de Guldensporenslag"],
    [2,1555,"De Vrede van Augsburg: religievrede in het Duitse Rijk (wiens gebied, diens godsdienst), waarna Karel V aftreedt"],
-   [2,1566,"Edelen bieden het Smeekschrift der Edelen aan landvoogdes Margaretha van Parma; hagenpreken leiden tot de Beeldenstorm"],
+   [2,1565.99,"Edelen bieden het Smeekschrift der Edelen aan landvoogdes Margaretha van Parma"],
+   [2,1566,"Hagenpreken leiden tot de Beeldenstorm"],
    [2,1567,"Alva komt naar de Nederlanden en richt de Raad van Beroerten op om Beeldenstormers te bestraffen"],
    [2,1572,"De inname van Den Briel is het eerste succes van de opstand"],
    [2,1576,"Na de Spaanse Furie sluiten de gewesten de Pacificatie van Gent"],
+   [2,1578.99,"Zuidelijke gewesten vormen de Unie van Atrecht en sluiten zich weer aan bij Spanje"],
    [2,1579,"De noordelijke gewesten vormen de Unie van Utrecht"],
    [2,1581,"De opstandige gewesten verwerpen Filips II als heerser"],
    [2,1585,"Antwerpen valt in Spaanse handen"],
@@ -835,10 +837,12 @@ const KOPX = [
 // Gebeurtenissen tijdlijn: jaar -> [uitleg, hint]
 const TLX = {
 1302:["De Vlaamse autonomie werd versterkt en het patriciaat, dat de Franse koning steunde, verloor macht aan de gilden. Met deze slag eindigt deelvraag 1.","Deze slag sluit de eerste periode van de context af."],
+1565.99:["Edelen vroegen landvoogdes Margaretha van Parma om de vervolging van protestanten te verminderen. Zij versoepelde de vervolging.","Dit gebeurde eerder dan de hagenpreken en de Beeldenstorm."],
 1566:["Radicale predikanten hielden hagenpreken. Daarna vernielden protestanten en profiteurs kerken. Filips II stuurde daarop Alva.","Dit gebeurde vlak voor de komst van Alva."],
 1572:["Tot 1572 had de opstand weinig succes. Na Den Briel sloten steden in Holland en Zeeland zich aan.","Dit gebeurde vier jaar na het begin van de opstand in 1568."],
 1576:["Niet-betaalde huursoldaten plunderden. Daarna kozen ook katholieke gewesten de kant van de opstand en spraken ze godsdienstvrijheid af.","Dit kwam vóór de splitsing tussen noord en zuid in 1579."],
-1579:["De zuidelijke gewesten vormden de Unie van Atrecht en sloten zich weer aan bij Spanje. De noordelijke gewesten vormden de Unie van Utrecht.","In dit jaar splitsten noord en zuid zich."],
+1578.99:["De zuidelijke gewesten vormden de Unie van Atrecht en sloten zich weer aan bij Spanje.","Dit gebeurde eerder in 1579 dan de Unie van Utrecht."],
+1579:["Daarna vormden de noordelijke gewesten de Unie van Utrecht, als verband tegen Spanje.","In dit jaar splitsten noord en zuid zich."],
 1581:["Met het Plakkaat van Verlatinghe zetten de Staten-Generaal Filips II af.","Dit gebeurde na de Unie van Utrecht, maar vóór de val van Antwerpen."],
 1585:["Antwerpen viel na een belegering. Veel calvinisten trokken naar het noorden en Amsterdam nam de stapelmarktfunctie over.","Dit gebeurde na het afzweren van Filips II."],
 1588:["De Republiek werd een confederatie met een zwak overkoepelend bestuur. Er werd geen nieuwe landsheer gezocht.","Dit is het einde van deelvraag 2."],
@@ -2652,7 +2656,7 @@ function qChrono(evs,c,tag,X){
     uitleg:`${esc(first.t)}: <strong>${fmtY(first.j)}</strong>. De andere: ${pool.filter(p=>p!==first).sort((a,b)=>a.j-b.j).map(p=>`${esc(p.t)} (${fmtY(p.j)})`).join("; ")}.`,extra:x?x[0]:""};
 }
 function qJaar(e,evs,c,tag,X){
-  const others=[...new Set(evs.filter(x=>x.j!==e.j).sort((a,b)=>Math.abs(a.j-e.j)-Math.abs(b.j-e.j)).map(x=>x.j))].slice(0,6);
+  const others=[...new Set(evs.filter(x=>Math.round(x.j)!==Math.round(e.j)).sort((a,b)=>Math.abs(a.j-e.j)-Math.abs(b.j-e.j)).map(x=>x.j))].filter((y,i,ar)=>ar.findIndex(z=>Math.round(z)===Math.round(y))===i).slice(0,6);
   if(others.length<3) return null;
   const opts=shuffle([e.j,...pickN(others,3)]), x=X?X(e):null;
   return {id:"jr"+e.j,ask:QTAG("Wanneer?")+"In welk jaar gebeurde dit?",q:e.t,c:c(e),right:String(e.j),
@@ -3606,7 +3610,7 @@ function hcFabel(){
   const yrs=[...new Set(H.tijdlijn.map(e=>e.j))];
   evs.forEach(e0=>{ const e=Object.assign({},e0,{t:onePart(e0.t)}); const t=Math.random()<.5;
     if(t) gens.push(()=>mk("y"+e.j+e.t,`In ${fmtY(e.j)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis"));
-    else { const o=yrs.filter(y=>y!==e.j).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`In ${fmtY(w)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde in <strong>${fmtY(e.j)}</strong>, niet in ${fmtY(w)}.`,"Gebeurtenis"); }); } });
+    else { const o=yrs.filter(y=>Math.round(y)!==Math.round(e.j)).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`In ${fmtY(w)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde in <strong>${fmtY(e.j)}</strong>, niet in ${fmtY(w)}.`,"Gebeurtenis"); }); } });
   // 2. betekenis van een begrip (lopende zin)
   begs.forEach(b=>{ const t=Math.random()<.5;
     if(t) gens.push(()=>mk("b"+b.b,begrSent(b,b.d),true,`Dat klopt. ${begrSentH(b,b.d)}`,"","Begrip"));
@@ -3646,7 +3650,7 @@ function kaTijd(){
 function hcTijd(){
   const H=S.hc, pool=shuffle(H.tijdlijn.filter(e=>S.dvSel.has(e.dv))).slice(0,6).sort((a,b)=>a.j-b.j);
   orderEx({title:"Chronologie",intro:"Zet de gebeurtenissen van vroeg (boven) naar laat (onder). Na controleren zie je de jaartallen.",
-    items:pool.map(e=>({id:"j"+e.j,label:e.t,detail:String(e.j),c:e.c||H.dv[e.dv-1].c,uitleg:(H.tlx||TLX)[e.j]?.[0],hint:(H.tlx||TLX)[e.j]?.[1]})),back:hcMenu,
+    items:pool.map(e=>({id:"j"+e.j,label:e.t,detail:fmtY(e.j),c:e.c||H.dv[e.dv-1].c,uitleg:(H.tlx||TLX)[e.j]?.[0],hint:(H.tlx||TLX)[e.j]?.[1]})),back:hcMenu,
     nextLabel:"Nieuwe ronde",onNext:hcTijd});
 }
 
@@ -4116,7 +4120,7 @@ const KA_TL = [
  [10,1985,"Het Schengenakkoord","Reizen zonder grenscontroles werd mogelijk.","Dit gebeurde in het midden van de jaren tachtig."],
  [10,1989,"De Berlijnse Muur valt","Het einde van de verdeling van Europa kwam in zicht.","Dit gebeurde aan het eind van de jaren tachtig."]
 ].map(a=>({tv:a[0],j:a[1],t:a[2],u:a[3],h:a[4]}));
-const fmtY = y => y<0 ? `${-y} v.C.` : String(y);
+const fmtY = y => { const r=Math.round(y); return r<0 ? `${-r} v.C.` : String(r); };
 /* ---------- Wanneer gebeurde het? Jaartal raden ---------- */
 // Hoeveel jaar ernaast nog 100 punten oplevert hangt af van hoe lang geleden het was
 const jaarR = y => y < -1000 ? 200 : y < 0 ? 25 : y < 1000 ? 10 : y < 1500 ? 5 : 3;
@@ -4156,7 +4160,7 @@ function jaarGame({key,items,back,again,title,vc}){
   }
   function check(){
     const q=round[i], g=parse(); if(g===null) return;
-    const d=Math.abs(g-q.j), r=jaarR(q.j), p=jaarPoints(d,r);
+    const d=Math.abs(g-Math.round(q.j)), r=jaarR(q.j), p=jaarPoints(d,r);
     total+=p; results.push({q,g,d,p,r}); record(key,q.j,p>=50); checked=true; draw();
   }
   function showFeedback(){
@@ -6113,7 +6117,7 @@ function mcWie(p,cands,c){
     opts:shuffle([p,...others]).map(o=>({id:o.id,label:o.n})),hint:p.h[1],uitleg:`Het is <strong>${esc(p.n)}</strong>.`,extra:p.h[4]};
 }
 function mcWat(e,evs,c,X){
-  const near=evs.filter(x=>x.j!==e.j).sort((a,b)=>Math.abs(a.j-e.j)-Math.abs(b.j-e.j)).slice(0,8);
+  const near=evs.filter(x=>Math.round(x.j)!==Math.round(e.j)).sort((a,b)=>Math.abs(a.j-e.j)-Math.abs(b.j-e.j)).slice(0,8);
   const others=pickSim(e,near,3,{text:x=>x.t,near:x=>1-Math.min(1,Math.abs(x.j-e.j)/60)});
   if(others.length<3) return null; const x=X?X(e):null;
   return {id:"wat"+e.j,ask:QTAG("Wat?")+`Wat gebeurde er in ${fmtY(e.j)}?`,q:`Kies de gebeurtenis uit ${fmtY(e.j)}.`,k:"-",c,right:"a",
@@ -6229,7 +6233,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261116192504"; let last=0, shown=false;
+  const BUILD="20261117101807"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
