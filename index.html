@@ -3070,7 +3070,11 @@ function simSteps(k,stepIdx,correct,allKetens,n){
   /* geen stappen uit dezelfde keten: die zijn ook (verdere) oorzaak/gevolg en dus dubbelzinnig */
   /* ook stappen uit ketens over hetzelfde onderwerp (zelfde deelvraag of tijdvak) kunnen een eerdere oorzaak zijn: liever stappen uit andere ketens */
   const far=[]; allKetens.filter(o=>o!==k).forEach(o=>o.stappen.filter(s=>!k.stappen.includes(s)).forEach(s=>{ const same=(o.dv&&o.dv===k.dv)||(o.tv&&o.tv===k.tv); (same?pool:far).push({s,near:same?.5:0}); }));
-  const use=far.length>=n+3?far:pool.concat(far);
+  let use=far.length>=n+3?far:pool.concat(far);
+  if(k.tv!=null&&k.dv==null){ /* kenmerkende aspecten: liever afleiders uit een naastliggend tijdvak, maar over een ander onderwerp */
+    const W=t=>(t.toLowerCase().match(/[a-zà-ÿ]{6,}/g)||[]).map(w=>w.slice(0,6)), mine=new Set(W(k.titel+" "+k.stappen.join(" ")));
+    const era=[]; allKetens.filter(o=>o!==k&&o.tv!=null&&Math.abs(o.tv-k.tv)===1).forEach(o=>{ const ow=W(o.titel+" "+o.stappen.join(" ")); if(ow.some(w=>mine.has(w))) return; o.stappen.filter(x=>!k.stappen.includes(x)).forEach(x=>era.push({s:x,near:.3})); });
+    if(era.length>=n+3) use=era; }
   return pickSim({s:correct,near:1},use,n,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
 }
 function simPlaces(m,all,n){
@@ -6681,7 +6685,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117233243"; let last=0, shown=false;
+  const BUILD="20261117233734"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
