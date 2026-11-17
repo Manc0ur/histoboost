@@ -6090,8 +6090,12 @@ function kaKruis(){ kruiswoord({scope:"ka",back:kaMenu,again:kaKruis}); }
 function hcKruis(){ kruiswoord({scope:"hc",back:hcMenu,again:hcKruis}); }
 
 /* ---------- Meerkeuzevragen: wie, wat, wanneer, oorzaak en gevolg, begrippen ---------- */
+const WBI_VR=new Set(["Pocahontas","Catharina de Grote","Olympe de Gouges","Aletta Jacobs","Koningin Victoria","Cixi","Wilhelmina Drucker","Anne Frank","Koningin Wilhelmina"]);
+const wbiGen=x=>WBI_VR.has(x.n)?"v":"m";
 function mcWie(p,cands,c){
-  const others=simPersons(p,cands,3,S.hc&&S.hc.id);
+  const same=cands.filter(x=>x.n!==p.n&&wbiGen(x)===wbiGen(p));
+  let others=wbiSim(p,same,3,S.hc&&S.hc.id);
+  if(others.length<3) others=others.concat(wbiSim(p,cands.filter(x=>x.n!==p.n&&!others.includes(x)),3-others.length,S.hc&&S.hc.id));
   if(others.length<3) return null;
   const blank=p.u.split(p.n).join("……");
   return {id:"wie"+p.id,ask:QTAG("Wie?")+"Wie hoort op de puntjes?",q:blank,k:p.n,c,right:p.id,
@@ -6214,7 +6218,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261117154926"; let last=0, shown=false;
+  const BUILD="20261117160541"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
