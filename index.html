@@ -355,6 +355,11 @@ input[type=checkbox]{width:1.25rem;height:1.25rem;accent-color:var(--ink);flex:n
 }
 @media(max-width:619px){.pool[data-pool]{position:sticky;bottom:0;max-height:38vh;overflow-y:auto;z-index:3;background:var(--bg);border-style:solid;box-shadow:0 -6px 14px rgba(0,0,0,.12)}}
 @media(max-width:480px){.exq{flex-direction:column;gap:.15rem}}
+.ovseg{flex-wrap:wrap;border-radius:18px;margin:.2rem 0 .8rem}.ovseg button{padding:.5rem 1rem}
+.ovh{font-family:"Bricolage Grotesque",sans-serif;font-size:1.05rem;margin:1.1rem 0 .3rem}
+.ovdl{margin:0}.ovdl dt{font-weight:800;margin-top:.55rem}.ovdl dd{margin:.1rem 0 0;max-width:68ch}
+.ovul{margin:.2rem 0;padding-left:1.1rem;max-width:68ch}.ovul li{margin:.4rem 0}
+.ovtl{list-style:none;margin:.2rem 0;padding:0}.ovtl li{display:grid;grid-template-columns:5rem 1fr;gap:.6rem;padding:.35rem 0;border-top:1px solid var(--line)}.ovtl li:first-child{border-top:0}.ovtl .yc{color:var(--c);font-variant-numeric:tabular-nums}.ovu{color:var(--muted)}
 .hscard .ht,.hslist .ht{overflow-wrap:anywhere;hyphens:auto;min-width:0}
 
 h1,h2,h3{overflow-wrap:break-word;hyphens:auto}
@@ -3295,7 +3300,7 @@ function hcWhy(H,m){
   if(m==="uitleg"&&!lzPass(H).some(x=>S.dvSel.has(x.dvNr))) return msg("teksten");
   return "";
 }
-function hcMenu(){ CTX="hc";
+function hcMenu(){ CTX="hc"; LEESOV=false;
   const H=S.hc; sylHC(H);
   if(H.niveau==="tl") S.dvSel=new Set(H.dv.map(d=>d.nr));
   app.innerHTML = `
@@ -3476,13 +3481,16 @@ function leesBuild(H,art){ const items=[]; let html="";
   leesGroups(H).forEach(g=>{ const D=lnkDict(g.P,items.length); items.push(...D.items); html+=(H.parts?`<h2 class="lgrp">${esc(g.P.grp||g.P.titel)}</h2>`:"")+art(g,D)+leesMeer(g.P); });
   return {items,html}; }
 function tlLees(){
+  if(LEESOV) return leesOverzicht();
   const H=S.hc, L=leesBuild(H,(g,D)=>tlArticles(g.P,g.dvs,D,g.nrOf));
   app.innerHTML = `<div class="tll lnk" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
   <h2>${H.parts?"De examenstof van je onderwerpen":esc(H.titel)}</h2>
+  ${ovToggle()}
   <p class="lead">Dit moet je kennen voor het examen. Het is de tekst uit de syllabus (de officiële lijst van wat je moet kunnen), overzichtelijk per onderdeel. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen. Tik erop voor uitleg. Ook personen en jaartallen kun je aantikken. Onder elk onderdeel staan de begrippen die je nodig hebt voor de examenvragen.</p>
   ${L.html}</div>`;
   const W=app.querySelector("#tll");
   lnkSheet(W,{items:L.items});
+  bindOv();
   W.addEventListener("click",e=>{ const f=e.target.closest("[data-fl]"); if(!f) return;
     const keep=S.dvSel, nr=+f.dataset.fl; S.dvSel=new Set([nr]);
     flashcards({scope:"hc",key:hk("flash"),back:()=>{ hcLees(); const a=document.getElementById("tll-"+nr); if(a) a.scrollIntoView(); }});
@@ -3497,14 +3505,42 @@ function hcArticles(H,dvs,D){ return dvs.map(d=>d.kaPart?kaArticle(d,D):`<articl
   </article>`).join(""); }
 function hcLees(){
   const H=S.hc;
+  if(LEESOV) return leesOverzicht();
   if(H.niveau==="tl") return tlLees();
   const L=leesBuild(H,(g,D)=>hcArticles(g.P,g.dvs,D));
   app.innerHTML = `<div class="lnk" id="lnk"><button class="back" id="back">‹ Terug naar oefeningen</button>
   <h2>${H.parts?"De examenstof van je onderwerpen":esc(H.titel)}</h2>
+  ${ovToggle()}
   <p class="lead">Dit is de tekst uit de syllabus: dit moet je kennen voor het examen. <strong>Onderstreepte woorden</strong> zijn begrippen, personen of gebeurtenissen: tik erop voor de uitleg.</p>
   ${L.html}</div>`;
   lnkSheet(app.querySelector("#lnk"),{items:L.items});
-  app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
+  bindOv(); app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
+}
+
+
+/* ---------- Lees de stof: overzicht van begrippen, personen en gebeurtenissen per deelonderwerp ---------- */
+let LEESOV=false;
+function ovToggle(){ return `<div class="seg ovseg" role="group" aria-label="Weergave"><button type="button" data-ov="0" aria-pressed="${!LEESOV}">Stofomschrijving</button><button type="button" data-ov="1" aria-pressed="${LEESOV}">Begrippen, personen en gebeurtenissen</button></div>`; }
+function bindOv(){ app.querySelectorAll("[data-ov]").forEach(b=>b.onclick=()=>{ LEESOV=b.dataset.ov==="1"; hcLees(); }); }
+function leesOverzicht(){
+  const H=S.hc, dvs=H.dv.filter(d=>S.dvSel.has(d.nr)), X=H.tlx||TLX;
+  const pers=d=>WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]&&p.hc[H.id].includes(d.nr));
+  const pHtml=p=>{ const u=esc(p.u), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
+  const body=dvs.map((d,i)=>{
+    const B=H.begrippen.filter(b=>b.dv===d.nr&&b.d).sort((a,b)=>a.b.localeCompare(b.b,"nl")), P=pers(d).sort((a,b)=>a.n.localeCompare(b.n,"nl")), E=H.tijdlijn.filter(e=>e.dv===d.nr).sort((a,b)=>a.j-b.j);
+    const grp=H.parts&&(i===0||dvs[i-1].src!==d.src)?`<p class="dvgrp">${esc(d.srcT||"")}</p>`:"";
+    return grp+`<article class="dv ovdv" style="--c:${col(d.c)}">
+      <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
+      ${B.length?`<h4 class="ovh">Begrippen</h4><dl class="ovdl">${B.map(b=>`<dt>${esc(b.b)}</dt><dd>${esc(b.d)}</dd>`).join("")}</dl>`:""}
+      ${P.length?`<h4 class="ovh">Personen</h4><ul class="ovul">${P.map(p=>`<li>${pHtml(p)}</li>`).join("")}</ul>`:""}
+      ${E.length?`<h4 class="ovh">Gebeurtenissen</h4><ol class="ovtl">${E.map(e=>{ const u=((X[e.j]||[])[0]||"").trim(); return `<li><span class="yc">${fmtY(e.j)}</span><span><strong>${esc(e.t)}</strong>${u?`<span class="ovu"> ${esc(u)}</span>`:""}</span></li>`; }).join("")}</ol>`:""}
+    </article>`; }).join("");
+  app.innerHTML=`<div class="lnk tll" id="ovp"><button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>${H.parts?"De examenstof van je onderwerpen":esc(H.titel)}</h2>
+  ${ovToggle()}
+  <p class="lead">Per deelonderwerp: de begrippen met een korte omschrijving, de personen die je moet kennen en de gebeurtenissen op een rij, van oud naar nieuw.</p>
+  ${body||'<p class="note">Er zijn geen onderdelen gekozen.</p>'}</div>`;
+  bindOv(); app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0);
 }
 
 function hcKoppelB(prev){
@@ -6686,7 +6722,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118000503"; let last=0, shown=false;
+  const BUILD="20261118004150"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
