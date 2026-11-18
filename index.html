@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118144940"; let last=0, shown=false;
+  const BUILD="20261118150200"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7395,6 +7395,27 @@ ICONS["m:piramide"]='<path d="M12 3L2.5 20.5h19z"/><path d="M8.2 11h7.6M5.4 16h1
 
 /* De Rijn is geen goede plekvraag (rivier door heel Europa): uit tijdmachine en kaartvragen; de gebeurtenis blijft in de tijdlijn */
 { const H=HCDATA.gr; for(let i=H.map.length-1;i>=0;i--) if(H.map[i].plaats==="De Rijn") H.map.splice(i,1); delete TM.mgr7; }
+
+/* Onderbouw: keuze Klas 1/2/3 en niveau (TL, TL-Havo, Havo, Havo-Vwo, Vwo) boven de onderwerpen */
+HCLIST.ob.forEach(h=>{ h.klas=[1]; });
+const OB_KLASSEN=[[1,"Klas 1"],[2,"Klas 2"],[3,"Klas 3"]];
+const OB_NIVEAUS=[["tl","TL"],["tlh","TL-Havo"],["h","Havo"],["hv","Havo-Vwo"],["v","Vwo"]];
+function obKN(){ let k=1,n="tl"; try{ k=+localStorage.getItem("obKlas")||1; n=localStorage.getItem("obNiv")||"tl"; }catch(e){}
+  if(!OB_KLASSEN.some(x=>x[0]===k)) k=1; if(!OB_NIVEAUS.some(x=>x[0]===n)) n="tl"; return {k,n}; }
+{ const _hOb=homeOb;
+  homeOb=function(){ const all=HCLIST.ob, {k,n}=obKN(); HCLIST.ob=all.filter(h=>h.klas.includes(k));
+    let old=null; try{ old=localStorage.getItem("hcSel-ob"); }catch(e){}
+    try{ _hOb(); } finally{ HCLIST.ob=all; }
+    if(!all.some(h=>h.klas.includes(k))) try{ old===null?localStorage.removeItem("hcSel-ob"):localStorage.setItem("hcSel-ob",old); }catch(e){}
+    const sec=app.querySelector("section.section"); if(!sec) return;
+    const seg=(lab,arr,cur,att)=>`<div class="obkn"><div class="obknl">${lab}</div><div class="seg" role="group" aria-label="${lab}">${arr.map(x=>`<button type="button" aria-pressed="${x[0]===cur}" ${att}="${x[0]}">${x[1]}</button>`).join("")}</div></div>`;
+    sec.insertAdjacentHTML("beforebegin",`<section class="section obkns">${seg("Klas",OB_KLASSEN,k,"data-klas")}${seg("Niveau",OB_NIVEAUS,n,"data-niv")}</section>`);
+    if(!HCLIST.ob.some(h=>h.klas.includes(k))){ sec.innerHTML=`<h2>Kies je onderwerp</h2><p class="hchint">Voor ${OB_KLASSEN.find(x=>x[0]===k)[1]} zijn er nog geen onderwerpen. Kies een andere klas.</p>`; }
+    app.querySelectorAll("[data-klas]").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem("obKlas",b.dataset.klas); }catch(e){} home(); });
+    app.querySelectorAll("[data-niv]").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem("obNiv",b.dataset.niv); }catch(e){} home(); }); }; }
+{ const st=document.createElement("style");
+  st.textContent=".obkns{margin:1.2rem 0 .2rem}.obkn{margin:.5rem 0}.obknl{font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.3rem}.obkn .seg{flex-wrap:wrap;border-radius:18px}";
+  document.head.appendChild(st); }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
