@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118111025"; let last=0, shown=false;
+  const BUILD="20261118111426"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7111,6 +7111,67 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
  window.__GKMISS=[];
  H.gk.forEach(t=>{ const m=N[t.titel]; if(!m){ __GKMISS.push("titel:"+t.titel); return; }
    for(const a in m){ const R=new RegExp("\\[\\["+re(a)+"\\|[^|\\]]*\\|"); if(!R.test(t.tekst)) __GKMISS.push(t.titel+":"+a); else t.tekst=t.tekst.replace(R,()=>"[["+a+"|"+m[a]+"|"); } });
+})();
+
+/* Onderbouw: omschrijvingen zonder losse verwijswoorden */
+(function(){ const H=GRIEKEN;
+ const B={
+  "Burger":["Vrije inwoner van een stad of staat die volledig meetelt en dus mag meebeslissen.","In Athene tellen alleen vrije mannen mee die er geboren zijn en ouder dan 18 jaar.","Vrouwen en slaven in Athene hoorden er niet bij."],
+  "Burgerrecht":["De rechten van een volwaardig inwoner van een staat, bijvoorbeeld meebeslissen over het bestuur.","In Athene kregen rond 500 v.C. meer mannen rechten om mee te beslissen, in ruil voor hun hulp bij de verdediging van de stad.","Wie volwaardig inwoner is, mag meebeslissen."],
+  "Democratie":["Bestuursvorm waarin de burgers mogen meebeslissen.","In Athene mochten rond 500 v.C. alleen mannen met burgerrecht meebeslissen.","Een Grieks woord dat 'macht van het volk' betekent."],
+  "Mythe":["Een verhaal over goden of halfgoden, of een verhaal dat voor waar wordt aangenomen, maar niet helemaal juist is.","De Grieken verklaarden natuurverschijnselen, ziekte en dood met verhalen over goden.","Denk aan de verhalen over Zeus en Poseidon."],
+  "Oudheid":["De periode tussen 3000 v.C. en 500 n.C., waarin de Griekse en Romeinse cultuur bloeiden.","De periode duurde ruim 3500 jaar.","De periode eindigt rond 500 n.C."],
+  "Politiek":["Alles wat te maken heeft met hoe een land of stad wordt bestuurd en hoe wetten worden gemaakt.","In elke Griekse stadstaat werd het bestuur anders geregeld.","Onderwerp: bestuur en wetten."],
+  "Stadstaat":["Een stad met het gebied eromheen en een eigen bestuur.","Athene en Sparta waren de grootste van zo'n 700 Griekse gebieden met een eigen bestuur.","Een stad met een eigen bestuur maakte haar eigen wetten."],
+  "Volksvergadering":["Een bijeenkomst van burgers waar wetten werden goedgekeurd of afgekeurd en besluiten werden genomen.","In Athene deden ongeveer 6000 burgers mee.","Burgers beslissen in zo'n bijeenkomst over oorlog en vrede."],
+  "Beroepsleger":["Een leger van soldaten die vechten als werk doen en daarvoor betaald worden.","De Romeinse soldaten waren goed getraind en gehoorzaam.","Soldaten die vechten als werk doen."],
+  "Bondgenoot":["Een volk of land dat samenwerkt met een ander volk of land.","Volken die door Rome waren overwonnen, betaalden belasting en mochten een eigen bestuur houden.","Samenwerkers."],
+  "Germanen":["Een verzameling volken die in het gebied van Duitsland en Nederland leefden, zoals de Bataven.","De Bataven werden bondgenoten van de Romeinen.","De volken woonden ten noorden van de Rijn."],
+  "Romeinse Rijk":["Het grote gebied rond de Middellandse Zee dat tussen 300 v.C. en ongeveer 500 n.C. vanuit één stad werd bestuurd.","In de 2e eeuw n.C. had het gebied zijn grootste omvang.","Het gebied lag in Europa, Afrika en Azië."],
+  "Consul":["Een van de twee gekozen bestuurders en legeraanvoerders in Rome, in de tijd dat er geen koning en geen keizer was.","Twee bestuurders tegelijk, elk jaar opnieuw gekozen.","Bestuurder en legeraanvoerder tegelijk."],
+  "Grieks-Romeinse cultuur":["Een mengeling van twee oude manieren van leven, doordat de overwinnaars veel gewoontes, goden en bouwwerken van de overwonnenen overnamen.","Voorbeelden: goden met andere namen, tempels, beelden, olijfolie en warmwaterbaden.","Een mix van twee oude volken."],
+  "Keizer":["De man die als enige alle macht had in het Romeinse Rijk, nadat de macht van de senaat was afgelopen.","De titel komt van de naam Caesar. Augustus was de eerste alleenheerser van Rome.","Alle macht in één hand."],
+  "Keizerrijk":["Een staat waarin één alleenheerser alle macht heeft; Rome werd zo'n staat in 27 v.C.","Onder Augustus veranderde de staatsvorm van het Romeinse Rijk.","Eén man heeft de macht."],
+  "Republiek":["Een land zonder koning, dat bestuurd wordt door een of meer gekozen leiders.","In 509 v.C. verjoegen de Romeinen hun koning; daarna veranderde hun staatsvorm.","Geen koning."],
+  "Senaat":["Groep leiders uit de rijkste en belangrijkste Romeinse families, die wetten goed- of afkeurde en Rome bestuurde.","In Rome keurde een groep rijke leiders wetten goed of af.","Rijke families."]
+ };
+ H.begrippen.forEach(b=>{ const x=B[b.b]; if(x){ b.d=x[0]; H.bext[b.b]=[x[1],x[2]]; } });
+ const TLX={"-500":["Het bestuur van Athene kwam niet meer alleen bij een kleine groep rijke mannen te liggen.","Het jaartal ligt kort na het begin van de Romeinse Republiek."],
+  "-300":["Na de verovering van Italië kwam Rome in conflict met de handelsstad Carthago.","Eerst Italië, daarna de rest van het gebied rond de Middellandse Zee."],
+  "-264":["Na de overwinning op Carthago had Rome de controle over de Middellandse Zee.","De oorlogen duurden samen meer dan honderd jaar."],
+  "-60":["De Germaanse Bataven werden bondgenoten van de Romeinen.","De verovering vond plaats vóór het begin van onze jaartelling."],
+  "-48":["Caesar greep de macht met zijn sterke leger.","Vier jaar later werd Caesar vermoord."],
+  "-44":["De moordenaars van Caesar kregen de macht van de senaat niet terug.","Het jaar van de moord op de alleenheerser."],
+  "-27":["Augustus noemde zichzelf 'caesar', in het Nederlands: keizer.","Augustus was de geadopteerde zoon van Caesar."],
+  "150":["Het Romeinse Rijk lag rond de hele Middellandse Zee.","Het jaartal ligt in de tweede eeuw na Christus."]};
+ for(const k in TLX) H.tlx[k]=TLX[k];
+ const K={"Van rijke mannen naar democratie in Athene":["Een kleine groep rijke mannen bestuurt Athene","Meer mannen helpen de stad te verdedigen","Die mannen krijgen burgerrechten in ruil voor hun hulp","De nieuwe burgers mogen meebeslissen in het bestuur van Athene","Athene wordt een democratie"],
+  "Hoe de Grieken aan eten kwamen":["De Grieken wonen in smalle bergdalen","In de bergdalen is het moeilijk om genoeg voedsel te verbouwen","De Grieken gaan veel handeldrijven","De stadstaten voeren oorlog om landbouwgrond"],
+  "Van mythe naar wetenschap":["De Grieken zoeken verklaringen voor natuurverschijnselen","De Grieken vinden verklaringen in godenverhalen, de mythen","Vanaf 600 v.C. geloven sommige Grieken de mythen niet meer","Die Grieken onderzoeken zaken met logisch nadenken","Het onderzoek vormt het begin van de Griekse wetenschap"],
+  "Van dorp tot wereldrijk":["Rome is een klein dorp aan de Tiber","Door handel wordt Rome rijk","Door de rijkdom kan Rome een sterk leger betalen","De Romeinen veroveren Italië en verslaan Carthago","Rome heeft de controle over de Middellandse Zee"],
+  "Waarom de overwonnen volken zich rustig hielden":["De Romeinen veroveren een volk","Het overwonnen volk wordt bondgenoot van Rome","Het overwonnen volk betaalt belasting en levert soldaten aan Rome","Het overwonnen volk mag een eigen bestuur houden","Het overwonnen volk komt minder snel in opstand"],
+  "Rome wordt een republiek":["De Romeinse koning gedraagt zich wreed","De bevolking jaagt de koning in 509 v.C. weg","Rome wordt een republiek","Rijke leiders vormen de senaat","Twee consuls worden de machtigste bestuurders"],
+  "Van boer naar arme stadsbewoner":["Boeren vechten jarenlang in het leger","De familie van de boeren kan de boerderij niet aan en verkoopt het land","De boerenfamilies trekken naar de stad op zoek naar werk","In de stad hebben de boerenfamilies geen vast werk en krijgen ze voedsel van de rijken"]};
+ H.ketens.forEach(k=>{ if(K[k.titel]) k.stappen=K[k.titel]; });
+ const M={"Athene":"Griekse stadstaat die rond 500 v.C. de democratie invoerde.","Sparta":"Griekse stadstaat die, net als Athene, veel groter was dan de meeste andere stadstaten.","Griekenland":"Land waar de meeste stadstaten van de Oudheid lagen, zoals Athene en Sparta.","Middellandse Zee":"Zee waaromheen de Grieken woonden en die later door de Romeinen werd gecontroleerd.","Carthago":"Machtige handelsstad in Noord-Afrika die drie oorlogen met Rome voerde.","Italië":"Land waarvan de Romeinen rond 300 v.C. het grootste deel hadden veroverd.","De Rijn":"Rivier die in de 1e eeuw v.C. de noordgrens van het Romeinse Rijk werd.","Zuid-Nederland":"Gebied waar de Bataven woonden, een Germaans volk dat bondgenoot van Rome werd.","Zuid-Italië":"Gebied met veel Griekse stadstaten, waardoor de Romeinen de Griekse cultuur goed kenden."};
+ H.map.forEach(m=>{ if(M[m.plaats]) m.t=M[m.plaats]; if(m.plaats==="Rome") m.t=m.dv===2?"Stad die rond 750 v.C. als klein dorp aan de Tiber ontstond.":"Stad van waaruit keizer Augustus het hele rijk bestuurde."; });
+ const N={
+  "Stadstaten":{"700":"Aantal zelfstandige Griekse steden met een eigen bestuur, ongeveer.","landbouw":"Werkwijze waarmee de meeste Grieken hun brood verdienden: het verbouwen van graan, druiven en olijven."},
+  "Athene":{"500 v.C.":"Jaartal rond het begin van de democratie in Athene.","burgerrechten":"Rechten waarmee Atheense mannen mochten meebeslissen over het bestuur.","loting":"Manier waarop werd bepaald wie in de Atheense raad van 500 kwam: het lot besliste."},
+  "Ongelijkheid in Athene":{"derde":"Breukdeel van de Atheense bevolking dat slaaf was: één op de drie.","vrouwen":"Atheense inwoners die, net als slaven, geen burgerrechten hadden."},
+  "Mythen en wetenschap":{"600 v.C.":"Jaartal rond het begin van de Griekse wetenschap."},
+  "Rome groeit":{"750 v.C.":"Jaartal rond het ontstaan van de stad Rome.","handel":"Reden waarom Rome steeds rijker werd en een sterk leger kon betalen."},
+  "Leger en bondgenoten":{"bondgenoten":"Naam voor volken die door Rome waren overwonnen en met Rome samenwerkten.","bestuur":"Het zelf bepalen hoe een overwonnen volk geregeerd werd."},
+  "De Bataven":{"leger":"Romeinse strijdmacht waarin veel Bataven jarenlang vochten.","schrijven":"Vaardigheid met letters die de Bataven van de Romeinen leerden en zelf nog niet kenden.","burgerrecht":"Beloning voor Bataafse soldaten: Romeinse rechten, met onder andere minder belasting betalen."},
+  "De Republiek":{"republiek":"Staat zonder koning, bestuurd door gekozen leiders; Rome werd zo'n staat in 509 v.C."},
+  "Sociale lagen":{"drie":"Aantal: rond 100 v.C. was in het Romeinse Rijk één op de … mensen een slaaf."},
+  "De Grieks-Romeinse cultuur":{"Grieken":"Volk waarvan de Romeinen de goden en gebouwen nabootsten.","Grieks-Romeinse cultuur":"Naam voor de vermenging van Griekse en Romeinse gewoontes, goden en kunst."}};
+ const re=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ H.gk.forEach(t=>{ const m=N[t.titel]; if(!m) return; for(const a in m){ const R=new RegExp("\\[\\["+re(a)+"\\|[^|\\]]*\\|"); if(!R.test(t.tekst)) __GKMISS.push("3:"+t.titel+":"+a); else t.tekst=t.tekst.replace(R,()=>"[["+a+"|"+m[a]+"|"); } });
+ const W=WBI.find(p=>p.n==="Augustus"); if(W) W.u="Augustus was de geadopteerde zoon van Caesar. In 27 v.C. kreeg Augustus alle macht en werd hij de eerste keizer van het Romeinse Rijk.";
+ H.__ketenOk=H.ketens.map(k=>k.stappen.length);
+ TM.mgr4[2]="Er ontstaat een klein dorp aan een rivier vlak bij de zee. Het dorp wordt later de hoofdstad van een wereldrijk.";
+ TM.mgr7[2]="Een grote rivier wordt de noordgrens van het Romeinse Rijk.";
 })();
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
