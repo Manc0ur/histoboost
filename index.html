@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118115619"; let last=0, shown=false;
+  const BUILD="20261118115926"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7234,6 +7234,26 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
  const e=H.tijdlijn.find(x=>x.j===-60); if(e){ e.j=-50; H.tlx[-50]=H.tlx[-60]; delete H.tlx[-60]; }
  delete YLAB["-60"]; YLAB["-50"]="Rond 50 v.C.";
  H.tijdlijn.sort((a,b)=>a.j-b.j);
+})();
+
+/* Onderbouw: drie passende afleiders per gat, en Romeinse alternatieven bij personen */
+(function(){ const H=GRIEKEN;
+ WBI.push({id:"pgr2",n:"Marcus Antonius",tv:[2],hc:{gr:[3]},h:["Ik was een Romeins veldheer in de laatste eeuw v.C.","Ik was een medestander van Julius Caesar.","Na Caesars dood streed ik om de macht met zijn geadopteerde zoon.","Ik werkte samen met de Egyptische koningin Cleopatra.","In 31 v.C. verloor ik de zeeslag bij Actium."],u:"Marcus Antonius was een Romeins veldheer en medestander van Julius Caesar. Na de moord op Caesar streed Marcus Antonius om de macht met Augustus en hij verloor in 31 v.C. de zeeslag bij Actium."});
+ WBI.push({id:"pgr3",n:"Pompeius",tv:[2],hc:{gr:[3]},h:["Ik was een Romeins veldheer en politicus in de laatste eeuw v.C.","Ik was een machtige rivaal van Julius Caesar.","Ik streed in een burgeroorlog tegen Caesar.","Ik verloor die oorlog.","In 48 v.C. werd ik in Egypte vermoord."],u:"Pompeius was een Romeins veldheer en politicus. Hij was de grote rivaal van Julius Caesar en verloor de burgeroorlog tegen hem. In 48 v.C. werd Pompeius in Egypte vermoord."});
+ const N={"Stadstaten":{"700":"70;7;7000","stadstaat":"volksvergadering;republiek;provincie","politiek":"wetenschap;democratie;handel","Grieks":"Latijn;Perzisch;Fenicisch","landbouw":"mijnbouw;scheepsbouw;jacht"},
+  "Athene":{"500 v.C.":"800 v.C.;100 v.C.;300 v.C.","burgerrechten":"slavenrechten;handelsrechten;erfrechten","democratie":"dictatuur;republiek;monarchie","volksvergadering":"senaat;rechtbank;priesterraad","loting":"stemmen;erfopvolging;veiling"},
+  "Ongelijkheid in Athene":{"ongelijkheid":"vrijheid;democratie;burgerrecht","slaaf":"priester;burger;krijger","derde":"tiende;helft;kwart","vrouwen":"kinderen;priesters;vreemdelingen"},
+  "Mythen en wetenschap":{"mythen":"sagen;wetten;dagboeken","Zeus":"Hades;Poseidon;Apollo","600 v.C.":"800 v.C.;100 v.C.;300 v.C.","wetenschap":"politiek;mythe;handel"},
+  "Rome groeit":{"750 v.C.":"509 v.C.;27 v.C.;264 v.C.","Tiber":"Rijn;Nijl;Donau","handel":"landbouw;wetenschap;kunst","Italië":"Griekenland;Spanje;Gallië","Carthago":"Athene;Sparta;Syracuse","Middellandse Zee":"Noordzee;Zwarte Zee;Rode Zee"},
+  "Leger en bondgenoten":{"beroepsleger":"burgerleger;vrijwilligersleger;volksleger","discipline":"vrijheid;rijkdom;snelheid","bondgenoten":"slaven;vijanden;gijzelaars","belasting":"loon;pacht;buit","bestuur":"leger;tempel;religie"},
+  "De Bataven":{"Rijn":"Maas;Tiber;Donau","Germanen":"Grieken;Carthagers;Etrusken","leger":"volksvergadering;senaat;vloot","schrijven":"rekenen;zeilen;bouwen","burgerrecht":"vrijkaartje;consulaat;pensioen"},
+  "De Republiek":{"509 v.C.":"44 v.C.;27 v.C.;264 v.C.","republiek":"keizerrijk;democratie;monarchie","senaat":"volksvergadering;legioen;rechtbank","consuls":"keizers;burgers;priesters"},
+  "Van Caesar tot Augustus":{"Caesar":"Augustus;Nero;Pompeius","48 v.C.":"27 v.C.;509 v.C.;44 v.C.","senaat":"volksvergadering;consul;legioen","vermoord":"verbannen;gekozen;gevangengenomen","Augustus":"Marcus Antonius;Pompeius;Nero","keizer":"consul;senator;legaat","keizerrijk":"republiek;stadstaat;bondsstaat"},
+  "Sociale lagen":{"rijken":"boeren;slaven;ambachtslieden","handelaren":"priesters;soldaten;bestuurders","boeren":"senatoren;bestuurders;legerleiders","slaven":"boeren;ambachtslieden;senatoren","drie":"vijf;tien;twee"},
+  "De Grieks-Romeinse cultuur":{"Grieken":"Egyptenaren;Perzen;Galliërs","Jupiter":"Neptunus;Hades;Mars","Neptunus":"Jupiter;Hera;Mars","gladiatorenspelen":"volksvergaderingen;aquaducten;olijfolie","Grieks-Romeinse cultuur":"Romeinse Republiek;Oudheid;Germaanse cultuur"}};
+ const re=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ H.gk.forEach(t=>{ const m=N[t.titel]; if(!m){ __GKMISS.push("6:"+t.titel); return; }
+  for(const a in m){ const R=new RegExp("(\\[\\["+re(a)+"\\|[^|\\]]*\\|)[^\\]]*\\]\\]"); if(!R.test(t.tekst)) __GKMISS.push("6:"+t.titel+":"+a); else t.tekst=t.tekst.replace(R,(x,p)=>p+m[a]+"]]"); } });
 })();
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
