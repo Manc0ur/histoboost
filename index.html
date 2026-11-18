@@ -126,6 +126,7 @@ button{font:inherit;color:inherit}
 .chip.pchip{--c:var(--ink);border-radius:999px;font-size:.95rem}
 .chip.pchip[aria-pressed="true"]{color:var(--bg)}
 .tly{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.25rem;white-space:nowrap}
+@media(max-width:520px){.tlrow{grid-template-columns:var(--tlwm,4.4rem) 1fr}.tly{font-size:1.02rem}}
 .slot{min-height:3.3rem;border:2px dashed var(--line);border-radius:10px;background:transparent;text-align:left;padding:.3rem;cursor:pointer;display:flex;align-items:stretch;width:100%}
 .slot.over,.pool.over{border-color:var(--focus);background:var(--surface)}
 .slot.correct{border:2px solid var(--ok);background:var(--ok-bg)}
@@ -4503,7 +4504,7 @@ function tlEx({all,key,back,again,X,tv}){
     app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>Tijdlijn</h2>
     <p class="lead">Sleep elke gebeurtenis naar het jaartal waarin hij plaatsvond. Je kunt ook op een gebeurtenis tikken en daarna op een jaartal.</p>
-    <div class="tl" style="--tlw:${years.some(y=>y<0)?"7.2rem":"4.4rem"}">${years.map(y=>{const id=place[y], e=id?evOf(id):null, cls=checked?(id===y?"correct":"wrong"):"";
+    <div class="tl" style="--tlwm:${(Math.max(...years.map(y=>fmtY(y).length))*.6+.5).toFixed(1)}rem;--tlw:${Math.max(years.some(y=>y<0)?7.2:4.4,Math.max(...years.map(y=>fmtY(y).length))*.7+.6).toFixed(1)}rem">${years.map(y=>{const id=place[y], e=id?evOf(id):null, cls=checked?(id===y?"correct":"wrong"):"";
       return `<div class="tlrow"><span class="tly">${fmtY(y)}</span><button class="slot ${cls}" data-slot="${y}" ${checked?"disabled":""} aria-label="Jaartal ${fmtY(y)}${e?`: ${esc(e.t)}`:", leeg"}">${e?`<span class="ecard ${sel===e.j?"sel":""}" data-ev="${e.j}">${esc(e.t)}${checked&&id!==y&&!shown&&X(id)?`<span class="hintline"><strong>Hint:</strong> ${esc(X(id)[1])}</span>`:""}${checked&&ok===years.length&&X(id)?`<span class="uitline">${esc(X(id)[0])}</span>`:""}</span>`:`<span class="ph">Sleep een gebeurtenis hierheen</span>`}</button></div>`;}).join("")}</div>
     ${checked?"":`<h3>Gebeurtenissen</h3>
     <div class="pool" data-pool="1">${pool.map(id=>`<button class="ecard ${sel===id?"sel":""}" data-ev="${id}">${esc(evOf(id).t)}</button>`).join("")||`<span class="ph">Alle gebeurtenissen staan op de tijdlijn. Sleep er een hierheen om hem terug te zetten.</span>`}</div>`}
@@ -6764,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118110113"; let last=0, shown=false;
+  const BUILD="20261118110231"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
