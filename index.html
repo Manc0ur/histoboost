@@ -6767,7 +6767,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118113551"; let last=0, shown=false;
+  const BUILD="20261118114640"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7226,6 +7226,13 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
   ["]] en Poseidon werd [[Neptunus","]] en de Griekse zeegod Poseidon werd [[Neptunus"]
  ];
  R.forEach(([a,b])=>{ let n=0; H.gk.forEach(t=>{ if(t.tekst.includes(a)){ n++; t.tekst=t.tekst.replace(a,b); } }); if(n!==1) __GKMISS.push("4:"+a.slice(0,30)+":"+n); });
+})();
+
+/* Onderbouw: geen gebeurtenissen met een overlappend eeuwlabel */
+(function(){ const H=GRIEKEN;
+ const e=H.tijdlijn.find(x=>x.j===-60); if(e){ e.j=-50; H.tlx[-50]=H.tlx[-60]; delete H.tlx[-60]; }
+ delete YLAB["-60"]; YLAB["-50"]="Rond 50 v.C.";
+ H.tijdlijn.sort((a,b)=>a.j-b.j);
 })();
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
