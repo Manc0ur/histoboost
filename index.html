@@ -3334,10 +3334,10 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één ${H.niveau==="tl"?"onderdeel":"deelvraag"} om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","koppel","mc","quiz","klas","exam","proef"]);
+  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","koppel","mc","quiz","klas","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),soort:()=>obSoort(),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
   menuScroll("hc:"+S.hc.id);
 }
 
@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118115926"; let last=0, shown=false;
+  const BUILD="20261118120422"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7255,6 +7255,54 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
  H.gk.forEach(t=>{ const m=N[t.titel]; if(!m){ __GKMISS.push("6:"+t.titel); return; }
   for(const a in m){ const R=new RegExp("(\\[\\["+re(a)+"\\|[^|\\]]*\\|)[^\\]]*\\]\\]"); if(!R.test(t.tekst)) __GKMISS.push("6:"+t.titel+":"+a); else t.tekst=t.tekst.replace(R,(x,p)=>p+m[a]+"]]"); } });
 })();
+
+/* ---------- Onderbouw: Soorten geschiedenis ---------- */
+const SOORTEN=[
+ {id:"pol",label:"Politiek-bestuurlijk",gloss:"macht en bestuur",uit:"Dit is politiek-bestuurlijke geschiedenis: het gaat over macht en bestuur. Wie maakt de regels en wie beslist?"},
+ {id:"soc",label:"Sociaal",gloss:"groepen mensen en hun onderlinge verhoudingen",uit:"Dit is sociale geschiedenis: het gaat over groepen mensen en hun onderlinge verhoudingen, zoals rijk en arm of rechten en samenleven."},
+ {id:"eco",label:"Economisch",gloss:"geld, werk, handel en productie",uit:"Dit is economische geschiedenis: het gaat over geld, werk, handel en productie."},
+ {id:"cul",label:"Cultureel",gloss:"geloof, taal, kunst, gewoontes en ideeën",uit:"Dit is culturele geschiedenis: het gaat over geloof, taal, kunst, gewoontes en ideeën."}];
+const SOORT_ITEMS=[
+ // gebeurtenissen en begrippen uit de stof (sleutel = tekst van de tijdlijn of het begrip)
+ {k:"e:-509",s:"pol"},{k:"e:-500",s:"pol"},{k:"e:-300",s:"pol"},{k:"e:-48",s:"pol"},{k:"e:-27",s:"pol"},{k:"e:-600",s:"cul"},
+ {k:"b:Democratie",s:"pol"},{k:"b:Senaat",s:"pol"},{k:"b:Mythe",s:"cul"},{k:"b:Wetenschap",s:"cul"},{k:"b:Ongelijkheid",s:"soc"},
+ // voorbeeldzinnen
+ {q:"De burgers van Athene stemden in de volksvergadering over nieuwe wetten.",s:"pol"},
+ {q:"Twee gekozen consuls bestuurden Rome en voerden het leger aan.",s:"pol"},
+ {q:"In Rome kreeg één keizer alle macht in handen.",s:"pol"},
+ {q:"De Griekse stadstaten hadden elk een eigen bestuur.",s:"pol"},
+ {q:"Vrouwen en slaven in Athene hadden geen burgerrechten.",s:"soc"},
+ {q:"In Rome waren slaven het bezit van hun eigenaar en hadden ze geen rechten.",s:"soc"},
+ {q:"In Rome hadden rijke families veel meer aanzien dan boeren en ambachtslieden.",s:"soc"},
+ {q:"In Athene waren vrije mannen belangrijker dan vrije vrouwen.",s:"soc"},
+ {q:"Griekse boeren verbouwden olijven en druiven.",s:"eco"},
+ {q:"Handelaren vervoerden wijn en olijfolie over de Middellandse Zee.",s:"eco"},
+ {q:"Soldaten in het Romeinse beroepsleger werden betaald voor hun werk.",s:"eco"},
+ {q:"De Bataven gingen geld gebruiken en handelden met de Romeinen.",s:"eco"},
+ {q:"Ambachtslieden in Rome maakten aardewerk om te verkopen.",s:"eco"},
+ {q:"De Grieken vertelden mythen over Zeus en Poseidon.",s:"cul"},
+ {q:"De Romeinen vereerden dezelfde goden als de Grieken, maar noemden ze anders.",s:"cul"},
+ {q:"Griekse geleerden zochten met logisch nadenken naar verklaringen voor de natuur.",s:"cul"},
+ {q:"De Romeinen bouwden Griekse tempels en beelden na.",s:"cul"},
+ {q:"De Bataven leerden schrijven en gingen Romeinse goden vereren.",s:"cul"}];
+function obSoortItems(){ const H=S.hc, out=[];
+  SOORT_ITEMS.forEach(it=>{ if(it.q){ out.push({id:"s:"+it.q,q:it.q,s:it.s}); return; }
+    const [t,k]=it.k.split(":");
+    if(t==="e"){ const e=H.tijdlijn.find(x=>String(x.j)===k); if(e) out.push({id:"s:"+it.k,q:`${inY(e.j,1)}: ${onePart(e.t)}.`,s:it.s,tag:"Gebeurtenis"}); }
+    else { const b=H.begrippen.find(x=>x.b===k); if(b) out.push({id:"s:"+it.k,q:`Begrip: ${b.b}. ${b.d}`,s:it.s,tag:"Begrip"}); } });
+  return out; }
+function obSoort(){
+  const items=obSoortItems();
+  const sel=[]; SOORTEN.forEach(z=>sel.push(...pickN(items.filter(x=>x.s===z.id),3)));
+  const gens=shuffle(sel).map(it=>()=>{ const z=SOORTEN.find(x=>x.id===it.s);
+    return {id:it.id,ask:QTAG(it.tag||"Voorbeeld")+"Welk soort geschiedenis past hierbij?",q:it.q,right:it.s,
+      opts:SOORTEN.map(x=>({id:x.id,label:`${x.label} (${x.gloss})`})),uitleg:z.uit,review:`${esc(it.q)} — ${z.label.toLowerCase()}`}; });
+  mcEx({title:"Soorten geschiedenis",qs:fillQuiz(gens,10),back:hcMenu,again:obSoort}); }
+{ const _m=hcModes;
+  hcModes=function(H){ const m=_m(H); if(!H.ob) return m;
+    const i=m.findIndex(x=>x[0]==="keten");
+    m.splice(i<0?m.length:i+1,0,["soort","Soorten geschiedenis","Is het politiek-bestuurlijk, sociaal, economisch of cultureel? Bepaal welk soort geschiedenis bij het voorbeeld past"]);
+    return m; }; }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
