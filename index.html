@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118111426"; let last=0, shown=false;
+  const BUILD="20261118111719"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7028,7 +7028,7 @@ const inY=(y,cap,strongOnly)=>{ const r=Math.round(y), lab=S.hc&&S.hc.ob&&YLAB[r
   if(lab){ t=/^Rond/.test(lab)?"rond"+lab.slice(4):/eeuw/.test(lab)?"in de "+lab:"in "+lab; } else t="in "+fmtY(y);
   if(cap) t=t[0].toUpperCase()+t.slice(1); return t; };
 /* modi voor Onderbouw */
-const OB_MODES=["lees","flash","koppelb","memory","gk","kruis","galgje","fabel","tijdlijn","hitster","tijdmachine","keten","mc","quiz","klas"];
+const OB_MODES=["lees","flash","koppelb","memory","gk","kruis","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","keten","mc","quiz","klas"];
 const _hcModes=hcModes;
 hcModes=function(H){ let m=_hcModes(H); if(!H.ob) return m;
   const i=m.findIndex(x=>x[0]==="tijdmachine");
