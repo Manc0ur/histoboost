@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118122702"; let last=0, shown=false;
+  const BUILD="20261118125459"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7310,6 +7310,33 @@ ICONS["m:soort"]='<circle cx="12" cy="12" r="9.5"/><path d="M12 2.5v19M2.5 12h19
 for(let i=WBI.length-1;i>=0;i--) if(WBI[i].id==="pgr2"||WBI[i].id==="pgr3") WBI.splice(i,1);
 { const _kw=kwWords; kwWords=function(scope){ const w=_kw(scope);
     return (S.hc&&S.hc.ob)?w.filter(x=>x.k!=="handel"):w; }; }
+
+/* Onderbouw: bij elk leerdoel directe links naar passende oefeningen */
+{ const st=document.createElement("style");
+  st.textContent=".dolinks{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.35rem 0 .5rem}.dolinks>span{font-size:.82rem;font-weight:700;color:var(--muted)}.dolink{font:inherit;font-size:.84rem;font-weight:700;padding:.25rem .7rem;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:inherit;cursor:pointer}.dolink:hover,.dolink:focus-visible{border-color:currentColor;outline:none}";
+  document.head.appendChild(st); }
+const DOEL_LINKS=[
+ [/volgorde van tijd/,["tijd","tijdlijn","hitster"]],
+ [/begrippen in je eigen woorden/,["koppelb","memory","galgje"]],
+ [/politiek-bestuurlijke, sociale/,["soort"]],
+ [/drie kenmerken noemen/,["fabel","mc"]],
+ [/Athene bestuurd/,["fabel","mc","gk"]],
+ [/godenverhalen en wetenschap/,["fabel","mc"]],
+ [/uitgroeide tot een wereldrijk/,["keten","tijdmachine","tijd"]],
+ [/redenen noemen waarom de Romeinen/,["keten","mc"]],
+ [/gevolgen .*Germanen/,["keten","mc"]],
+ [/macht hadden in de Romeinse Republiek/,["fabel","mc","gk"]],
+ [/vijf sociale lagen/,["gk","mc"]],
+ [/Grieks-Romeinse cultuur/,["fabel","mc"]]];
+const DOEL_MODE={tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Meerkeuzevragen",()=>hcMC()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
+function obDoelLinks(root){ if(!S.hc||!S.hc.ob) return;
+  root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return;
+    const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit) return;
+    const d=document.createElement("div"); d.className="dolinks";
+    d.innerHTML="<span>Oefen:</span>"+hit[1].map(m=>`<button class="dolink" data-dm="${m}">${DOEL_MODE[m][0]}</button>`).join("");
+    li.insertBefore(d,li.querySelector(":scope>ul")); });
+  root.querySelectorAll(".dolink").forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); CTX="hc"; S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); DOEL_MODE[b.dataset.dm][1](); }); }
+{ const _ol=obLees; obLees=function(){ const r=_ol.apply(this,arguments); obDoelLinks(app); return r; }; }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
