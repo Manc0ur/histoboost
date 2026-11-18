@@ -6764,7 +6764,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118105932"; let last=0, shown=false;
+  const BUILD="20261118110113"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -6974,8 +6974,8 @@ Object.assign(TM,{
  "mgr4":[-750,-750,"Rome ontstaat als klein dorp aan de Tiber."],
  "mgr5":[-264,-146,"Rome verslaat Carthago in drie grote oorlogen."],
  "mgr6":[-300,-300,"De Romeinen hebben het grootste deel van Italië in handen."],
- "mgr7":[-100,-1,"De Romeinen veroveren het zuiden van Nederland. De Rijn wordt de grens."],
- "mgr8":[-100,-1,"De Romeinen veroveren het zuiden van Nederland en de Bataven worden bondgenoten."],
+ "mgr7":[-100,-1,"De Rijn wordt de noordgrens van het Romeinse Rijk."],
+ "mgr8":[-100,-1,"De Romeinen veroveren het zuiden van Nederland. De Bataven worden hun bondgenoten."],
  "mgr10":[-27,-27,"Augustus wordt keizer en regeert vanuit Rome."]
 });
 const YLAB={"-800":"Rond 800 v.C.","-750":"Rond 750 v.C.","-600":"Rond 600 v.C.","-500":"Rond 500 v.C.","-300":"Rond 300 v.C.","-264":"264–146 v.C.","-60":"1e eeuw v.C.","150":"2e eeuw n.C.","500":"Rond 500 n.C."};
