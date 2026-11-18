@@ -5401,12 +5401,13 @@ function qBeide(k,all,c){
     uitleg:`Uit de keten ‘${esc(k.titel)}’: eerst <strong>${esc(A)}</strong> (oorzaak), dan <strong>${esc(B)}</strong>, en daarna <strong>${esc(C)}</strong> (gevolg).`,extra:k.uit||""};
 }
 function qSchakel(k,all,c){
-  if(k.stappen.length!==3) return null;
-  const [A,B,C]=k.stappen, others=simSteps(k,0,B,all,9).filter(x=>x!==C&&!k.stappen.includes(x)).slice(0,3);
+  if(k.stappen.length<3) return null;
+  const st=k.stappen.length>3?Math.floor(Math.random()*(k.stappen.length-2)):0;
+  const [A,B,C]=k.stappen.slice(st,st+3), others=simSteps(k,st,B,all,9).filter(x=>x!==C&&!k.stappen.includes(x)).slice(0,3);
   if(others.length<3) return null;
-  return {id:"ocs"+k.titel,ask:QTAG("Ontbrekende schakel")+"Welke stap ontbreekt in deze keten?",q:`${A} → ? → ${C}`,
+  return {id:"ocs"+k.titel+st,ask:QTAG("Ontbrekende schakel")+"Welke stap ontbreekt in deze keten?",q:`${A} → ? → ${C}`,
     qhtml:`<ol class="oc3"><li><span class="ocl">Eerst</span>${esc(A)}</li><li class="gap">Welke stap ontbreekt hier?</li><li><span class="ocl">Daarna</span>${esc(C)}</li></ol>`,c:c(k),right:"a",
-    opts:shuffle([{id:"a",label:B},...others.map((x,j)=>({id:"d"+j,label:x}))]),hint:k.hint||"Wat is het gevolg van de eerste stap én de oorzaak van de laatste?",
+    opts:shuffle([{id:"a",label:B},...others.map((x,j)=>({id:"d"+j,label:x}))]),hint:(k.stappen.length>3?"":k.hint)||"Wat is het gevolg van de eerste stap én de oorzaak van de laatste?",
     uitleg:`De ontbrekende stap is <strong>${esc(B)}</strong>. Het is het gevolg van ‘${esc(A)}’ en de oorzaak van ‘${esc(C)}’.`,extra:k.uit||""};
 }
 function ocQuiz(scope,mode){
@@ -6767,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118114640"; let last=0, shown=false;
+  const BUILD="20261118115619"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
