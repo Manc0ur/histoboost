@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118130036"; let last=0, shown=false;
+  const BUILD="20261118130309"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7351,7 +7351,7 @@ function obPiramide(){
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
     <div class="meta"><span>Sociale piramide</span></div>
     <h2>Sociale lagen in de Romeinse samenleving</h2>
-    <p class="lead">Zet de vijf groepen in de goede laag van de Romeinse samenleving. Bovenaan staat de groep met de meeste macht en het meeste bezit, onderaan de groep met de minste. Tik op een groep en daarna op een laag.</p>
+    <p class="lead">Zet de vijf groepen in de goede laag van de Romeinse samenleving. Bovenaan staat de groep met de meeste macht en het meeste bezit, onderaan de groep met de minste. Sleep een groep naar een laag, of tik op een groep en daarna op een laag.</p>
     <div class="pirlab"><span>▲ Hoogste laag</span></div>
     <div class="pir">${slots.map((v,i)=>`<div class="pr" style="width:${W[i]}%"><button class="slot${v!=null?" full":""}${checked&&v!=null?(v===i?" ok":" bad"):""}" data-s="${i}" style="width:100%">${v!=null?esc(PIRAMIDE[v]):`Laag ${i+1}`}</button></div>`).join("")}</div>
     <div class="pirlab"><span>▼ Laagste laag</span></div>
@@ -7368,6 +7368,22 @@ function obPiramide(){
       app.querySelector("#pfb").innerHTML=n===5?`<p class="note"><strong>Goed!</strong> Alle vijf de lagen staan op de goede plek.</p>`:`<p class="note"><strong>${n} van de 5 lagen staan goed.</strong> Tik op een rode laag om de groep terug te zetten en probeer het opnieuw.</p>`; };
     app.querySelector("#pshow").onclick=()=>{ pool=[]; sel=null; PIRAMIDE.forEach((_,i)=>slots[i]=i); checked=true; draw(); app.querySelector("#pfb").innerHTML=`<p class="note">Dit is de goede volgorde, van de hoogste naar de laagste laag.</p>`; };
     app.querySelector("#pnew").onclick=obPiramide;
+    // slepen (muis en aanraking); tikken blijft werken
+    app.querySelectorAll(".pircard,.slot.full").forEach(el=>{ el.style.touchAction="none";
+      el.addEventListener("pointerdown",ev=>{ if(ev.button>0) return; const sx=ev.clientX, sy=ev.clientY; let ghost=null, moved=false;
+        const src=el.classList.contains("pircard")?{c:+el.dataset.c}:{s:+el.dataset.s};
+        const mv=e=>{ if(!moved&&Math.hypot(e.clientX-sx,e.clientY-sy)<7) return;
+          if(!moved){ moved=true; ghost=el.cloneNode(true); ghost.style.cssText="position:fixed;z-index:99;pointer-events:none;opacity:.9;width:"+el.offsetWidth+"px;box-shadow:0 6px 18px rgba(0,0,0,.3)"; document.body.appendChild(ghost); el.style.opacity=".35"; }
+          ghost.style.left=(e.clientX-el.offsetWidth/2)+"px"; ghost.style.top=(e.clientY-20)+"px";
+          app.querySelectorAll(".slot").forEach(x=>x.style.outline=""); const t=document.elementFromPoint(e.clientX,e.clientY), sl=t&&t.closest&&t.closest(".slot"); if(sl) sl.style.outline="3px solid #2f6fa3"; };
+        const up=e=>{ document.removeEventListener("pointermove",mv); document.removeEventListener("pointerup",up); document.removeEventListener("pointercancel",up);
+          if(!moved) return; ghost.remove();
+          const stop=x=>{ x.stopPropagation(); x.preventDefault(); }; el.addEventListener("click",stop,{capture:true,once:true}); setTimeout(()=>el.removeEventListener("click",stop,true),50);
+          const t=document.elementFromPoint(e.clientX,e.clientY), sl=t&&t.closest&&t.closest(".slot"), i=sl?+sl.dataset.s:null;
+          if(src.c!=null){ if(i!=null){ const cur=slots[i]; slots[i]=src.c; pool=pool.filter(x=>x!==src.c); if(cur!=null) pool.push(cur); } }
+          else { const v=slots[src.s]; if(i!=null){ if(i!==src.s){ slots[src.s]=slots[i]; slots[i]=v; } } else { slots[src.s]=null; pool.push(v); } }
+          sel=null; checked=false; draw(); };
+        document.addEventListener("pointermove",mv); document.addEventListener("pointerup",up); document.addEventListener("pointercancel",up); }); });
   };
   draw(); window.scrollTo(0,0); }
 ICONS["m:piramide"]='<path d="M12 3L2.5 20.5h19z"/><path d="M8.2 11h7.6M5.4 16h13.2"/>';
