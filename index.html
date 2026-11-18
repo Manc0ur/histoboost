@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118110700"; let last=0, shown=false;
+  const BUILD="20261118111025"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7090,6 +7090,27 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
  const g=(dv,titel,f)=>{ const x=H.gk.find(t=>t.titel===titel); x.tekst=f(x.tekst); };
  g(1,"Ongelijkheid in Athene",t=>t.replace(/Ongeveer een \[\[derde\|[^\]]*\]\] van de bevolking was onvrij\. /,"Ongeveer een [[derde|Welk deel van de bevolking was slaaf?|tiende;helft]] van de bevolking was slaaf. "));
  g(3,"Van Caesar tot Augustus",t=>t.replace("Een populaire legerleider.","Een Romeinse legerleider.").replace("Een land waar een keizer de baas is.","Een land met één alleenheerser."));
+})();
+
+/* Onderbouw: gatenkaas-hints zijn zelfstandige aanwijzingen (ook bruikbaar als kruiswoord-omschrijving) */
+(function(){ const H=GRIEKEN;
+ const N={
+  "Stadstaten":{"700":"Ongeveer zo veel stadstaten, elk met een eigen bestuur, had het Griekse volk.","stadstaat":"Zelfstandig Grieks gebied met een eigen bestuur, zoals Athene of Sparta.","politiek":"Alles wat te maken heeft met het besturen van een stad of land.","Grieks":"De taal die alle Grieken spraken.","landbouw":"Hiervan leefden de meeste Grieken: het verbouwen van graan, druiven en olijven."},
+  "Athene":{"500 v.C.":"Rond dit jaartal voerde Athene de democratie in.","burgerrechten":"Hiermee mochten Atheense mannen meebeslissen over het bestuur.","democratie":"Bestuursvorm van Athene waarin burgers mogen meebeslissen.","volksvergadering":"Bijeenkomst in Athene waar ongeveer 6000 burgers besluiten namen.","loting":"Zo werd bepaald wie in de Atheense raad van 500 kwam: het lot besliste."},
+  "Ongelijkheid in Athene":{"ongelijkheid":"Verschillen in rechten en macht tussen groepen mensen in Athene.","slaaf":"Iemand in Athene die onvrij was en het eigendom van een ander.","derde":"Zo'n deel van de Atheense bevolking was slaaf: één op de drie.","vrouwen":"Zij hadden in Athene geen burgerrechten, net als slaven."},
+  "Mythen en wetenschap":{"mythen":"Godenverhalen waarmee de Grieken natuurverschijnselen verklaarden.","Zeus":"Oppergod van de Grieken en baas van alle goden.","600 v.C.":"Rond dit jaartal begonnen sommige Grieken de godenverhalen niet meer te geloven.","wetenschap":"Verklaringen zoeken met onderzoek en logisch nadenken, in plaats van met godenverhalen."},
+  "Rome groeit":{"750 v.C.":"Rond dit jaartal ontstond Rome als klein dorp.","Tiber":"Rivier waaraan het dorp Rome lag.","handel":"Hierdoor werd Rome steeds rijker, zodat het een sterk leger kon betalen.","Italië":"Land waarin Rome ligt en dat de Romeinen rond 300 v.C. grotendeels hadden veroverd.","Carthago":"Machtige handelsstad in Noord-Afrika, de vijand van Rome.","Middellandse Zee":"Zee tussen Europa en Afrika die Rome na de oorlogen met Carthago controleerde."},
+  "Leger en bondgenoten":{"beroepsleger":"Romeins leger van soldaten die vechten als werk deden.","discipline":"Gehoorzaamheid en orde in het Romeinse leger.","bondgenoten":"Zo werden overwonnen volken van Rome: ze werkten met Rome samen.","belasting":"Geld dat overwonnen volken aan Rome moesten betalen.","bestuur":"Dit mochten overwonnen volken zelf houden: zelf bepalen hoe ze geregeerd werden."},
+  "De Bataven":{"Rijn":"Rivier die de noordgrens van het Romeinse Rijk werd.","Germanen":"Verzamelnaam voor de volken in Duitsland en Nederland, zoals de Bataven.","leger":"Hierin vochten veel Bataven jarenlang voor Rome.","schrijven":"Dit leerden de Bataven van de Romeinen; zelf kenden ze het nog niet.","burgerrecht":"Beloning voor Bataafse soldaten: Romeinse rechten, waardoor ze bijvoorbeeld minder belasting betaalden."},
+  "De Republiek":{"509 v.C.":"Jaar waarin de Romeinen hun koning wegjoegen.","republiek":"Staat zonder koning, bestuurd door gekozen leiders: dit werd Rome in 509 v.C.","senaat":"Groep rijke Romeinse leiders die wetten goed- of afkeurde.","consuls":"De twee machtigste bestuurders van de Romeinse Republiek, ook legeraanvoerders."},
+  "Van Caesar tot Augustus":{"Caesar":"Romeinse legerleider die met zijn leger de macht greep.","48 v.C.":"Jaar waarin Caesar alleenheerser van Rome werd.","senaat":"Romeins bestuursorgaan dat onder Caesar zijn macht verloor.","vermoord":"Wat tegenstanders in 44 v.C. met Caesar deden.","Augustus":"Geadopteerde zoon van Caesar en eerste keizer van Rome.","keizer":"Titel van de alleenheerser van het Romeinse Rijk; komt van de naam Caesar.","keizerrijk":"Staatsvorm van Rome vanaf 27 v.C.: één alleenheerser heeft alle macht."},
+  "Sociale lagen":{"rijken":"Mensen in het Romeinse Rijk met veel land en macht: de hoogste laag.","handelaren":"Mensen in de Romeinse steden die goederen verhandelden.","boeren":"Romeinse landbouwers die vaak hun land moesten verkopen en naar de stad trokken.","slaven":"Onderste laag van de Romeinse samenleving: eigendom van hun meester.","drie":"Rond 100 v.C. was in het Romeinse Rijk één op de zoveel mensen een slaaf: één op de …?"},
+  "De Grieks-Romeinse cultuur":{"Grieken":"Dit volk bewonderden de Romeinen: hun goden en gebouwen werden nagemaakt.","Jupiter":"Romeinse naam van de Griekse oppergod Zeus.","Neptunus":"Romeinse naam van de Griekse zeegod Poseidon.","gladiatorenspelen":"Romeins vermaak, door de keizers georganiseerd, met strijders in de arena.","Grieks-Romeinse cultuur":"Zo heet de vermenging van Griekse en Romeinse gewoontes, goden en kunst."}
+ };
+ const re=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+ window.__GKMISS=[];
+ H.gk.forEach(t=>{ const m=N[t.titel]; if(!m){ __GKMISS.push("titel:"+t.titel); return; }
+   for(const a in m){ const R=new RegExp("\\[\\["+re(a)+"\\|[^|\\]]*\\|"); if(!R.test(t.tekst)) __GKMISS.push(t.titel+":"+a); else t.tekst=t.tekst.replace(R,()=>"[["+a+"|"+m[a]+"|"); } });
 })();
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
