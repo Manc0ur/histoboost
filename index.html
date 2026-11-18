@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118125459"; let last=0, shown=false;
+  const BUILD="20261118125908"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7330,7 +7330,7 @@ const DOEL_LINKS=[
  [/Grieks-Romeinse cultuur/,["fabel","mc"]]];
 const DOEL_MODE={tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Meerkeuzevragen",()=>hcMC()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
 function obDoelLinks(root){ if(!S.hc||!S.hc.ob) return;
-  root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return;
+  root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return; const sm=li.parentElement.previousElementSibling; if(!sm||!/^Algemene/.test(sm.textContent)) return;
     const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit) return;
     const d=document.createElement("div"); d.className="dolinks";
     d.innerHTML="<span>Oefen:</span>"+hit[1].map(m=>`<button class="dolink" data-dm="${m}">${DOEL_MODE[m][0]}</button>`).join("");
