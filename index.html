@@ -3527,7 +3527,7 @@ const KA_BEG={"1": [["Jager-verzamelaars", "Mensen die leefden van het jagen op 
 function kaOverzicht(){
   sylKA();
   const tvs=TV.filter(t=>S.sel.has(t.n));
-  const pHtml=p=>{ const u=esc(p.u), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
+  const pHtml=p=>{ const u=esc(String(p.u).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
   const body=tvs.map(t=>{
     const seen=new Set(), B=kwGapDefs(GK_KA.filter(x=>x.tv.includes(t.n))).filter(d=>d.a&&d.q&&!/\d/.test(d.a)&&!seen.has(d.a.toLowerCase())&&seen.add(d.a.toLowerCase()));
     (KA_BEG[t.n]||[]).forEach(([a,q])=>{ if(!seen.has(a.toLowerCase())){ seen.add(a.toLowerCase()); B.push({a,q}); } });
@@ -3551,7 +3551,7 @@ function leesOverzicht(){
   sylHC(S.hc);
   const H=S.hc, dvs=H.dv.filter(d=>S.dvSel.has(d.nr)), X=H.tlx||TLX;
   const pers=d=>WBI.filter(p=>p.u&&p.hc&&p.hc[H.id]&&p.hc[H.id].includes(d.nr));
-  const pHtml=p=>{ const u=esc(p.u), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
+  const pHtml=p=>{ const u=esc(String(p.u).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")), n=esc(p.n); return u.startsWith(n)?`<strong>${n}</strong>${u.slice(n.length)}`:`<strong>${n}</strong>: ${u}`; };
   const body=dvs.map((d,i)=>{
     const B=H.begrippen.filter(b=>b.dv===d.nr&&b.d).sort((a,b)=>a.b.localeCompare(b.b,"nl")), P=pers(d).sort((a,b)=>a.n.localeCompare(b.n,"nl")), E=H.tijdlijn.filter(e=>e.dv===d.nr).sort((a,b)=>a.j-b.j);
     const grp=H.parts&&(i===0||dvs[i-1].src!==d.src)?`<p class="dvgrp">${esc(d.srcT||"")}</p>`:"";
@@ -6302,7 +6302,7 @@ const WBI_RAW = [
  ["Chen Duxiu", [9], "china:2", ["Ik leefde in de twintigste eeuw in China.", "Ik was een leider van de 4 Meibeweging.", "Ik was geïnteresseerd in het communisme.", "In 1921 was ik betrokken bij een nieuwe partij.", "Ik richtte in 1921 de Chinese Communistische Partij op."], "Chen Duxiu richtte in 1921 de Chinese Communistische Partij op. Wel handig om te weten, geen verplichte stof."],
  ["Liu Shaoqi", [9, 10], "china:3", ["Ik was een Chinese communistische leider.", "Ik was een gematigde leider.", "Ik was het niet eens met alle plannen van Mao.", "Ik werd vervolgd tijdens de Culturele Revolutie.", "Samen met Deng Xiaoping werd ik door de Rode Garde vervolgd."], "Liu Shaoqi was een gematigde leider die tijdens de Culturele Revolutie werd vervolgd. Wel handig om te weten, geen verplichte stof."],
  ["Margaretha van Parma", [6], "steden:2", ["Ik leefde in de zestiende eeuw in de Nederlanden.", "Ik was een vrouw met een hoge bestuursfunctie.", "Ik regeerde namens een koning.", "In 1566 ontving ik het Smeekschrift der Edelen.", "Ik was landvoogdes van Filips II."], "Margaretha van Parma was landvoogdes en ontving in 1566 het Smeekschrift der Edelen. Wel handig om te weten, geen verplichte stof."],
- ["Maria van Bourgondië", [4], "steden:2", ["Ik leefde in de vijftiende eeuw.", "Ik was een vrouw van hoge adel.", "Ik was erfgename van het hertogdom Bourgondië.", "Mijn huwelijk veranderde het bestuur van de Nederlanden.", "Ik trouwde met Maximiliaan van Habsburg."], "Maria van Bourgondië trouwde met Maximiliaan van Habsburg. Wel handig om te weten, geen verplichte stof."],
+ ["Maria van Bourgondië", [4], "steden:2", ["Ik leefde in de vijftiende eeuw.", "Ik was een vrouw van hoge adel.", "Ik was erfgename van het hertogdom Bourgondië.", "Mijn huwelijk veranderde het bestuur van de Nederlanden.", "Ik trouwde met Maximiliaan van Habsburg."], "Maria van Bourgondië was de enige dochter en erfgename van Karel de Stoute. Na zijn dood in 1477 trouwde zij met Maximiliaan van Habsburg, de zoon van de keizer, om haar land tegen Frankrijk te beschermen. Door dit huwelijk kwamen de Bourgondische Nederlanden in handen van de Habsburgers. Haar zoon Filips de Schone en haar kleinzoon Karel V erfden die gebieden, zodat de Nederlanden Habsburgs bleven."],
  ["Simon Stevin", [6], "steden:3", ["Ik leefde in de zestiende en zeventiende eeuw.", "Ik was een wetenschapper.", "Ik werkte aan technische hulpmiddelen.", "Ik ontwikkelde apparaten voor het droogleggen van land.", "Mijn uitvindingen hielpen bij het maken van nieuwe polders."], "Simon Stevin ontwikkelde apparaten voor het droogleggen. Wel handig om te weten, geen verplichte stof."],
  ["Hammurabi", [1], "", ["Ik leefde ruim drieduizend jaar geleden in Mesopotamië.", "Ik was koning van de stad Babylon.", "In mijn stad was de anonimiteit groot en moest het water goed verdeeld worden.", "Ik liet wetten opschrijven die voor iedereen golden.", "Mijn wetboek zorgde ervoor dat iedereen wist waar hij zich aan moest houden."], "Hammurabi was koning van Babylon en liet een wetboek met universele wetten opstellen. Wel handig om te weten, geen verplichte stof."],
  ["Hippocrates", [2], "", ["Ik leefde in de vijfde eeuw voor Christus.", "Ik woonde in een Griekse stadstaat.", "Ik zocht logische verklaringen voor iets natuurlijks.", "Ik schreef ziekten niet toe aan een god, maar onderzocht de zieken.", "Ik behandelde zieken volgens een vaste methode."], "Hippocrates was een Griekse arts die ziekten verklaarde door onderzoek en logisch nadenken."],
@@ -6749,7 +6749,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118011254"; let last=0, shown=false;
+  const BUILD="20261118081045"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
