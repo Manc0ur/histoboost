@@ -3127,7 +3127,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="wie" ${WBI.some(p=>p.tv.some(t=>S.sel.has(t)))?"":"disabled"}><span class="txt"><strong>Wie ben ik?</strong><span class="sub">Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten</span></span></button>
       <button class="item" data-m="hitster" ${KA_TL.some(e=>S.sel.has(e.tv))?"":"disabled"}><span class="txt"><strong>Hitster</strong><span class="sub">Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!</span></span></button>
       <button class="item" data-m="tijdmachine" ${tmItems(MAP_KA).some(x=>S.sel.has(x.tv))?"":"disabled"}><span class="txt"><strong>Tijdmachine</strong><span class="sub">${TMSUB}</span></span></button>
-      <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv))?"":"disabled"}><span class="txt"><strong>Oorzaak en gevolg</strong><span class="sub">Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
+      <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv))?"":"disabled"}><span class="txt"><strong>Oorzaak en gevolg</strong><span class="sub">Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
       <button class="item" data-m="gk"><span class="txt"><strong>Gatenkaas</strong><span class="sub">Sleep begrippen, personen, jaartallen en tijdvakken naar de juiste plek in een tekst</span></span></button>
       <button class="item" data-m="quiz" ${count?"":"disabled"}><span class="txt"><strong>Quiz</strong><span class="sub">Allerlei oefeningen door elkaar: tijdvakken, kenmerkende aspecten, jaartallen, plaatsen, oorzaak en gevolg en gatenkaas</span></span></button>
       <button class="item" data-m="klas" ${count?"":"disabled"}><span class="txt"><strong>Klas Quiz</strong><span class="sub">Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op</span></span></button>
@@ -3294,7 +3294,7 @@ function hcModes(H){ return [...(lzPass(H).length&&false?[["uitleg","Lees en bea
          ["hitster","Hitster","Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!"],
          
          ["tijdmachine","Tijdmachine",TMSUB],
-         ["keten","Oorzaak en gevolg","Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor"],
+         ["keten","Oorzaak en gevolg","Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor"],
          ["koppel","Koppel aan een kenmerkend aspect","Bij welk kenmerkend aspect past deze gebeurtenis of examenbron?"],
          ["gk","Gatenkaas","Sleep begrippen, personen en gebeurtenissen naar de juiste plek in een tekst"],
          ["quiz","Quiz","Allerlei oefeningen door elkaar: begrippen, "+(H.koppel.length?"kenmerkende aspecten, ":"")+"jaartallen, plaatsen, oorzaak en gevolg en gatenkaas"],
@@ -3997,11 +3997,13 @@ function hcTijd(){
     nextLabel:"Nieuwe ronde",onNext:hcTijd});
 }
 
+/* Oorzaak en gevolg: altijd drie opeenvolgende stappen uit de keten */
+function ktWin(a){ const n=a.length, st=n>3?Math.floor(Math.random()*(n-2)):0; return a.slice(st,st+3).map((x,j)=>[x,st+j]); }
 function hcKeten(k){
   const H=S.hc, list=(H.ketens||[]).filter(x=>S.dvSel.has(x.dv)); if(!list.length) return leeg("Oorzaak en gevolg",hcMenu,"ketens"); const ch=list[k%list.length];
   orderEx({title:ch.titel,meta:[ktSoort(ch),`Keten ${k%list.length+1} van ${list.length}`],
-    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
-    items:ch.stappen.map((s,i)=>({id:"s"+i,label:s,c:H.dv[ch.dv-1].c})),back:hcMenu,explain:ch.uit,hintAll:ch.hint,
+    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
+    items:ktWin(ch.stappen).map(([s,i])=>({id:"s"+i,label:s,c:H.dv[ch.dv-1].c})),back:hcMenu,explain:ch.uit,hintAll:ch.stappen.length>3?undefined:ch.hint,
     nextLabel:"Volgende keten",onNext:()=>hcKeten(k+1)});
 }
 
@@ -5354,8 +5356,8 @@ function kaKeten(k){
   if(!list.length) return kaMenu();
   const ch=list[k%list.length];
   orderEx({title:ch.titel,meta:[`${ktSoort(ch)}, tijdvak ${ch.tv}`,`Keten ${k%list.length+1} van ${list.length}`],
-    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
-    items:ch.stappen.map((s,i)=>({id:"s"+i,label:s,c:ch.tv})),back:kaMenu,explain:ch.uit,hintAll:ch.hint,
+    intro:ktVerloop(ch)?"Zet de gebeurtenissen in de goede volgorde: zo verliep het in de tijd.":"Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap erboven.",
+    items:ktWin(ch.stappen).map(([s,i])=>({id:"s"+i,label:s,c:ch.tv})),back:kaMenu,explain:ch.uit,hintAll:ch.stappen.length>3?undefined:ch.hint,
     nextLabel:"Volgende keten",onNext:()=>kaKeten(k+1)});
 }
 
@@ -5368,7 +5370,7 @@ function ocMenu(scope){
   <h2>Oorzaak en gevolg</h2>
   <p class="lead">Historici zoeken naar oorzaken en gevolgen. Een gevolg komt ná zijn oorzaak, en een oorzaak leidt tot een gevolg. Kies hoe je dit wilt oefenen (${n} ${n===1?"keten":"ketens"} over je stof).</p>
   <section class="section"><div class="list">
-   <button class="item" data-oc="volgorde" ${n?"":"disabled"}><span class="txt"><strong>Zet in volgorde</strong><span class="sub">Zet de stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
+   <button class="item" data-oc="volgorde" ${n?"":"disabled"}><span class="txt"><strong>Zet in volgorde</strong><span class="sub">Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
    <button class="item" data-oc="oorz" ${n?"":"disabled"}><span class="txt"><strong>Oorzaak of gevolg?</strong><span class="sub">Je ziet een gebeurtenis en kiest de oorzaak, het gevolg of allebei</span></span></button>
    <button class="item" data-oc="schakel" ${n?"":"disabled"}><span class="txt"><strong>Ontbrekende schakel</strong><span class="sub">Eén stap uit de keten ontbreekt. Welke stap hoort er tussen?</span></span></button>
   </div></section>`;
@@ -6765,7 +6767,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118113244"; let last=0, shown=false;
+  const BUILD="20261118113551"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
