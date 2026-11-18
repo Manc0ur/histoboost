@@ -6763,7 +6763,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118092541"; let last=0, shown=false;
+  const BUILD="20261118093929"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -6799,7 +6799,7 @@ const VSEC=[{"h":"steden","d":[1],"t":"","l":"PLiIYa8Sijh22Vusld1E8z1yzTIDheIOn0
 const VTIT={"svlQFPMVLuM":"Regenten en de stadhouder","C0Ws2XaRQRU":"Oorlogseconomie in de Republiek","L_YmbigKNOU":"Europese grootmacht","R6cSmAfRK_o":"Rijke kooplieden","XxF0DK8eYXM":"Toenemende concurrentie","p7R-nq_1Mj4":"Redeloos, radeloos, reddeloos"};
 const YTC=(()=>{ try{ return JSON.parse(localStorage.getItem("yt1")||"{}"); }catch(e){ return {}; } })();
 const ytSave=()=>{ try{ localStorage.setItem("yt1",JSON.stringify(YTC)); }catch(e){} };
-const ytClean=t=>String(t).replace(/^\s*\d+\.\s*/,"").replace(/\s*\((?:vwo|havo|tl)[^)]*\)\s*$/i,"").trim();
+const ytClean=t=>String(t).replace(/^\s*\d+\.\s*/,"").replace(/\s*\([^)]*\)\s*$/,"").trim();
 function vidGroups(){ const H=S.hc; return leesGroups(H).map(g=>{ const hid=g.P.id||H.id, nrs=new Set(g.dvs.map(d=>d.nr));
     const secs=VSEC.filter(v=>v.h===hid&&v.d.some(n=>nrs.has(n)));
     return {P:g.P,dvs:g.dvs,secs}; }).filter(g=>g.secs.length); }
@@ -6816,7 +6816,7 @@ function leesVideos(){
   G.forEach(g=>g.secs.forEach(sc=>{
     const d=g.dvs.find(x=>sc.d.includes(x.nr))||g.dvs[0];
     const head=sc.t?esc(sc.t):`${d.nr}. ${esc(d.vraag)} (${d.periode})`;
-    body+=`<article class="dv" style="--c:${col(d.c)}"><h3>${head}</h3><div class="vgrid">${sc.v.map((id,n)=>{ const t=YTC[id]||VTIT[id]||"";
+    body+=`<article class="dv" style="--c:${col(d.c)}"><h3>${head}</h3><div class="vgrid">${sc.v.map((id,n)=>{ const t=ytClean(YTC[id]||VTIT[id]||"");
       return `<a class="vcard" href="https://www.youtube.com/watch?v=${id}&list=${sc.l}" target="_blank" rel="noopener">
       <span class="vthumb"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://img.youtube.com/vi/${id}/0.jpg';}else this.remove()"><span class="vplay" aria-hidden="true">▶</span></span>
       <span class="vtxt"><span class="vnr">Video ${n+1}</span><strong data-yt="${id}">${t?esc(t):"Uitleg bij dit onderdeel"}</strong><span class="vgo">Bekijk op YouTube ↗</span></span></a>`; }).join("")}</div></article>`; }));
