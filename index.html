@@ -365,6 +365,8 @@ input[type=checkbox]{width:1.25rem;height:1.25rem;accent-color:var(--ink);flex:n
 .vnr{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .vgo{font-size:.85rem;color:var(--focus);margin-top:.2rem}
 @media(max-width:560px){.vgrid{grid-template-columns:1fr;gap:.5rem}.vcard{flex-direction:row;align-items:stretch}.vthumb{flex:0 0 40%;aspect-ratio:auto;min-height:5.2rem}.vtxt{justify-content:center;padding:.5rem .7rem}.vplay{width:2.2rem;height:2.2rem;font-size:.9rem}}
+.ovseg{display:inline-flex;flex-direction:column;align-items:stretch}.ovseg button{text-align:left}
+@media(min-width:700px){.ovseg{flex-direction:row;align-items:center}}
 .ovseg{flex-wrap:wrap;border-radius:18px;margin:.2rem 0 .8rem}.ovseg button{padding:.5rem 1rem}
 .ovh{font-family:"Bricolage Grotesque",sans-serif;font-size:1.05rem;margin:1.1rem 0 .3rem}
 .ovdl{margin:0}.ovdl dt{font-weight:800;margin-top:.55rem}.ovdl dd{margin:.1rem 0 0;max-width:68ch}
@@ -6761,7 +6763,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118083018"; let last=0, shown=false;
+  const BUILD="20261118083534"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -6809,7 +6811,7 @@ function leesVideos(){
     return `<article class="dv" style="--c:${col(d.c)}">
     <h3>${d.nr}. ${esc(d.vraag)} (${d.periode})</h3>
     <div class="vgrid">${V.map(v=>`<a class="vcard" href="https://www.youtube.com/watch?v=${v[0]}&list=${YTL}&index=${v[1]}" target="_blank" rel="noopener">
-      <span class="vthumb"><img src="https://i.ytimg.com/vi/${v[0]}/mqdefault.jpg" alt="" loading="lazy" onerror="this.remove()"><span class="vplay" aria-hidden="true">▶</span></span>
+      <span class="vthumb"><img src="https://i.ytimg.com/vi/${v[0]}/hqdefault.jpg" alt="" referrerpolicy="no-referrer" onerror="if(!this.dataset.r){this.dataset.r=1;this.src='https://img.youtube.com/vi/${v[0]}/0.jpg';}else this.remove()"><span class="vplay" aria-hidden="true">▶</span></span>
       <span class="vtxt"><span class="vnr">Video ${v[1]}</span><strong>${esc(v[2])}</strong><span class="vgo">Bekijk op YouTube ↗</span></span></a>`).join("")}</div>
   </article>`; }).join("")).join("");
   app.innerHTML=`<div class="lnk tll" id="vidp"><button class="back" id="back">‹ Terug naar oefeningen</button>
