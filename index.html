@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118121000"; let last=0, shown=false;
+  const BUILD="20261118122702"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7305,6 +7305,11 @@ function obSoort(){
     return m; }; }
 
 ICONS["m:soort"]='<circle cx="12" cy="12" r="9.5"/><path d="M12 2.5v19M2.5 12h19"/><path d="M5.5 8.5h3.5M7.3 6.7v3.6"/><circle cx="16.5" cy="8" r="1.6"/><path d="M5.8 15.5l1.7-1.7 1.7 1.7-1.7 1.7z"/><path d="M15 16.5h3M16.5 15v3"/>';
+
+/* Marcus Antonius en Pompeius staan niet in de leerteksten: geen aparte personen meer (alleen nog afleidernamen) */
+for(let i=WBI.length-1;i>=0;i--) if(WBI[i].id==="pgr2"||WBI[i].id==="pgr3") WBI.splice(i,1);
+{ const _kw=kwWords; kwWords=function(scope){ const w=_kw(scope);
+    return (S.hc&&S.hc.ob)?w.filter(x=>x.k!=="handel"):w; }; }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
