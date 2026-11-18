@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118151826"; let last=0, shown=false;
+  const BUILD="20261118153525"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7309,7 +7309,7 @@ ICONS["m:soort"]='<circle cx="12" cy="12" r="9.5"/><path d="M12 2.5v19M2.5 12h19
 /* Marcus Antonius en Pompeius staan niet in de leerteksten: geen aparte personen meer (alleen nog afleidernamen) */
 for(let i=WBI.length-1;i>=0;i--) if(WBI[i].id==="pgr2"||WBI[i].id==="pgr3") WBI.splice(i,1);
 { const _kw=kwWords; kwWords=function(scope){ const w=_kw(scope);
-    return (S.hc&&S.hc.ob)?w.filter(x=>!["HANDEL","TIBER","CONSULS","SLAVEN","MYTHEN","BURGERRECHTEN","BONDGENOTEN"].includes(String(x.k).toUpperCase())):w; }; }
+    return (S.hc&&S.hc.ob)?w.filter(x=>!["HANDEL","TIBER","CONSULS","MYTHEN","BURGERRECHTEN","BONDGENOTEN"].includes(String(x.k).toUpperCase())):w; }; }
 
 /* Onderbouw: bij elk leerdoel directe links naar passende oefeningen */
 { const st=document.createElement("style");
