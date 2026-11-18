@@ -6768,7 +6768,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118130309"; let last=0, shown=false;
+  const BUILD="20261118144940"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7392,6 +7392,9 @@ ICONS["m:piramide"]='<path d="M12 3L2.5 20.5h19z"/><path d="M8.2 11h7.6M5.4 16h1
     const i=m.findIndex(x=>x[0]==="soort");
     m.splice(i<0?m.length:i+1,0,["piramide","Sociale piramide","Zet de vijf sociale lagen van de Romeinse samenleving in de goede volgorde, van hoog naar laag"]);
     return m; }; }
+
+/* De Rijn is geen goede plekvraag (rivier door heel Europa): uit tijdmachine en kaartvragen; de gebeurtenis blijft in de tijdlijn */
+{ const H=HCDATA.gr; for(let i=H.map.length-1;i>=0;i--) if(H.map[i].plaats==="De Rijn") H.map.splice(i,1); delete TM.mgr7; }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
