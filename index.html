@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118111719"; let last=0, shown=false;
+  const BUILD="20261118112957"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7172,6 +7172,58 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
  H.__ketenOk=H.ketens.map(k=>k.stappen.length);
  TM.mgr4[2]="Er ontstaat een klein dorp aan een rivier vlak bij de zee. Het dorp wordt later de hoofdstad van een wereldrijk.";
  TM.mgr7[2]="Een grote rivier wordt de noordgrens van het Romeinse Rijk.";
+})();
+
+/* Onderbouw: elke zin en elke stap noemt zelf om welke samenleving en plek het gaat */
+(function(){ const H=GRIEKEN;
+ const K={"Van rijke mannen naar democratie in Athene":["In Athene bestuurt een kleine groep rijke mannen de stad","In Athene helpen steeds meer mannen mee om de stad te verdedigen","De Atheense mannen die de stad helpen verdedigen, krijgen burgerrechten in ruil voor hun hulp","De nieuwe Atheense burgers mogen meebeslissen in het bestuur van Athene","Athene wordt een democratie"],
+  "Hoe de Grieken aan eten kwamen":["De Grieken wonen in Griekenland in smalle bergdalen","In de Griekse bergdalen is het moeilijk om genoeg voedsel te verbouwen","De Grieken gaan veel handeldrijven met andere gebieden","De Griekse stadstaten voeren oorlog om landbouwgrond"],
+  "Van mythe naar wetenschap":["De Grieken zoeken verklaringen voor natuurverschijnselen","De Grieken vinden verklaringen in godenverhalen, de mythen","Vanaf 600 v.C. geloven sommige Grieken de mythen niet meer","Die Grieken onderzoeken zaken met logisch nadenken","Het onderzoek van die Grieken vormt het begin van de Griekse wetenschap"],
+  "Van dorp tot wereldrijk":["Rome is een klein dorp aan de rivier de Tiber","Door de handel wordt Rome rijk","Door zijn rijkdom kan Rome een sterk leger betalen","De Romeinen veroveren Italië en verslaan de handelsstad Carthago","Rome heeft de controle over de Middellandse Zee"],
+  "Waarom de overwonnen volken zich rustig hielden":["De Romeinen veroveren een volk buiten Rome","Het door de Romeinen overwonnen volk wordt bondgenoot van Rome","Het overwonnen volk betaalt belasting en levert soldaten aan Rome","Het overwonnen volk mag zijn eigen bestuur houden","Het overwonnen volk komt minder snel in opstand tegen Rome"],
+  "De Bataven worden Romeinser":["De Romeinen veroveren het zuiden van Nederland","Er komen Romeinse forten met soldaten langs de Rijn","Rond de Romeinse forten ontstaat handel met de omliggende gebieden","De Bataven in het zuiden van Nederland gebruiken Romeins geld","De Bataven nemen Romeinse gewoontes over"],
+  "Rome wordt een republiek":["De koning van Rome gedraagt zich wreed","De Romeinse bevolking jaagt de koning in 509 v.C. weg","Rome wordt een republiek","Rijke Romeinse leiders vormen de senaat","Twee consuls worden de machtigste bestuurders van Rome"],
+  "Van republiek naar keizerrijk":["Door de veroveringen van Rome worden Romeinse legerleiders belangrijker","De Romeinse legerleider Caesar grijpt met zijn leger de macht in Rome","Senaatsleden vermoorden Caesar in 44 v.C.","Augustus verslaat de vijanden van zijn geadopteerde vader Caesar","In 27 v.C. heeft Augustus alle macht in Rome: het Romeinse Rijk wordt een keizerrijk"],
+  "Een eeuw van vrede onder Augustus":["Keizer Augustus bestuurt het hele Romeinse Rijk vanuit Rome","In het Romeinse Rijk komt een periode van rust en vrede","De Romeinen leggen overal in hun rijk wegen, bruggen en steden aan","In het Romeinse Rijk bloeit de handel en neemt de welvaart toe"],
+  "Van boer naar arme stadsbewoner":["Romeinse boeren vechten jarenlang in het leger","De familie van de Romeinse boeren kan de boerderij niet aan en verkoopt het land","De Romeinse boerenfamilies trekken naar de stad op zoek naar werk","In de Romeinse stad hebben de boerenfamilies geen vast werk en krijgen ze voedsel van de rijken"]};
+ H.ketens.forEach(k=>{ if(K[k.titel]) k.stappen=K[k.titel]; else __GKMISS.push("keten:"+k.titel); });
+ H.ketens.forEach(k=>{ if(k.titel==="Waarom de overwonnen volken zich rustig hielden") k.uit="Een eigen bestuur zorgde ervoor dat door Rome overwonnen volken zich rustig hielden."; });
+ const T=H.tijdlijn.find(e=>e.j===-48); if(T) T.t="Julius Caesar wordt alleenheerser van Rome en de Romeinse senaat verliest zijn macht";
+ H.tlx[-800][0]="In Griekenland waren zo'n 700 stadstaten, elk met een eigen bestuur.";
+ H.tlx[-509][0]="De Romeinse bevolking vond dat de koning zich te wreed gedroeg.";
+ const R=[
+  ["De meeste mensen leefden van de [[landbouw","De meeste Grieken leefden van de [[landbouw"],
+  ["]]. Omdat het moeilijk was om genoeg voedsel te verbouwen, dreven ze ook veel handel.","]]. Omdat het in de Griekse bergdalen moeilijk was om genoeg voedsel te verbouwen, dreven de Grieken ook veel handel."],
+  ["]] kreeg een grotere groep mannen [[burgerrechten","]] kreeg in Athene een grotere groep mannen [[burgerrechten"],
+  ["]]. Zij mochten meebeslissen in het bestuur: zo ontstond een [[democratie","]]. De Atheense mannen mochten meebeslissen in het bestuur van hun stad: zo ontstond in Athene een [[democratie"],
+  ["De burgers namen besluiten in de [[volksvergadering","De Atheense burgers namen besluiten in de [[volksvergadering"],
+  ["]]. Een raad van 500 burgers deed voorstellen voor wetten.","]]. In Athene deed een raad van 500 burgers voorstellen voor wetten."],
+  ["Een [[slaaf|","Een Atheense [[slaaf|"],
+  ["]] van de bevolking was slaaf. Ook [[vrouwen","]] van de Atheense bevolking was slaaf. Ook Atheense [[vrouwen"],
+  ["]] was de baas van alle goden.","]] was de baas van alle Griekse goden."],
+  ["Dat noemen we [[wetenschap","Dat onderzoek van de Grieken noemen we [[wetenschap"],
+  ["Daarna kwamen ze in conflict met de handelsstad [[Carthago","Daarna kwamen de Romeinen in conflict met de handelsstad [[Carthago"],
+  ["Ten tweede werden overwonnen volken [[bondgenoten","Ten tweede werden de overwonnen volken [[bondgenoten"],
+  ["]]. Zij betaalden [[belasting","]]. Die overwonnen volken betaalden aan Rome [[belasting"],
+  ["]] werd de grens. De Bataven","]] werd de grens van het Romeinse Rijk. De Bataven"],
+  ["Ze werden beloond met het Romeinse [[burgerrecht","De Bataafse soldaten werden beloond met het Romeinse [[burgerrecht"],
+  ["Zo raakte hun cultuur vermengd met die van de Romeinen.","Zo raakte de cultuur van de Bataven vermengd met die van de Romeinen."],
+  ["De rijke leiders vormden samen de [[senaat","De rijke Romeinse leiders vormden samen de [[senaat"],
+  ["De machtigste bestuurders waren twee [[consuls","De machtigste bestuurders van Rome waren twee [[consuls"],
+  ["Zij werden één keer per jaar gekozen.","De consuls werden één keer per jaar gekozen."],
+  ["]] greep met zijn sterke leger de macht.","]] greep met zijn sterke leger de macht in Rome."],
+  ["]] werd hij alleenheerser en verloor de [[senaat","]] werd Caesar alleenheerser van Rome en verloor de Romeinse [[senaat"],
+  ["In 44 v.C. werd hij door tegenstanders [[vermoord","In 44 v.C. werd Caesar door tegenstanders [[vermoord"],
+  ["De hoogste laag bestond uit [[rijken","De hoogste laag van de Romeinse samenleving bestond uit [[rijken"],
+  ["Daaronder kwamen de [[handelaren","Daaronder kwamen de Romeinse [[handelaren"],
+  ["Veel [[boeren|","Veel Romeinse [[boeren|"],
+  ["Onderaan stonden de [[slaven","Onderaan de Romeinse samenleving stonden de [[slaven"],
+  ["Rond 100 v.C. was ongeveer een op de [[drie","Rond 100 v.C. was in het Romeinse Rijk ongeveer een op de [[drie"],
+  ["]] mensen in het rijk onvrij.","]] mensen een slaaf."],
+  ["Ze vereerden dezelfde goden, maar met andere namen. De oppergod Zeus werd [[Jupiter","De Romeinen vereerden dezelfde goden als de Grieken, maar met andere namen. De Griekse oppergod Zeus werd bij de Romeinen [[Jupiter"],
+  ["]] en Poseidon werd [[Neptunus","]] en de Griekse zeegod Poseidon werd [[Neptunus"]
+ ];
+ R.forEach(([a,b])=>{ let n=0; H.gk.forEach(t=>{ if(t.tekst.includes(a)){ n++; t.tekst=t.tekst.replace(a,b); } }); if(n!==1) __GKMISS.push("4:"+a.slice(0,30)+":"+n); });
 })();
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
