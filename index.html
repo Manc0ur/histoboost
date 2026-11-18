@@ -4266,7 +4266,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     const w=Math.max((x1-x0)*2.2,(y1-y0)*2.2*M.W/M.H,M.W/(mapId==="nl"?2.6:5)); if(w>=M.W*.85) return full;
     const h=w*M.H/M.W; return {w,h,x:Math.max(0,Math.min(M.W-w,(x0+x1)/2-w/2)),y:Math.max(0,Math.min(M.H-h,(y0+y1)/2-h/2))}; };
   let i=0,total=0,guess=null,checked=false,vb=startVB();
-  let val="",bc=false;
+  let val="",bc=!!(S.hc&&S.hc.ob);
   const parseY=()=>{ const s=val.trim().toLowerCase(); const m=s.match(/^(-)?\s*(\d{1,4})\s*(v\.?\s*c\.?|v\.?\s*chr\.?)?$/); if(!m) return null; let y=+m[2]; if(m[1]||m[3]||bc) y=-y; return y; };
   const canCheck=()=>!!guess&&(!tm||parseY()!==null);
   const results=[];
@@ -4277,7 +4277,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${round.length} · ${total} punten</span></div>
     <div class="progress"><i style="width:${i/round.length*100}%"></i></div>
     <div class="qcard" ${q.tv?`style="--c:${col(q.tv)}"`:""}><p class="ask">${tm?"Je staat in het heden en wilt met de tijdmachine naar de volgende gebeurtenis. Typ het jaartal in en klik op de kaart op de plek waar je heen wilt.":"Klik op de kaart aan waar dit gebeurde."}</p><p class="q" data-k="${esc(q.plaats||"")}">${esc(q.t)}</p></div>
-    ${tm?`<div class="jaarin tmjaar"><label for="jaar"><strong>Jaartal</strong></label><input id="jaar" type="text" inputmode="numeric" autocomplete="off" placeholder="bijv. 1648" value="${esc(val)}" ${checked?"disabled":""}>${vc?`<label class="vcbox"><input type="checkbox" id="bc" ${bc?"checked":""} ${checked?"disabled":""}> v.C.</label>`:""}</div>`:""}
+    ${tm?`<div class="jaarin tmjaar"><label for="jaar"><strong>Jaartal</strong></label><input id="jaar" type="text" inputmode="numeric" autocomplete="off" placeholder="${S.hc&&S.hc.ob?"bijv. 300":"bijv. 1648"}" value="${esc(val)}" ${checked?"disabled":""}>${vc?`<label class="vcbox"><input type="checkbox" id="bc" ${bc?"checked":""} ${checked?"disabled":""}> v.C.</label>`:""}</div>`:""}
     <div class="mapwrap">
       <svg id="map" class="map" style="aspect-ratio:${M.W}/${M.H}" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kaart: klik om je antwoord te plaatsen">
         <rect class="sea" x="-${M.W}" y="-${M.H}" width="${M.W*3}" height="${M.H*3}"/>
@@ -4299,7 +4299,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     if(tm&&!checked){ const inp=app.querySelector("#jaar"); const upd=()=>{ val=inp.value; const c2=app.querySelector("#check"); if(c2) c2.disabled=!canCheck(); };
       inp.addEventListener("input",upd); inp.addEventListener("keydown",e=>{ if(e.key==="Enter"&&canCheck()) check(); });
       const bx=app.querySelector("#bc"); if(bx) bx.onchange=()=>{ bc=bx.checked; upd(); }; }
-    const n=app.querySelector("#next"); if(n) n.onclick=()=>{ i++; guess=null; checked=false; val=""; bc=false; vb=startVB(); if(i<round.length){draw();window.scrollTo(0,0);} else result(); };
+    const n=app.querySelector("#next"); if(n) n.onclick=()=>{ i++; guess=null; checked=false; val=""; bc=!!(S.hc&&S.hc.ob); vb=startVB(); if(i<round.length){draw();window.scrollTo(0,0);} else result(); };
   }
   function setVB(svg){ svg.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); renderMarks(); }
   function clampVB(){ vb.w=Math.min(M.W,Math.max(M.W/60,vb.w)); vb.h=vb.w*M.H/M.W; vb.x=Math.max(-vb.w*.25,Math.min(M.W-vb.w*.75,vb.x)); vb.y=Math.max(-vb.h*.25,Math.min(M.H-vb.h*.75,vb.y)); }
@@ -6764,7 +6764,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118105544"; let last=0, shown=false;
+  const BUILD="20261118105824"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
