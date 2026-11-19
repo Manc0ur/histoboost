@@ -3609,6 +3609,7 @@ function kaOverzicht(){
     const P=WBI.filter(p=>p.u&&p.tv.includes(t.n)&&kaOk(p)).sort((a,b)=>a.n.localeCompare(b.n,"nl")), E=KA_TL.filter(e=>e.tv===t.n&&kaOk(e)).sort((a,b)=>a.j-b.j);
     return `<article class="dv ovdv" style="--c:${col(t.n)}">
       <h3>Tijdvak ${t.n}: ${esc(t.naam)} (${t.jaren})</h3>
+      <h4 class="ovh">Kenmerkende aspecten</h4><ul class="ovul">${KA.filter(k=>k.tv===t.n&&kaOk(k)).map(k=>`<li><strong>${k.n}.</strong> ${esc(KAMAP.short[k.n-1])}</li>`).join("")}</ul>
       ${B.length?`<h4 class="ovh">Begrippen</h4><dl class="ovdl">${B.map(b=>`<dt>${esc(b.a==="zuilen"?"De vijf zuilen van de islam":b.a.charAt(0).toUpperCase()+b.a.slice(1))}${verplicht(b.a)?" "+starHtml():""}</dt><dd>${esc(b.q)}</dd>`).join("")}</dl>`:""}
       ${P.length?`<h4 class="ovh">Personen</h4><ul class="ovul">${P.map(p=>`<li>${pHtml(p)}${verplicht(p.n)?" "+starHtml():""}</li>`).join("")}</ul>`:""}
       ${E.length?`<h4 class="ovh">Gebeurtenissen</h4><ol class="ovtl">${E.map(e=>{ const u=(e.u||(TLX[e.j]||[])[0]||"").trim(); return `<li><span class="yc">${fmtY(e.j)}</span><span><strong>${esc(e.t)}</strong>${verplicht(e.t)?" "+starHtml():""}${u?`<span class="ovu"> ${esc(u)}</span>`:""}</span></li>`; }).join("")}</ol>`:""}
@@ -6912,7 +6913,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119151933"; let last=0, shown=false;
+  const BUILD="20261119152255"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
