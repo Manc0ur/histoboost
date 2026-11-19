@@ -2023,7 +2023,7 @@ const TL_WO1 = mkHC({
    [1,"Russische Revolutie","Omwenteling in 1917 waardoor de tsaar werd weggestuurd en later een communistische regering aan de macht kwam."],
    [1,"Wapenstilstand","Afspraak om te stoppen met vechten."],
    [1,"Censuur","Toezicht op de media."],
-   [1,"Propaganda","Het eenzijdig verspreiden van bepaalde ideeën."],
+   [1,"Propaganda","Informatie of idee die wordt verspreid om de mening of het gedrag van mensen te beïnvloeden."],
    [1,"Totale oorlog","Strijd waaraan de hele maatschappij meedoet: niet alleen soldaten, maar ook burgers, fabrieken en de economie."],
    [1,"Mobilisatie","Het leger gereed maken voor oorlog."],
    [2,"Neutraliteit","Geen partij kiezen in een conflict of oorlog."],
@@ -2107,7 +2107,7 @@ const TL_INTER = mkHC({
    [1,"Demilitarisatie","Het leger en de wapens van een land kleiner maken."],
    [1,"Volkenbond","Internationale organisatie die na de Eerste Wereldoorlog vrede moest bewaren, op voorstel van president Wilson."],
    [1,"Republiek van Weimar","De Duitse parlementaire democratie na de Eerste Wereldoorlog."],
-   [1,"Dolkstootlegende","Het geloof dat de regering de Duitse soldaten had verraden."],
+   [1,"Dolkstootlegende","De opvatting dat de nieuwe sociaaldemocratische regering van Duitsland de Duitse soldaten had verraden eind Eerste Wereldoorlog."],
    [1,"Inflatie","Geld wordt steeds minder waard, doordat de regering geld bijdrukt."],
    [1,"Dawesplan","Plan uit 1924: Duitsland kreeg goedkope leningen uit de VS om zijn economie op te bouwen."],
    [1,"Beurskrach","Het instorten van de aandelenkoersen op Wall Street in 1929."],
@@ -2425,7 +2425,6 @@ const TL_ORDE = mkHC({
   begrippen:[
    [1,"Duitse hereniging","Het samengaan van de BRD en de DDR tot één land op 3 oktober 1990."],
    [1,"Uiteenvallen van de Sovjet-Unie","De vijftien deelrepublieken verklaarden zich in 1990-1991 onafhankelijk."],
-   [1,"Nieuwe staten","Landen die ontstonden na de Koude Oorlog, zoals Tsjechië, Slowakije en Kroatië."],
    [1,"Herlevend nationalisme","Het opnieuw sterker worden van liefde voor het eigen volk, bijvoorbeeld in Joegoslavië."],
    [1,"Uitbreiding van de NAVO","Voormalige tegenstanders uit Oost-Europa werden lid van het westerse militaire bondgenootschap."],
    [1,"Internationaal terrorisme","Aanslagen door groepen die over landsgrenzen heen opereren, zoals Al Qaida."],
@@ -6957,7 +6956,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119171521"; let last=0, shown=false;
+  const BUILD="20261119172223"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
