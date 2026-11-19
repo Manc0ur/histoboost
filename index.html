@@ -6080,11 +6080,11 @@ function exHintBox(q,box){
   let lvl=null; try{ lvl=JSON.parse(localStorage.getItem(exHKey(q))||"null"); }catch(e){}
   const save=()=>{ try{ localStorage.setItem(exHKey(q),JSON.stringify(lvl)); }catch(e){} };
   function render(){
-    if(!lvl){ box.innerHTML=`<button class="btn ghost" id="hintgo">💡 Hint</button>`; box.querySelector("#hintgo").onclick=()=>{ lvl=hints.map(()=>0); lvl[0]=1; save(); render(); }; return; }
+    if(!lvl){ box.innerHTML=`<button class="btn ghost" id="hintgo">💡 Hint</button>`; box.querySelector("#hintgo").onclick=()=>{ lvl=hints.map(()=>0); if(hints.length===1) lvl[0]=1; save(); render(); }; return; }
     box.innerHTML=`<div class="hints"><h3>Hints</h3>${hints.map((hs,k)=>{const l=lvl[k]||0;return `<div class="hintpart">
       ${hints.length>1?`<p class="hintlbl">Onderdeel ${k+1}: ${esc(parts[k]&&parts[k].length>110?parts[k].slice(0,110)+"…":(parts[k]||""))}</p>`:""}
       ${hs.slice(0,l).map((h,j)=>`<p class="hintline"><strong>Hint ${j+1}:</strong> ${esc(h)}</p>`).join("")}
-      ${l<hs.length?`<button class="linkbtn" data-hk="${k}">${l===0?"Geef een hint":`Geef een concretere hint (${l+1} van ${hs.length})`}</button>`:`<p class="uitline">Dit was de laatste hint voor dit onderdeel.</p>`}
+      ${l<hs.length?`<button class="linkbtn" data-hk="${k}">${l===0?(hints.length>1?`Geef een hint voor onderdeel ${k+1}`:"Geef een hint"):`Geef een concretere hint (${l+1} van ${hs.length})`}</button>`:`<p class="uitline">Dit was de laatste hint voor dit onderdeel.</p>`}
     </div>`;}).join("")}</div>`;
     box.querySelectorAll("[data-hk]").forEach(b=>b.onclick=()=>{const k=+b.dataset.hk; lvl[k]=(lvl[k]||0)+1; save(); render();});
   }
@@ -6947,7 +6947,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119163929"; let last=0, shown=false;
+  const BUILD="20261119164332"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
