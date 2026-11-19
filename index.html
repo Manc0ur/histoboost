@@ -954,7 +954,6 @@ const BRITS = {
   ].map(a=>({dv:a[0],b:a[1],d:a[2]})),
   tijdlijn:[
    [1,1585,"De Engelsen stichten Roanoke, hun eerste kolonie in Noord-Amerika"],
-   [1,1614,"Pocahontas bekeert zich tot het christendom"],
    [1,1620,"De Pilgrim Fathers vertrekken met de Mayflower naar Amerika"],
    [2,1757,"De Britten verslaan de nawab van Bengalen in de Slag bij Plassey"],
    [2,1765,"Het Verdrag van Allahabad: de East India Company mag belasting innen"],
@@ -1004,7 +1003,6 @@ const BRITS = {
 };
 BRITS.tlx = {
 1585:["Roanoke bestond maar enkele jaren, door misoogsten en ziekten.","Dit is het beginjaar van de historische context."],
-1614:["Pocahontas, de dochter van een Powhatan-hoofdman, kreeg de naam Rebecca. Later reisde ze naar Londen.","Dit gebeurde kort voor de Pilgrim Fathers vertrokken."],
 1620:["De Mayflower vertrok uit Plymouth met 102 kolonisten. Ze stichtten de Plymouth Colony in New England.","Dit gebeurde in het begin van de 17e eeuw."],
 1757:["De nawab had een bondgenootschap met de Fransen gesloten. Na Plassey kregen de Britten de controle over Bengalen.","Dit gebeurde acht jaar vóór het Verdrag van Allahabad."],
 1765:["Mogolvorst Shah Alam II moest de East India Company het recht geven belasting te innen. Dit was het begin van het Britse rijk in India.","Dit is het beginjaar van deelvraag 2."],
@@ -6767,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119094544"; let last=0, shown=false;
+  const BUILD="20261119094721"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
