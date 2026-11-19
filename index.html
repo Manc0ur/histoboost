@@ -6062,8 +6062,14 @@ const sywords=s=>synorm(s).split(" ").filter(w=>w.length>=4&&!SYSTOP.has(w));
 const system=w=>w.slice(0,Math.max(5,w.length-2));
 function sylKA(){ SYL=" "+synorm(KA.map(k=>k.t).join(" ")+" "+TV.map(t=>t.naam+" "+(t.per||"")).join(" "))+" "; }
 function sylHC(H){ SYL=" "+synorm(H.dv.flatMap(d=>d.tekst).join(" ")+" "+H.dv.map(d=>d.vraag).join(" ")+" "+H.dv.flatMap(d=>d.ka).map(i=>KA.find(k=>k.n===i).t).join(" "))+" "; }
+let VITEMS=null;
+function vitems(){ if(VITEMS) return VITEMS; const set=new Set(), add=x=>{ const k=synorm(String(x||"").replace(/\(.*?\)/g,"")).trim(); if(k) set.add(k); };
+  for(const id in HCDATA){ const H=HCDATA[id]; (H.begrippen||[]).forEach(b=>add(b.b)); (H.tijdlijn||[]).forEach(e=>add(e.t)); }
+  WBI.forEach(p=>add(p.n)); KA_TL.forEach(e=>add(e.t));
+  for(const k in KW_EVENTS) (KW_EVENTS[k]||[]).forEach(e=>add(e[1]));
+  return VITEMS=set; }
 function verplicht(t){
-  if(!SYL||!t) return false; const raw=String(t).replace(/\(.*?\)/g,"");
+  if(!SYL||!t) return false; if(!vitems().has(synorm(String(t).replace(/\(.*?\)/g,"")).trim())) return false; const raw=String(t).replace(/\(.*?\)/g,"");
   const toks=raw.split(/[^A-Za-zÀ-ÿ0-9'’-]+/).filter(Boolean);
   const hitW=w=>{ const n=synorm(w).trim(); return n.length>=3 && SYL.includes(n.length<4?" "+n+" ":system(n)); };
   const ws=toks.filter(w=>/^[A-Z]{2,}$/.test(w)||sywords(w).length);
@@ -6774,7 +6780,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119114730"; let last=0, shown=false;
+  const BUILD="20261119120305"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
