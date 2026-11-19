@@ -6069,7 +6069,7 @@ function vitems(){ if(VITEMS) return VITEMS; const set=new Set(), add=x=>{ const
   for(const k in KW_EVENTS) (KW_EVENTS[k]||[]).forEach(e=>add(e[1]));
   return VITEMS=set; }
 function verplicht(t){
-  if(!SYL||!t) return false; if(!vitems().has(synorm(String(t).replace(/\(.*?\)/g,"")).trim())) return false; const raw=String(t).replace(/\(.*?\)/g,"");
+  if(!SYL||!t) return false; if(!vitems().has(synorm(String(t).replace(/\(.*?\)/g,"")).trim())) return false; const raw=String(t).replace(/\(.*?\)/g,""); { const nn=synorm(raw).trim(); if(nn.split(" ").length>=2&&SYL.includes(" "+nn+" ")) return true; }
   const toks=raw.split(/[^A-Za-zÀ-ÿ0-9'’-]+/).filter(Boolean);
   const hitW=w=>{ const n=synorm(w).trim(); return n.length>=3 && SYL.includes(n.length<4?" "+n+" ":system(n)); };
   const ws=toks.filter(w=>/^[A-Z]{2,}$/.test(w)||sywords(w).length);
@@ -6781,7 +6781,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119120653"; let last=0, shown=false;
+  const BUILD="20261119122236"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
