@@ -2140,7 +2140,7 @@ const TL_INTER = mkHC({
   koppel:[],
   map:[
    [1,"Frankrijk bezette in 1923 dit Duitse industriegebied.","Ruhrgebied",51.45,7.2,120,"Het Ruhrgebied ligt in het westen van Duitsland."],
-   [1,"In 1929 stortte de beurs in deze straat in New York in.","Wall Street (New York)",40.71,-74.01,600,"New York ligt aan de oostkust van de VS."],
+   [1,"In 1929 stortte de beurs op deze plek in, het begin van de Grote Depressie.","Wall Street (New York)",40.71,-74.01,600,"New York ligt aan de oostkust van de VS."],
    [1,"In deze Franse plaats werd in 1919 het vredesverdrag getekend.","Versailles",48.80,2.13,150,"Versailles ligt bij Parijs."],
    [2,"Hier kondigde Hitler in 1935 de rassenwetten af.","Neurenberg",49.45,11.08,150,"Neurenberg ligt in het zuiden van Duitsland."],
    [2,"Hier spraken vier landen in 1938 af dat Hitler het Sudetenland mocht innemen.","München",48.14,11.58,150,"München ligt in het zuiden van Duitsland."],
@@ -2250,7 +2250,7 @@ const TL_WO2 = mkHC({
    [2,"Via dit doorgangskamp werden Joden gedeporteerd.","Westerbork",52.92,6.61,120,"Westerbork ligt in Drenthe."],
    [2,"Hier verloren de geallieerden in 1944 de slag die Market Garden deed mislukken.","Arnhem",51.98,5.91,120,"Arnhem ligt aan de Rijn in Gelderland."],
    [2,"Hier begon in februari 1941 de Februaristaking.","Amsterdam",52.37,4.90,120,"Amsterdam ligt in Noord-Holland."],
-   [3,"Deze Nederlandse kolonie werd in 1942 door Japan bezet.","Nederlands-Indië (Java)",-7.2,110.0,800,"Java ligt in Zuidoost-Azië."]
+   [3,"Deze kolonie in Zuidoost-Azië werd in 1942 door Japan bezet.","Nederlands-Indië (Java)",-7.2,110.0,800,"Java ligt in Zuidoost-Azië."]
   ],
   gk:[
    {dv:1,titel:"Het verloop van de oorlog",uit:"Oorzaken, verloop en afloop.",
@@ -2356,7 +2356,7 @@ const TL_KOUDE = mkHC({
    [2,"Deze stad werd in 1948 door de Sovjet-Unie geblokkeerd.","Berlijn",52.52,13.40,150,"Berlijn lag midden in de Sovjetzone."],
    [2,"In 1956 was hier een opstand tegen de communistische regering.","Hongarije (Boedapest)",47.50,19.04,250,"Hongarije ligt in Midden-Europa."],
    [2,"In 1962 plaatste de Sovjet-Unie hier kernraketten.","Cuba",21.9,-79.5,600,"Cuba ligt ten zuiden van de VS."],
-   [2,"In 1968 was hier de Praagse Lente.","Praag",50.08,14.44,200,"Praag ligt in Tsjechië."],
+   [2,"In 1968 wilde de regering hier het communisme hervormen, tot troepen van het Warschaupact binnenvielen.","Praag",50.08,14.44,200,"Praag ligt in Tsjechië."],
    [2,"In deze stad werd in 1955 het pact van het Oostblok gesloten.","Warschau",52.23,21.01,200,"Warschau is de hoofdstad van Polen."],
    [2,"Hier staat het gebouw van de Verenigde Naties.","New York",40.71,-74.01,600,"New York ligt aan de oostkust van de VS."],
    [2,"In 1950 viel het noorden van dit land het zuiden aan.","Korea",37.5,127.5,500,"Korea ligt tussen China en Japan."],
@@ -2442,7 +2442,7 @@ const TL_ORDE = mkHC({
    [1,"Op 11 september 2001 vlogen vliegtuigen tegen de Twin Towers in deze stad.","New York",40.71,-74.01,600,"New York ligt aan de oostkust van de VS."],
    [1,"In 2004 ontploften bommen in het spitsuur in deze stad.","Madrid",40.42,-3.70,250,"Madrid is de hoofdstad van Spanje."],
    [1,"In 2005 was er een aanslag in de metro van deze stad.","Londen",51.51,-0.13,200,"Londen ligt in Engeland."],
-   [1,"Dit land splitste in twee: Tsjechië en Slowakije.","Tsjecho-Slowakije",50.08,14.44,250,"Dit land lag in Midden-Europa."],
+   [1,"Dit land splitste in twee afzonderlijke landen.","Tsjecho-Slowakije",50.08,14.44,250,"Dit land lag in Midden-Europa."],
    [3,"In deze stad zetelt de Europese Commissie.","Brussel",50.85,4.35,150,"Brussel ligt in België."]
   ],
   gk:[
@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119101943"; let last=0, shown=false;
+  const BUILD="20261119102414"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
