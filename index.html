@@ -6772,7 +6772,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119112217"; let last=0, shown=false;
+  const BUILD="20261119113511"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7469,6 +7469,59 @@ wereldorde:{"1991":"In de Sovjet-Unie droeg Gorbatsjov de macht over aan Jeltsin
 for(const k in EV){ const X=HCDATA[k].tlx; for(const j in EV[k]){ if(X&&X[j]) X[j][0]=EV[k][j]; else console.warn("tlx mist",k,j); } }
 const BG={wo1:{"Dodendraad":"Door de Duitsers in 1915 aangelegd hek onder hoogspanning aan de Belgisch-Nederlandse grens, zodat vluchten naar Nederland bijna onmogelijk werd."},koudeoorlog:{"EGKS":"Europese Gemeenschap voor Kolen en Staal (1951): samenwerking van zes West-Europese landen op het gebied van kolen en staal."}};
 for(const k in BG){ HCDATA[k].begrippen.forEach(b=>{ if(BG[k][b.b]) b.d=BG[k][b.b]; }); }
+})();
+(function(){
+const TLI=["staats","wo1","interbellum","wo2","koudeoorlog","wereldorde"];
+const PN2={
+"Hindenburg":"Hindenburg was een Duitse veldmaarschalk en later rijkspresident van Duitsland (1925-1934). Hij vroeg in 1918 om een wapenstilstand en benoemde in 1933 Hitler tot kanselier.",
+"Stresemann":"Stresemann was in de jaren twintig minister van Buitenlandse Zaken van de Weimarrepubliek in Duitsland. Hij zorgde voor betere relaties met andere landen, zoals in het Verdrag van Locarno.",
+"Rosa Luxemburg":"Rosa Luxemburg was een Duitse communistische leidster. Ze leidde in 1919 in Berlijn de Spartakusopstand en werd vermoord.",
+"Goebbels":"Goebbels was van 1933 tot 1945 de Duitse minister van Propaganda en de propagandameester van de NSDAP.",
+"Marinus van der Lubbe":"Marinus van der Lubbe was een Nederlandse communist (1909-1934). Hij kreeg de schuld van de Rijksdagbrand van 1933 in Berlijn en werd ter dood veroordeeld.",
+"Truman":"Truman was van 1945 tot 1953 president van de Verenigde Staten. Hij voerde een hardere lijn tegen Stalin en kondigde in 1947 de Trumandoctrine aan.",
+"Diderot":"Diderot was een Franse verlichte denker (1713-1784). Hij maakte samen met d'Alembert de Encyclopédie.",
+"Bismarck":"Bismarck was minister-president van Pruisen en later rijkskanselier van Duitsland. Samen met koning Wilhelm I riep hij in 1871 het Duitse keizerrijk uit.",
+"Hong Xiuquan":"Hong Xiuquan was een Chinese opstandelingenleider in de 19e eeuw. Hij leidde in het zuiden van China de Taipingopstand (1850-1864).",
+"Chen Duxiu":"Chen Duxiu was een Chinese intellectueel en politiek leider. Hij richtte in 1921 in Sjanghai de Chinese Communistische Partij op.",
+"Liu Shaoqi":"Liu Shaoqi was een gematigde Chinese communistische leider en president van China (1959-1968). Tijdens de Culturele Revolutie werd hij vervolgd.",
+"Margaretha van Parma":"Margaretha van Parma was in de 16e eeuw landvoogdes van de Nederlanden namens Filips II. In 1566 ontving ze het Smeekschrift der Edelen.",
+"Geert Wilders":"Geert Wilders is een Nederlandse politicus en oprichter van de PVV (2006). Hij uitte scherpe kritiek op de islam en kreeg daarvoor veel ruimte in de media.",
+"Beatrix":"Beatrix was van 1980 tot 2013 koningin van Nederland. Tijdens haar kroning in Amsterdam protesteerden krakers met de leus Geen woning, geen kroning.",
+"Gandhi":"Gandhi was in de eerste helft van de 20e eeuw de leider van de Indiase onafhankelijkheidsbeweging. Hij koos voor geweldloos verzet tegen het Britse bestuur, zoals de Zoutmars van 1930.",
+"Mao Zedong":"Mao Zedong was de leider van de Chinese Communistische Partij (1893-1976). Hij riep in 1949 de Volksrepubliek China uit en begon de Grote Sprong Voorwaarts en de Culturele Revolutie.",
+"Deng Xiaoping":"Deng Xiaoping was van eind jaren zeventig tot begin jaren negentig de machtigste leider van China, na Mao. Hij zette de Vier Moderniseringen in gang: de economie werd liberaler, de politiek niet.",
+"Jiang Zemin":"Jiang Zemin was van 1989 tot 2002 de leider van China, als opvolger van Deng Xiaoping. Onder hem trad China in 2001 toe tot de Wereldhandelsorganisatie.",
+"Galilei":"Galilei was een Italiaanse natuurkundige en sterrenkundige (1564-1642). Met een verbeterde telescoop onderbouwde hij het wereldbeeld van Copernicus: de aarde draait om de zon.",
+"George Washington":"George Washington was de militaire leider van de Amerikaanse onafhankelijkheidsstrijd (1775-1783) en daarna, van 1789 tot 1797, de eerste president van de Verenigde Staten.",
+"Rousseau":"Rousseau was een verlichte denker uit Genève in de 18e eeuw. Hij schreef over vrijheid en gelijkheid en pleitte voor een directe democratie op basis van de algemene wil.",
+"Thomas Paine":"Thomas Paine was een uit Engeland afkomstige schrijver die in 1776 de Amerikaanse kolonisten steunde. Met zijn pamflet Common Sense, waarin hij het koningschap tiranniek noemde, won hij steun voor de onafhankelijkheid.",
+"Robert Owen":"Robert Owen was in het begin van de 19e eeuw een fabrikant in Schotland. Hij verkortte de werktijden, verhoogde de lonen en regelde scholing voor arbeiderskinderen, en beïnvloedde vakbonden en sociale wetgeving.",
+"Cixi":"Cixi was eind 19e eeuw keizerin-weduwe aan het hof van de Qing-dynastie in China en tot 1908 de machtigste persoon van het land. Zij keerde zich tegen de buitenlandse aanwezigheid en steunde in 1900 de Bokseropstand.",
+"Adenauer":"Adenauer was van 1949 tot 1963 de eerste bondskanselier van West-Duitsland. Hij koos voor snelle integratie in het Westen; onder hem werd West-Duitsland lid van de NAVO en de EGKS.",
+"Ulbricht":"Ulbricht was van 1950 tot 1971 de communistische leider van de DDR (Oost-Duitsland). Onder hem werd de DDR een totalitaire dictatuur naar Sovjetvoorbeeld en werd in 1961 de Berlijnse muur gebouwd.",
+"Brandt":"Brandt was van 1969 tot 1974 sociaaldemocratisch bondskanselier van West-Duitsland. Hij voerde de Ostpolitik en kreeg in 1971 de Nobelprijs voor de Vrede.",
+"Honecker":"Honecker was van 1971 tot 1989 de communistische leider van de DDR (Oost-Duitsland), na Ulbricht. Hij zag de Duitse deling als definitief en verzette zich tegen de hervormingen van Gorbatsjov.",
+"Lubbers":"Lubbers was van 1982 tot 1994 minister-president van Nederland. Zijn regeringen bezuinigden op de verzorgingsstaat en privatiseerden staatsbedrijven.",
+"Simon Stevin":"Simon Stevin was een Vlaams-Nederlandse wetenschapper en ingenieur (1548-1620). Hij ontwikkelde apparaten, zoals verbeterde windmolens en sluizen, om meren en moerassen droog te leggen. Zo konden er nieuwe polders ontstaan.",
+"Constantijn de Grote":"Constantijn de Grote was een Romeinse keizer in de 4e eeuw (306-337). Hij bekeerde zich tot het christendom en stond in 313 christenen toe hun geloof in het openbaar te uiten.",
+"Petrarca":"Petrarca was een Italiaanse dichter en geleerde in de 14e eeuw (1304-1374). Hij was de grondlegger van het humanisme en schreef over een 'smerige midden-tijd' tussen de klassieke oudheid en zijn eigen tijd.",
+"Wilhelm II":"Wilhelm II was van 1888 tot 1918 keizer van Duitsland. Na de nederlaag in de Eerste Wereldoorlog trad hij op 9 november 1918 af en vluchtte hij naar Nederland."
+};
+WBI.forEach(w=>{ const u=PN2[w.n]; if(!u||!w.hc) return; if(Object.keys(w.hc).some(k=>TLI.includes(k))) return; w.u=u; });
+const PK={"George Washington":"Militair leider van de Amerikaanse onafhankelijkheidsstrijd en eerste president van de Verenigde Staten.","Koningin Victoria":"Britse koningin in de 19e eeuw die in 1876 ook keizerin van India werd.","Constantijn de Grote":"Romeins keizer in de 4e eeuw die christenen toestond hun geloof openlijk te belijden.","Petrarca":"Italiaanse dichter en geleerde uit de 14e eeuw, grondlegger van het humanisme."};
+WBI.forEach(w=>{ if(PK[w.n]&&w.hc&&!Object.keys(w.hc).some(k=>TLI.includes(k))) w.k=PK[w.n]; });
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+WBI.forEach(w=>{ if(w.k||!w.u) return;
+  const s=w.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").trim();
+  const sent=s.split(/(?<!\bv\.C|\bn\.C|\bDr|\b[A-Z])\.\s+(?=[A-Z])/);
+  let r=sent[0].replace(new RegExp("^"+esc(w.n)+"\\s+(was|is|werd)\\s+"),"");
+  if(r===sent[0]) return;
+  r=r.replace(/\.$/,"");
+  if(r.length<70&&sent[1]){ const r2=r+". "+sent[1].replace(/\.$/,""); if(r2.length<=119) r=r2; }
+  r=r[0].toUpperCase()+r.slice(1)+".";
+  const low=r.toLowerCase();
+  if(r.length>120||w.n.split(/\s+/).some(t=>t.length>=4&&low.includes(t.toLowerCase()))) return;
+  w.k=r; });
 })();
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
