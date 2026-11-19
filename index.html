@@ -551,6 +551,24 @@ body.kqon{overflow:hidden}
 .pnav button.cur{outline:3px solid var(--focus);outline-offset:1px}
 .peres{border:2px solid var(--ink);border-radius:12px;padding:1rem 1.2rem;background:var(--surface);margin:1rem 0;max-width:62ch}
 .peres p{margin:.3rem 0}
+.pnav span{display:inline-flex;align-items:center;justify-content:center;min-width:2.4rem;height:2.4rem;border:2px solid var(--line);border-radius:8px;background:var(--surface);color:var(--muted);font-weight:700}
+.pnav span.ans{background:var(--ok-bg);border-color:var(--ok);color:var(--ink)}
+.pnav span.cur{outline:3px solid var(--focus);outline-offset:1px;color:var(--ink)}
+.petoast{position:fixed;top:.8rem;left:50%;transform:translateX(-50%);z-index:50;max-width:min(36rem,92vw);background:var(--surface);border:3px solid var(--ink);border-radius:12px;padding:.8rem 1.1rem;box-shadow:0 6px 24px rgba(0,0,0,.25);font-weight:600}
+.petoast.warn{border-color:var(--bad);color:var(--bad)}
+.pmodes{border:0;padding:0;margin:1rem 0 0}
+.pmodes legend{font-weight:800;margin-bottom:.4rem}
+.pmode{display:flex;gap:.6rem;align-items:flex-start;margin:.5rem 0;max-width:62ch;cursor:pointer}
+.pmode input{margin-top:.3rem}
+.pmode small{display:block;color:var(--muted)}
+.peloknote{color:var(--muted);margin:.5rem 0 0;max-width:62ch}
+.leerx{margin-top:1rem;padding:.8rem 1rem;border:2px solid var(--focus);border-radius:10px;background:var(--surface);max-width:70ch}
+.leerx ul{margin:.3rem 0 .3rem 1.1rem;padding:0}
+.leerx .muted{color:var(--muted);font-size:.92rem}
+.exres{list-style:none;padding:0;margin:1rem 0;max-width:72ch}
+.exres li{border:2px solid var(--line);border-radius:10px;padding:.6rem .9rem;margin:.5rem 0;background:var(--surface)}
+.exres li.bad{border-color:var(--bad)}
+.exres .leerx{margin-top:.5rem;border-width:1px}
 .logo{margin:1.8rem 0 .4rem;font-size:clamp(2.4rem,11vw,3.6rem);font-weight:900;letter-spacing:-.04em;line-height:1;display:flex;align-items:center;gap:.2em}.logob{display:inline-block;background:#ffc93c;color:#111827;padding:.08em .26em .13em;border-radius:.2em;transform:rotate(-4deg);box-shadow:.09em .09em 0 #ff5a5f}
 .newver{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:50;display:flex;gap:.8rem;align-items:center;background:var(--ink);color:var(--bg);padding:.7rem .8rem .7rem 1.1rem;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);width:min(26rem, calc(100vw - 2rem));justify-content:space-between;font-size:.95rem;box-sizing:border-box}
 .newver button{font:inherit;font-weight:700;background:var(--bg);color:var(--ink);border:0;border-radius:8px;padding:.45rem .8rem;cursor:pointer;white-space:nowrap}
@@ -5468,7 +5486,10 @@ const PESUB="Een echt examengevoel: vragen over je stof, met een timer. Je kijkt
 let PE=null;
 const peFmtMin=m=>(Number.isInteger(m)?String(m):String(m).replace(".",","))+" minuten";
 const peClock=sec=>{ const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60), x=sec%60; return (h?h+":"+String(m).padStart(2,"0"):String(m))+":"+String(x).padStart(2,"0"); };
-const peLeft=()=>Math.max(0,Math.ceil((PE.end-Date.now())/1000));
+const peLeft=()=>PE.lock?Math.max(0,Math.ceil((PE.qEnd-Date.now())/1000)):Math.max(0,Math.ceil((PE.end-Date.now())/1000));
+const peLow=()=>PE.lock?30:300;
+function peToastOff(){ const t=document.getElementById("petoast"); if(t) t.remove(); }
+function peToast(msg,kind){ peToastOff(); const d=document.createElement("div"); d.id="petoast"; d.className="petoast"+(kind?" "+kind:""); d.setAttribute("role","status"); d.textContent=msg; document.body.appendChild(d); setTimeout(()=>{ if(d.isConnected) d.remove(); },kind==="warn"?7000:10000); }
 /* Zijn er historische contexten én tijdvakken/perioden gekozen? Dan is peCls een functie die elke vraag indeelt:
    "H" = vraag over een gekozen historische context, "T" = tijdvakvraag (geen context), "X" = vraag over een andere context in de gekozen tijdvakken.
    Het proefexamen kiest dan 2 contextvragen per tijdvakvraag, zoals op het echte CE (60-70% contextvragen). */
@@ -5529,11 +5550,11 @@ function peSelect(pool,target,cls){
   }
   return peOrder(best.out,best.first);
 }
-function peStop(scope){ if(PE&&PE.iv) clearInterval(PE.iv); PE=null; (scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu)(); }
+function peStop(scope){ if(PE&&PE.iv) clearInterval(PE.iv); peToastOff(); PE=null; (scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu)(); }
 const peMpp=()=>exNiv()==="tl"?120/65:2.5;
 const peMin=n=>exNiv()==="tl"?Math.round(n*peMpp()):n*2.5;
 function proefMenu(scope){
-  if(PE&&PE.iv) clearInterval(PE.iv); PE=null; SYL=null;
+  if(PE&&PE.iv) clearInterval(PE.iv); peToastOff(); PE=null; SYL=null;
   EXSCOPE=scope==="ex"?(EXF.tv.size?new Set(EXF.tv):null):scope==="ka"?new Set(S.sel):new Set(S.hc.dv.filter(d=>S.dvSel.has(d.nr)).map(d=>d.c).filter(c=>typeof c==="number"));
   const pool=pePool(scope), tot=pool.reduce((a,q)=>a+q.cv.max,0), back=scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu;
   if(!pool.length) return back();
@@ -5546,37 +5567,74 @@ function proefMenu(scope){
   <section class="section"><h3>Hoe lang?</h3>
    <div class="row" style="margin-top:.6rem"><label>Aantal punten <select id="pn" class="sel">${sizes.map(n=>`<option value="${n}" ${n===def?"selected":""}>${n} punten · ${peFmtMin(peMin(n))}${n===MAXP?" (zo lang als het echte examen)":""}${n===tot&&tot<=MAXP&&!base_.includes(n)?" (alle vragen)":""}</option>`).join("")}</select></label></div>
    <p style="color:var(--muted);margin:.5rem 0 0">${isTL_?"Zoals op het examen: <strong>65 punten in 120 minuten</strong>, dus ongeveer 1,85 minuut per punt (2 punten = ruim 3,5 minuten).":"Zoals op het examen: <strong>1 punt = 2,5 minuut</strong>, dus 2 punten = 5 minuten."} Er zijn ${pool.length} vragen beschikbaar (${tot} punten).</p>
-   <label class="row" style="gap:.5rem;flex-wrap:nowrap;align-items:flex-start;margin-top:.8rem"><input type="checkbox" id="pt" checked> Met timer</label>
+   <fieldset class="pmodes"><legend>Hoe wil je het maken?</legend>
+    <label class="pmode"><input type="radio" name="pmode" value="none"><span><strong>Zonder timer</strong><small>Je bepaalt zelf je tempo.</small></span></label>
+    <label class="pmode"><input type="radio" name="pmode" value="timer" checked><span><strong>Met timer</strong><small>Eén klok voor het hele proefexamen, zoals op het echte examen.</small></span></label>
+    <label class="pmode"><input type="radio" name="pmode" value="remind"><span><strong>Met timer en tijdsherinnering</strong><small>Dezelfde klok. Elke <select id="prem" class="sel"><option value="5">5</option><option value="10" selected>10</option></select> minuten krijg je een melding met hoeveel tijd je hebt gebruikt en hoeveel je nog hebt.</small></span></label>
+    <label class="pmode"><input type="radio" name="pmode" value="lock"><span><strong>Strikt: maximale tijd per vraag</strong><small>Elke vraag heeft een maximumtijd (${isTL_?"2 punten = ruim 3,5 minuten":"1 punt = 2,5 minuut"}). Is de tijd om, dan gaat het automatisch door naar de volgende vraag. Je kunt niet terug en tijd die je overhoudt telt niet mee. Pauzeren kan alleen tussen twee vragen door.</small></span></label>
+   </fieldset>
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start het proefexamen</button></div>
   </section>`;
   app.querySelector("#back").onclick=back;
-  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope)); if(!list.length) return; peStart(scope,list,app.querySelector("#pt").checked); };
+  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope)); if(!list.length) return; const m=(app.querySelector('input[name="pmode"]:checked')||{}).value||"timer"; peStart(scope,list,m,+app.querySelector("#prem").value); };
+  app.querySelector("#prem").onchange=()=>{ app.querySelector('input[name="pmode"][value="remind"]').checked=true; };
   window.scrollTo(0,0);
 }
-function peStart(scope,list,timed){
-  EXRUN=new Set(); list.forEach(q=>exFresh(q));
-  const total=list.reduce((a,q)=>a+q.cv.max,0), now=Date.now();
-  PE={scope,list,i:0,timed,total,start:now,end:now+total*peMpp()*60000,submitted:false};
+function peStart(scope,list,mode,rem){
+  EXRUN=new Set(); list.forEach(q=>exFresh(q)); peToastOff();
+  mode=mode===true?"timer":mode===false?"none":(mode||"timer");
+  const timed=mode!=="none", total=list.reduce((a,q)=>a+q.cv.max,0), now=Date.now();
+  PE={scope,list,i:0,timed,mode,lock:mode==="lock",rem:mode==="remind"?(rem||10):0,nextRem:mode==="remind"?(rem||10):0,total,start:now,end:now+total*peMpp()*60000,submitted:false,paused:false,pauseMs:0,qt:{},qa:{}};
+  if(PE.lock) peQStart();
   EXBACK=()=>proefMenu(scope);
   if(timed) PE.iv=setInterval(peTick,1000);
   peDraw(); window.scrollTo(0,0);
 }
+function peQStart(){ PE.qStart=Date.now(); PE.qEnd=PE.qStart+Math.round(PE.list[PE.i].cv.max*peMpp()*60)*1000; PE.warned=false; PE.lnc=false; }
+function peLockNext(auto){
+  if(!PE||PE.submitted||!PE.lock) return;
+  const j=PE.i, mx=Math.round(PE.list[j].cv.max*peMpp()*60);
+  PE.qt[j]=Math.min(Math.round((Date.now()-PE.qStart)/1000),mx); PE.qa[j]=!!auto; peToastOff();
+  if(j+1>=PE.list.length) return peSubmit(false);
+  PE.i=j+1; PE.paused=true; PE.pauseAt=Date.now(); peBreak(auto,j);
+}
+function peBreak(auto,j){
+  const q=PE.list[PE.i], n=PE.list.length, secs=Math.round(q.cv.max*peMpp()*60);
+  app.innerHTML=`<div class="pehead"><button class="back" id="back">‹ Stoppen</button><div class="petimer"><span>Pauze: de klok staat stil</span></div></div>
+  <h2>Pauze</h2>
+  ${auto?`<div class="exwarn" role="status"><strong>De tijd voor vraag ${j+1} was om</strong><p>Je antwoord is bewaard en je bent automatisch doorgegaan. Je kunt niet meer terug naar deze vraag.</p></div>`:`<p class="lead">Vraag ${j+1} is afgesloten. Je kunt niet meer terug.</p>`}
+  <p>Hierna: vraag ${PE.i+1} van ${n} (${q.cv.max} ${q.cv.max===1?"punt":"punten"}). Je krijgt daarvoor <strong>${peClock(secs)}</strong>. De klok start pas als je op de knop drukt, dus je kunt even pauzeren.</p>
+  <div class="row" style="margin-top:1.2rem"><button class="btn" id="go2">Start vraag ${PE.i+1}</button></div>`;
+  peBind(); window.scrollTo(0,0);
+  app.querySelector("#go2").onclick=()=>{ PE.pauseMs+=Date.now()-PE.pauseAt; PE.paused=false; peQStart(); peDraw(); window.scrollTo(0,0); };
+}
+function peRemind(left){
+  const used=PE.nextRem, n=PE.list.length, ans=PE.list.filter(peAnswered).length;
+  const pts=PE.list.reduce((a,q)=>a+(peAnswered(q)?q.cv.max:0),0), tf=(Date.now()-PE.start)/(PE.end-PE.start), pf=pts/PE.total;
+  const pace=pf<tf-.12?" Je ligt wat achter op schema: blijf niet te lang bij één vraag hangen.":pf>tf+.12?" Je loopt voor op schema.":"";
+  peToast(`${used} minuten gebruikt, nog ${Math.ceil(left/60)} minuten over. Je hebt ${ans} van ${n} vragen beantwoord.${pace}`);
+}
 function peTick(){
-  if(!PE||PE.submitted) return;
+  if(!PE||PE.submitted||PE.paused) return;
   const el=document.getElementById("ptimer");
   if(!el){ clearInterval(PE.iv); PE=null; return; }
-  const left=peLeft(); el.textContent=peClock(left); el.parentElement.classList.toggle("low",left<=300);
+  const left=peLeft(); el.textContent=peClock(left); el.parentElement.classList.toggle("low",left<=peLow());
+  if(PE.lock){
+    if(left<=30&&left>0&&!PE.warned){ PE.warned=true; peToast("Nog 30 seconden voor deze vraag. Daarna ga je automatisch door naar de volgende vraag.","warn"); }
+    if(left<=0) peLockNext(true);
+    return; }
+  if(PE.rem){ const e=Math.floor((Date.now()-PE.start)/1000); if(e>=PE.nextRem*60){ if(left>60) peRemind(left); while(PE.nextRem*60<=e) PE.nextRem+=PE.rem; } }
   if(left<=0) peSubmit(true);
 }
 const peAnswered=q=>{ const s=exLoad(q); return !!(s.ans&&String(s.ans).trim()); };
 function peHead(){
-  const t=PE.timed?`<div class="petimer"><span>Tijd over</span><b id="ptimer">${peClock(peLeft())}</b></div>`:`<div class="petimer"><span>Zonder timer</span></div>`;
-  if(PE.timed&&peLeft()<=300) return `<div class="pehead"><button class="back" id="back">‹ Stoppen</button>${t.replace('class="petimer"','class="petimer low"')}</div>`;
+  const t=PE.timed?`<div class="petimer${peLeft()<=peLow()?" low":""}"><span>${PE.lock?"Tijd voor deze vraag":"Tijd over"}</span><b id="ptimer">${peClock(peLeft())}</b></div>`:`<div class="petimer"><span>Zonder timer</span></div>`;
   return `<div class="pehead"><button class="back" id="back">‹ Stoppen</button>${t}</div>`;
 }
 function peNavHtml(cur){
   return `<div class="pnav" role="group" aria-label="Spring naar een vraag">${PE.list.map((x,j)=>`<button type="button" class="${j===cur?"cur":""} ${peAnswered(x)?"ans":""}" data-j="${j}" aria-label="Vraag ${j+1}${peAnswered(x)?", beantwoord":", nog niet beantwoord"}" ${j===cur?'aria-current="true"':""}>${j+1}</button>`).join("")}</div>`;
 }
+function peLockProg(){ return `<div class="pnav" role="group" aria-label="Voortgang">${PE.list.map((x,j)=>`<span class="${j===PE.i?"cur":""} ${j<PE.i?"ans":""}" ${j===PE.i?'aria-current="true"':""}>${j+1}</span>`).join("")}</div>`; }
 function peBind(){
   const back=app.querySelector("#back");
   back.onclick=()=>{ if(!PE.confirmStop){ PE.confirmStop=true; back.textContent="Klik nogmaals om te stoppen (je antwoorden gaan verloren)"; setTimeout(()=>{ if(PE) PE.confirmStop=false; if(back.isConnected) back.textContent="‹ Stoppen"; },4000); return; } peStop(PE.scope); };
@@ -5584,8 +5642,9 @@ function peBind(){
 }
 function peDraw(){
   const {list,i}=PE, q=list[i], st=exLoad(q);
+  PE.lnc=false;
   app.innerHTML=`${peHead()}
-  ${peNavHtml(i)}
+  ${PE.lock?peLockProg():peNavHtml(i)}
   <div class="meta"><span>Vraag ${i+1} van ${list.length}</span><span>${PE.total} punten in totaal</span></div>
   <div class="row" style="gap:.4rem;margin-bottom:.8rem"><span class="tag">${esc(q.sec)}</span><span class="tag">${exType(q)}</span>${q.tv.length?`<span class="tag">tijdvak ${q.tv.join(", ")}</span>`:""}<span class="tag">${q.p} ${q.p===1?"punt":"punten"}</span></div>
   ${exWarnHtml(q)}
@@ -5596,18 +5655,19 @@ function peDraw(){
     <div class="opts">${q.mc.map(o=>`<button type="button" class="opt exmco ${st.ans===o.l?"sel":""}" data-l="${o.l}" aria-pressed="${st.ans===o.l}"><span class="n">${o.l}</span>${esc(o.t)}</button>`).join("")}</div>`
    :`<label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label>
     <textarea id="ans" class="ans" rows="7" placeholder="Schrijf hier je antwoord, zoals je het op het examen zou doen.">${esc(st.ans||"")}</textarea>`}
-  <div class="row" style="margin-top:1.4rem">
+  ${PE.lock?`<div class="row" style="margin-top:1.4rem"><button class="btn" id="lnext">${i+1<list.length?"Klaar met deze vraag":"Klaar en inleveren"}</button></div><p class="peloknote">Je kunt na deze vraag niet meer terug. Is de tijd om, dan gaat het vanzelf door.</p>`:`<div class="row" style="margin-top:1.4rem">
     <button class="btn ghost" id="prev" ${i===0?"disabled":""}>Vorige vraag</button>
     ${i+1<list.length?`<button class="btn" id="next">Volgende vraag</button>`:""}
     <button class="btn ${i+1<list.length?"ghost":""}" id="submit">Inleveren</button>
-  </div>`;
+  </div>`}`;
   peBind();
   const ans=app.querySelector("#ans");
   if(ans) ans.oninput=()=>{ st.ans=ans.value; exSave(q,st); const b=app.querySelector(`.pnav [data-j="${i}"]`); if(b) b.classList.toggle("ans",!!ans.value.trim()); };
   app.querySelectorAll(".exmco").forEach(b=>b.onclick=()=>{ st.ans=st.ans===b.dataset.l?"":b.dataset.l; exSave(q,st); const y=window.scrollY; peDraw(); window.scrollTo(0,y); });
-  app.querySelector("#prev").onclick=()=>{ PE.i--; peDraw(); window.scrollTo(0,0); };
+  const pv=app.querySelector("#prev"); if(pv) pv.onclick=()=>{ PE.i--; peDraw(); window.scrollTo(0,0); };
   const nx=app.querySelector("#next"); if(nx) nx.onclick=()=>{ PE.i++; peDraw(); window.scrollTo(0,0); };
-  app.querySelector("#submit").onclick=peConfirm;
+  const sb=app.querySelector("#submit"); if(sb) sb.onclick=peConfirm;
+  const ln=app.querySelector("#lnext"); if(ln){ const orig=ln.textContent; ln.onclick=()=>{ if(!PE.lnc){ PE.lnc=true; ln.textContent="Klik nogmaals: hierna kun je niet meer terug"; setTimeout(()=>{ if(PE) PE.lnc=false; if(ln.isConnected) ln.textContent=orig; },4000); return; } PE.lnc=false; peLockNext(false); }; }
 }
 function peConfirm(){
   const open=PE.list.map((q,j)=>({q,j})).filter(x=>!peAnswered(x.q));
@@ -5623,8 +5683,8 @@ function peConfirm(){
 }
 function peSubmit(auto){
   if(!PE||PE.submitted) return;
-  PE.submitted=true; if(PE.iv) clearInterval(PE.iv);
-  PE.used=Math.min(Math.round((Date.now()-PE.start)/1000),Math.round(PE.total*peMpp()*60)); PE.auto=!!auto;
+  PE.submitted=true; if(PE.iv) clearInterval(PE.iv); peToastOff();
+  PE.used=PE.lock?Object.values(PE.qt).reduce((a,b)=>a+b,0):Math.min(Math.round((Date.now()-PE.start)/1000),Math.round(PE.total*peMpp()*60)); PE.auto=!!auto;
   let got=0,max=0,n=0,omax=0;
   PE.list.forEach(q=>{ const st=exLoad(q);
     if(q.mc){ st.score=st.ans===q.cv.mc?q.cv.max:0; st.done=true; exSave(q,st); got+=st.score; max+=q.cv.max; }
@@ -5635,10 +5695,11 @@ function peSubmit(auto){
 function peResult(){
   const {list,res,total}=PE, unans=list.filter(q=>!peAnswered(q)).length;
   app.innerHTML=`<button class="back" id="back">‹ Terug naar de keuze</button>
-  <h2>${PE.auto?"De tijd is om":"Ingeleverd"}</h2>
+  <h2>${PE.auto&&!PE.lock?"De tijd is om":"Ingeleverd"}</h2>
   <div class="peres">
-    ${PE.auto?`<p>Je antwoorden zijn automatisch ingeleverd.</p>`:""}
+    ${PE.auto&&!PE.lock?`<p>Je antwoorden zijn automatisch ingeleverd.</p>`:""}
     ${PE.timed?`<p>Je hebt <strong>${peClock(PE.used)}</strong> gebruikt van ${peFmtMin(peMin(total))}.</p>`:""}
+    ${PE.lock?`<details style="margin:.4rem 0"><summary>Tijd per vraag (${Object.values(PE.qa).filter(Boolean).length} automatisch afgesloten)</summary><ul>${list.map((q,j)=>`<li>Vraag ${j+1} (${q.cv.max}p): ${peClock(PE.qt[j]||0)} van ${peClock(Math.round(q.cv.max*peMpp()*60))}${PE.qa[j]?" · tijd om, automatisch afgesloten":""}</li>`).join("")}</ul></details>`:""}
     <p>Je maakte ${list.length} ${list.length===1?"vraag":"vragen"}, samen ${total} punten${unans?` (${unans} onbeantwoord)`:""}.</p>
     ${res.max?`<p>Meerkeuze: <strong>${res.got} van ${res.max} punten</strong>.</p>`:""}
     ${res.n?`<p>Open vragen: ${res.n} ${res.n===1?"vraag":"vragen"} (${res.omax} punten). Die kijk je nu na met het correctievoorschrift${SAMPLEOFF?"":", of laat je nakijken"}.</p>`:""}
@@ -5870,6 +5931,17 @@ Geef bij elk onderdeel in "punten" hoeveel punten je toekent; bij een onderdeel 
   return {checks,score:Math.max(0,Math.min(q.cv.max,sc)),auto:{feedback:String(r.feedback||""),tip:String(r.tip||""),per}};
 }
 
+function leerExtra(q){
+  const L=[], ka=q.ka||[];
+  ka.forEach(n=>{ const k=kaOf(n); if(k) L.push(`Tijdvak ${k.tv}, kenmerkend aspect ${n}: ${esc(k.t)}`); });
+  if(!ka.length) (q.tv||[]).slice(0,3).forEach(t=>{ const v=TV[t-1]; if(v) L.push(`Tijdvak ${t}: ${esc(v.naam)} (${esc(v.jaren)})`); });
+  (q.hc||[]).forEach(h=>{ const nm=exNames()[h]||HCNAMES[h]; if(!nm) return; let x=(exNiv()==="tl"?"Examenstof: ":"Historische context: ")+esc(nm);
+    try{ const dv=exDvOf(q,h); if(dv&&dv.size){ const H=exHcData(h); const d=[...dv].map(nr=>H.dv.find(y=>y.nr===nr)).filter(Boolean).slice(0,2);
+      if(d.length) x+=", deelvraag "+d.map(y=>`${y.nr} (${esc(y.periode)}): ${esc(y.vraag.length>95?y.vraag.slice(0,92)+"…":y.vraag)}`).join("; "); } }catch(e){}
+    L.push(x); });
+  if(!L.length) L.push("Onderdeel van het examen: "+esc(q.sec));
+  return `<div class="leerx"><strong>Leer extra</strong><ul>${L.map(x=>`<li>${x}</li>`).join("")}</ul><span class="muted">Bestudeer dit onderdeel nog eens bij “Bestudeer de stof” of in het Stofoverzicht.</span></div>`;
+}
 function exCv(q,st){
   const it=q.cv.items; const scored=it.some(i=>i.s);
   let k=-1;
@@ -5911,11 +5983,13 @@ function exRun(list,i){
     ${q.mc?exMcHtml(q,st,shown):`<label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label>
     <textarea id="ans" class="ans" rows="6" placeholder="Schrijf hier je antwoord, zoals je het op het examen zou doen.">${esc(st.ans||"")}</textarea>
     ${shown?exCv(q,st):`<div class="row" style="margin-top:.8rem"><button class="btn ghost" id="show">Zelf nakijken</button>${SAMPLEOFF?"":`<button class="btn" id="auto">Laten nakijken</button>`}</div><div id="autostatus"></div>`}`}
+    <div id="leerx"></div>
     <div class="row" style="margin-top:1.4rem">
       <button class="btn ghost" id="prev" ${i===0?"disabled":""}>Vorige vraag</button>
       <button class="btn ${shown?"":"ghost"}" id="next">${i+1<list.length?"Volgende vraag":"Klaar"}</button>
     </div>`;
     app.querySelector("#back").onclick=EXBACK;
+    const fx=()=>{ const b=app.querySelector("#leerx"); if(b) b.innerHTML=(shown&&(st.score??0)<q.cv.max)?leerExtra(q):""; }; fx();
     exHintBox(q,app.querySelector("#hintbox"));
     const ans=app.querySelector("#ans");
     if(ans) ans.oninput=()=>{st.ans=ans.value; exSave(q,st);};
@@ -5943,12 +6017,12 @@ function exRun(list,i){
       }
     };
     const recalc=()=>{ st.score=Math.min(q.cv.max,[...app.querySelectorAll(".cvrow input")].reduce((a,c)=>a+(c.checked?+c.dataset.s:0),0)+[...app.querySelectorAll(".cvmulti")].reduce((a,r)=>a+(+r.dataset.v||0),0));
-      app.querySelector("#sc").textContent=st.score; exSave(q,st); };
+      app.querySelector("#sc").textContent=st.score; exSave(q,st); fx(); };
     app.querySelectorAll(".cvrow input").forEach(cb=>cb.onchange=()=>{ st.checks=st.checks||{}; st.checks[cb.dataset.k]=cb.checked; recalc(); });
     app.querySelectorAll(".cvmulti .cvp").forEach(b=>b.onclick=()=>{ const r=b.closest(".cvmulti"), v=+b.dataset.v; r.dataset.v=v;
       r.querySelectorAll(".cvp").forEach(x=>{ const on=+x.dataset.v===v; x.classList.toggle("on",on); x.setAttribute("aria-checked",on); });
       st.checks=st.checks||{}; st.checks[r.dataset.k]=v; recalc(); });
-    const ss=app.querySelector("#scsel"); if(ss) ss.onchange=()=>{st.score=+ss.value; exSave(q,st);};
+    const ss=app.querySelector("#scsel"); if(ss) ss.onchange=()=>{st.score=+ss.value; exSave(q,st); fx();};
     app.querySelector("#prev").onclick=()=>exRun(list,i-1);
     app.querySelector("#next").onclick=()=>i+1<list.length?exRun(list,i+1):exDone(list);
   }
@@ -5976,13 +6050,19 @@ function exHintBox(q,box){
   render();
 }
 function exDone(list){
-  let got=0,max=0,n=0;
-  list.forEach(q=>{const s=exLoad(q).score; if(s!==undefined&&s!==null){got+=s;max+=q.cv.max;n++;}});
+  let got=0,max=0,n=0; const wrong=[];
+  list.forEach(q=>{const s=exLoad(q).score; if(s!==undefined&&s!==null){got+=s;max+=q.cv.max;n++; if(s<q.cv.max) wrong.push(q);}});
+  const rows=list.map((q,j)=>{ const s=exLoad(q).score, has=s!==undefined&&s!==null, bad=has&&s<q.cv.max;
+    return `<li class="${bad?"bad":""}"><div class="row" style="gap:.6rem;align-items:center;justify-content:space-between"><span><strong>Vraag ${j+1}</strong> · ${esc(exLabel(q.ex))}, vraag ${q.nr} · ${has?`<strong>${s} van ${q.cv.max}</strong>`:"niet nagekeken"}</span>${bad?`<button class="btn ghost" data-r="${j}">Maak opnieuw</button>`:""}</div>${bad?leerExtra(q):""}</li>`; }).join("");
   app.innerHTML=`<button class="back" id="back">‹ Terug naar de keuze</button>
   <p class="score">${got}/${max}</p>
   <h2 style="margin-top:.5rem">Punten bij ${n} nagekeken ${n===1?"vraag":"vragen"}</h2>
   <p class="lead">${max&&got/max>=.7?"Goed bezig! Probeer ook eens een andere context of periode.":"Kijk bij de vragen met weinig punten nog eens goed naar het correctievoorschrift: welke onderdelen miste je?"}</p>
-  <div class="row" style="margin-top:1.5rem"><button class="btn" id="menu">Nieuwe selectie</button></div>`;
+  <ul class="exres">${rows}</ul>
+  <div class="row" style="margin-top:1.5rem">${wrong.length?`<button class="btn" id="redo">Maak ${wrong.length===1?"de fout beantwoorde vraag":"de "+wrong.length+" fout beantwoorde vragen"} opnieuw</button>`:""}<button class="btn ${wrong.length?"ghost":""}" id="menu">Nieuwe selectie</button></div>`;
+  const redo=qs=>{ qs.forEach(q=>EXRUN.delete(exKey(q))); exRun(qs,0); };
+  const rd=app.querySelector("#redo"); if(rd) rd.onclick=()=>redo(wrong);
+  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>redo([list[+b.dataset.r]]));
   app.querySelector("#back").onclick=EXBACK; app.querySelector("#menu").onclick=EXBACK; window.scrollTo(0,0);
 }
 
@@ -6792,7 +6872,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119125154"; let last=0, shown=false;
+  const BUILD="20261119131333"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
