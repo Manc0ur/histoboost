@@ -2023,7 +2023,7 @@ const TL_WO1 = mkHC({
    [1,"Russische Revolutie","Omwenteling in 1917 waardoor de tsaar werd weggestuurd en later een communistische regering aan de macht kwam."],
    [1,"Wapenstilstand","Afspraak om te stoppen met vechten."],
    [1,"Censuur","Toezicht op de media."],
-   [1,"Propaganda","Informatie of idee die wordt verspreid om de mening of het gedrag van mensen te beïnvloeden."],
+   [1,"Propaganda","Informatie of idee dat wordt verspreid om de mening of het gedrag van mensen te beïnvloeden."],
    [1,"Totale oorlog","Strijd waaraan de hele maatschappij meedoet: niet alleen soldaten, maar ook burgers, fabrieken en de economie."],
    [1,"Mobilisatie","Het leger gereed maken voor oorlog."],
    [2,"Neutraliteit","Geen partij kiezen in een conflict of oorlog."],
@@ -6728,12 +6728,15 @@ function kwWords(scope){
     W.push(...WBI.filter(p=>p.hc[H.id]&&p.hc[H.id].some(x=>S.dvSel.has(x))).map(person));
   }
   const seen=new Set();
-  return W.map(w=>({...w,k:kwNorm(w.a),lens:kwLens(w.a)})).filter(w=>{ if(w.k.length<3||w.k.length>13||/\d/.test(w.a)||w.k==="mechelen"||seen.has(w.k)) return false; seen.add(w.k); return true; });
+  return W.map(w=>({...w,k:kwNorm(w.a),lens:kwLens(w.a)})).filter(w=>{ if(w.k.length<3||w.k.length>16||/\d/.test(w.a)||w.k==="mechelen"||seen.has(w.k)) return false; seen.add(w.k); return true; });
 }
+/* Recent gebruikte woorden onthouden, zodat elke puzzel andere woorden kiest */
+function kwRecent(){ const m=new Map(); try{ (JSON.parse(localStorage.getItem("kwr")||"[]")||[]).forEach(l=>l.forEach(k=>m.set(k,(m.get(k)||0)+1))); }catch(e){} return m; }
+function kwRemember(placed){ try{ const a=(JSON.parse(localStorage.getItem("kwr")||"[]")||[]); a.push(placed.map(p=>p.k)); localStorage.setItem("kwr",JSON.stringify(a.slice(-3))); }catch(e){} }
 function kwBuild(words,target){
-  let best=null;
+  let best=null; const R=kwRecent();
   for(let attempt=0;attempt<60;attempt++){
-    const pool=shuffle(words).sort((a,b)=>(a.k.length>9)-(b.k.length>9)).slice(0,45); const fi=pool.findIndex(w=>w.k.length>=7&&w.k.length<=10); if(fi>0) pool.unshift(...pool.splice(fi,1)); const evs=pool.filter(w=>w.tag==="Gebeurtenis").slice(0,3); evs.forEach(e=>{ pool.splice(pool.indexOf(e),1); pool.splice(1,0,e); });
+    const pool=shuffle(words).map(w=>[w,Math.random()+1.2*(R.get(w.k)||0)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).map(w=>[w,w.k.length>9&&Math.random()<.35?1:0]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).slice(0,45); const fi=pool.findIndex(w=>w.k.length>=7&&w.k.length<=10); if(fi>0) pool.unshift(...pool.splice(fi,1)); const evs=pool.filter(w=>w.tag==="Gebeurtenis"&&!R.get(w.k)).slice(0,2); evs.forEach(e=>{ pool.splice(pool.indexOf(e),1); pool.splice(1,0,e); });
     const G=new Map(), D=new Map(), placed=[]; const at=(r,c)=>G.get(r+","+c);
     let minR=0,maxR=0,minC=0,maxC=0;
     const fits=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1, L=w.k.length; let cross=0;
@@ -6742,7 +6745,7 @@ function kwBuild(words,target){
         if(ch){ if(ch!==w.k[i]||((D.get(rr+","+cc)||0)&(1<<dir))) return null; cross++; }
         else if(at(rr+dc,cc+dr)||at(rr-dc,cc-dr)) return null; }
       const nr0=Math.min(minR,r), nr1=Math.max(maxR,r+dr*(L-1)), nc0=Math.min(minC,c), nc1=Math.max(maxC,c+dc*(L-1));
-      if(nr1-nr0>=11||nc1-nc0>=13) return null;
+      if(nr1-nr0>=11||nc1-nc0>=15) return null;
       return cross*4-((nr1-nr0)*(nc1-nc0)-(maxR-minR)*(maxC-minC))/12; };
     const put=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1; for(let i=0;i<w.k.length;i++) { const kk=(r+dr*i)+","+(c+dc*i); G.set(kk,w.k[i]); D.set(kk,(D.get(kk)||0)|(1<<dir)); }
       placed.push({...w,r,c,dir}); minR=Math.min(minR,r); maxR=Math.max(maxR,r+dr*(w.k.length-1)); minC=Math.min(minC,c); maxC=Math.max(maxC,c+dc*(w.k.length-1)); };
@@ -6757,7 +6760,7 @@ function kwBuild(words,target){
       if(opts.length){ const o=opts.sort((a,b)=>b.f-a.f)[0]; put(w,o.r,o.c,o.dir); }
     }
     const tags=new Set(placed.map(p=>p.tag)).size;
-    const cells=new Set(); placed.forEach(p=>{for(let i=0;i<p.k.length;i++) cells.add((p.r+(p.dir?i:0))+','+(p.c+(p.dir?0:i)));}); const cross=placed.reduce((s,p)=>s+p.k.length,0)-cells.size; const score=placed.length*10+tags*3+Math.min(3,placed.filter(p=>p.tag==="Gebeurtenis").length)*6+cross*2-((maxR-minR+1)*(maxC-minC+1))/20;
+    const cells=new Set(); placed.forEach(p=>{for(let i=0;i<p.k.length;i++) cells.add((p.r+(p.dir?i:0))+','+(p.c+(p.dir?0:i)));}); const cross=placed.reduce((s,p)=>s+p.k.length,0)-cells.size; const score=placed.length*10+tags*3+Math.min(2,placed.filter(p=>p.tag==="Gebeurtenis").length)*3+cross*2-placed.reduce((s,p)=>s+(R.get(p.k)||0),0)*5-((maxR-minR+1)*(maxC-minC+1))/20;
     if(!best||score>best.score) best={placed:placed.map(p=>({...p,r:p.r-minR,c:p.c-minC})),rows:maxR-minR+1,cols:maxC-minC+1,score};
     
   }
@@ -6766,7 +6769,7 @@ function kwBuild(words,target){
 function kruiswoord({scope,back,again}){
   const words=kwWords(scope);
   if(words.length<6){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Kruiswoordpuzzel</h2><p class="note">Er zijn te weinig woorden voor een puzzel. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
-  const P=kwBuild(words,Math.min(12,words.length));
+  const P=kwBuild(words,Math.min(12,words.length)); kwRemember(P.placed);
   // nummering
   const starts=new Map(); let num=0;
   const order=[...P.placed].sort((a,b)=>a.r-b.r||a.c-b.c);
@@ -6779,7 +6782,7 @@ function kruiswoord({scope,back,again}){
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <div class="meta"><span>Kruiswoordpuzzel</span><span>${P.placed.length} woorden</span></div>
     <p class="lead" style="margin-bottom:.8rem">Klik op een vakje of een omschrijving en typ het antwoord. Klik nog een keer op hetzelfde vakje om van richting te wisselen. Spaties en streepjes laat je weg.</p>
-    <div class="kwwrap" style="--kw:max(1.4rem, min(2.3rem, calc((min(100vw, 46rem) - 3.6rem) / ${P.cols} - 2px)))"><div class="kwgrid" id="kwg" style="grid-template-columns:repeat(${P.cols},var(--kw));grid-template-rows:repeat(${P.rows},var(--kw))"></div></div>
+    <div class="kwwrap" style="--kw:max(1.2rem, min(2.3rem, calc((min(100vw, 46rem) - 3.6rem) / ${P.cols} - 2px)))"><div class="kwgrid" id="kwg" style="grid-template-columns:repeat(${P.cols},var(--kw));grid-template-rows:repeat(${P.rows},var(--kw))"></div></div>
     <div class="row" style="margin:.9rem 0 1.2rem"><button class="btn" id="kwcheck">Controleer</button><button class="btn ghost" id="kwhint">Hint: één letter</button><button class="btn ghost" id="kwshow">Toon oplossing</button><button class="btn ghost" id="kwnew">Nieuwe puzzel</button></div>
     <div id="kwfb"></div>
     <div class="kwclues"><section><h3>Horizontaal</h3><ol>${across.map(clueLi).join("")}</ol></section><section><h3>Verticaal</h3><ol>${down.map(clueLi).join("")}</ol></section></div>`;
@@ -6956,7 +6959,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119172223"; let last=0, shown=false;
+  const BUILD="20261119172726"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
