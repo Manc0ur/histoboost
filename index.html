@@ -3170,7 +3170,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="memory" ${count?"":"disabled"}><span class="txt"><strong>Memory</strong><span class="sub">Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving</span></span></button>
       <button class="item" data-m="mc" ${count?"":"disabled"}><span class="txt"><strong>Meerkeuzevragen</strong><span class="sub">Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen</span></span></button>
       <button class="item" data-m="kruis" ${count?"":"disabled"}><span class="txt"><strong>Kruiswoordpuzzel</strong><span class="sub">Elke keer een nieuwe puzzel met personen, plaatsen en begrippen uit de gekozen tijdvakken</span></span></button>
-      <button class="item" data-m="wie" ${WBI.some(p=>p.tv.some(t=>S.sel.has(t))&&kaOk(p))?"":"disabled"}><span class="txt"><strong>Wie of wat ben ik?</strong><span class="sub">Raad de historische persoon of het begrip. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten</span></span></button>
+      <button class="item" data-m="wie" ${WBI.some(p=>p.tv.some(t=>S.sel.has(t))&&kaOk(p))?"":"disabled"}><span class="txt"><strong>Wie ben ik?</strong><span class="sub">Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten</span></span></button>
       <button class="item" data-m="hitster" ${KA_TL.some(e=>S.sel.has(e.tv)&&kaOk(e))?"":"disabled"}><span class="txt"><strong>Hitster</strong><span class="sub">Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!</span></span></button>
       <button class="item" data-m="tijdmachine" ${tmItems(MAP_KA).some(x=>S.sel.has(x.tv)&&kaOk(x))?"":"disabled"}><span class="txt"><strong>Tijdmachine</strong><span class="sub">${TMSUB}</span></span></button>
       <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv)&&kaOk(k))?"":"disabled"}><span class="txt"><strong>Oorzaak en gevolg</strong><span class="sub">Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
@@ -3341,7 +3341,7 @@ function hcModes(H){ return [...(lzPass(H).length&&false?[["uitleg","Lees en bea
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
          ["mc","Meerkeuzevragen","Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen"],
          ["kruis","Kruiswoordpuzzel","Elke keer een nieuwe puzzel met begrippen, personen, plaatsen en zinnen uit "+(H.parts?"deze stof":"deze context")],
-         ["wie","Wie of wat ben ik?","Raad de historische persoon of het begrip. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten"],
+         ["wie","Wie ben ik?","Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten"],
          ["hitster","Hitster","Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!"],
          
          ["tijdmachine","Tijdmachine",TMSUB],
@@ -6574,7 +6574,7 @@ function confetti(){
     const m=/^\s*(\d+)\s*\/\s*(\d+)\s*$/.exec(el.textContent||""); if(el.dataset.perfect==="1"||(m&&+m[2]>0&&+m[1]===+m[2])) confetti(); }).observe(root,{childList:true,subtree:true}); })();
 /* ---------- Wie of wat ben ik? ---------- */
 function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
-  if(pool.length<1&&!begr.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Wie of wat ben ik?</h2><p class="note">Bij deze keuze horen nog geen personen of begrippen. Kies andere ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
+  if(pool.length<1&&!begr.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Wie ben ik?</h2><p class="note">Bij deze keuze horen nog geen personen. Kies andere ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
   const NOPT=8, NH=5;
   const NR=6, total0=Math.min(NR,pool.length+begr.length);
   let nb=0; for(let k=0;k<total0;k++) if(begr.length&&(!pool.length||Math.random()<.5)) nb++;
@@ -6633,12 +6633,10 @@ function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
   }
   start();
 }
-function kaWie(){ const pool=WBI.filter(p=>p.tv.some(t=>S.sel.has(t))&&kaOk(p)); const all=wbKaBegrippen(), begr=all.filter(b=>S.sel.has(b.tv[0])&&kaOk({ka:b.ka}));
-  wieBenIk({pool,others:WBI,key:"wbi-ka",back:kaMenu,again:kaWie,begr,begrAll:all}); }
+function kaWie(){ const pool=WBI.filter(p=>p.tv.some(t=>S.sel.has(t))&&kaOk(p)); wieBenIk({pool,others:WBI,key:"wbi-ka",back:kaMenu,again:kaWie}); }
 function hcWie(){ const H=S.hc, id=H.id; const inH=WBI.filter(p=>p.hc[id]); const pool=inH.filter(p=>p.hc[id].some(d=>S.dvSel.has(d)));
   const tvs=H.dv.map(d=>d.c); const others=H.niveau==="tl"?WBI.filter(p=>TL_IDS.some(k=>p.hc[k])):[...inH,...WBI.filter(p=>!p.hc[id]&&p.tv.some(t=>tvs.includes(t)))];
-  const all=wbHcBegrippen(H), begr=all.filter(b=>S.dvSel.has(b.dv));
-  wieBenIk({pool,others:others.length>=8?others:WBI,key:hk("wbi"),back:hcMenu,again:hcWie,begr,begrAll:all}); }
+  wieBenIk({pool,others:others.length>=8?others:WBI,key:hk("wbi"),back:hcMenu,again:hcWie}); }
 
 /* ---------- Kruiswoordpuzzel: elke keer een nieuwe puzzel uit begrippen, personen, plaatsen en zinnen ---------- */
 const kwNorm = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z]/g,"");
