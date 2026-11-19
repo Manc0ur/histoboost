@@ -457,10 +457,10 @@ body.kqon{overflow:hidden}
 .kqbar{height:8px;background:rgba(255,255,255,.14);border-radius:4px;overflow:hidden;flex:none}
 .kqbar i{display:block;height:100%;width:100%;background:#FFC400}
 .kqq{background:#fff;color:#16233A;border-radius:16px;padding:clamp(.8rem,2.4vh,1.8rem) clamp(1rem,2.4vw,2.4rem);text-align:center;flex:none}
-.kqask{margin:0 0 .35em;color:#55627A;font-weight:700;font-size:clamp(.95rem,.7vw + .9vh,1.45rem)}
-.kqtext{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;line-height:1.22;font-size:clamp(1.3rem,1.9vw + 1.6vh,3.1rem);overflow-wrap:break-word;hyphens:auto}
-.kqq.mid .kqtext{font-size:clamp(1.15rem,1.4vw + 1.2vh,2.4rem)}
-.kqq.long .kqtext{font-size:clamp(1.05rem,1.05vw + .95vh,1.85rem);font-weight:700;line-height:1.3}
+.kqask{margin:0 0 .35em;color:#55627A;font-weight:700;font-size:clamp(1.05rem,.9vw + 1vh,1.7rem)}
+.kqtext{margin:0;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;line-height:1.22;font-size:clamp(1.65rem,2.7vw + 2.3vh,4.2rem);overflow-wrap:break-word;hyphens:auto}
+.kqq.mid .kqtext{font-size:clamp(1.45rem,2vw + 1.7vh,3.2rem)}
+.kqq.long .kqtext{font-size:clamp(1.25rem,1.4vw + 1.2vh,2.4rem);font-weight:700;line-height:1.3}
 .kqq .kbron{text-align:left;color:#16233A}
 .kqopts{display:grid;grid-template-columns:1fr 1fr;gap:clamp(.5rem,1.4vh,1rem);flex:1 0 auto;min-height:0}
 .kqo{position:relative;background:var(--bg);color:var(--fg);border-radius:14px;display:flex;align-items:center;gap:clamp(.6rem,1.2vw,1.2rem);padding:clamp(.6rem,1.6vh,1.3rem) clamp(.8rem,1.4vw,1.4rem);min-height:clamp(4rem,13vh,11rem);transition:opacity .3s,transform .3s;box-shadow:0 4px 0 rgba(0,0,0,.25)}
@@ -3730,7 +3730,7 @@ function kqFill(gens,n){
 function klasQuiz({scope,back}){
   const gens=()=>scope==="ka"?[...kaMixGens(),mcGensKA()[4]]:hcMixGens();
   const lsG=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:+v; }catch(e){ return d; } }, lsS=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(e){} };
-  let N=lsG("kqN",15), T=lsG("kqT",15); if(![10,15,20].includes(N)) N=15; if(![0,10,15,20].includes(T)) T=15;
+  let N=lsG("kqN",15), T=lsG("kqT",15), M=lsG("kqM",0); if(![10,15,20].includes(N)) N=15; if(![0,15,20,25,30].includes(T)) T=15; if(![0,1].includes(M)) M=0;
   const leave=()=>{ if(kqStop) kqStop(); back(); };
   function setup(msg){
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
@@ -3739,7 +3739,9 @@ function klasQuiz({scope,back}){
     <div class="kqlegend" aria-label="Kleuren en nummers">${KQ_COL.map(([n,c,bg,fg,v])=>`<span style="background:${bg};color:${fg}"><b>${n}</b><span>${c}<small>of ${v}</small></span></span>`).join("")}</div>
     <div class="kqset">
       <h3>Aantal vragen</h3><div class="chips">${[10,15,20].map(n=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${N===n}" data-n="${n}">${n} vragen</button>`).join("")}</div>
-      <h3>Bedenktijd per vraag</h3><div class="chips">${[[0,"Geen timer"],[10,"10 seconden"],[15,"15 seconden"],[20,"20 seconden"]].map(([t,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${T===t}" data-t="${t}">${l}</button>`).join("")}</div>
+      <h3>Bedenktijd per vraag</h3><div class="chips">${[[0,"Geen timer"],[15,"15 seconden"],[20,"20 seconden"],[25,"25 seconden"],[30,"30 seconden"]].map(([t,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${T===t}" data-t="${t}">${l}</button>`).join("")}</div>
+      <h3>Antwoordopties</h3><div class="chips">${[[0,"Direct in beeld"],[1,"Na een klik"]].map(([m,l])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${M===m}" data-m="${m}">${l}</button>`).join("")}</div>
+      <p class="note" style="margin:.4rem 0 0;max-width:60ch">${M?"Eerst zien de leerlingen alleen de vraag, zodat ze die rustig kunnen lezen. Met de knop “Toon antwoordopties” komen de vier antwoorden in beeld en start de timer.":"De vraag en de vier antwoorden staan meteen in beeld en de timer loopt direct."}</p>
     </div>
     ${msg?`<p class="note" style="margin-top:1rem">${msg}</p>`:""}
     <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start de Klas Quiz</button></div>
@@ -3747,6 +3749,7 @@ function klasQuiz({scope,back}){
     app.querySelector("#back").onclick=leave;
     app.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{ N=+b.dataset.n; lsS("kqN",N); setup(); });
     app.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{ T=+b.dataset.t; lsS("kqT",T); setup(); });
+    app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{ M=+b.dataset.m; lsS("kqM",M); setup(); });
     app.querySelector("#go").onclick=run;
     window.scrollTo(0,0);
   }
@@ -3754,13 +3757,13 @@ function klasQuiz({scope,back}){
     const qs=kqFill(gens(),N);
     if(qs.length<4){ setup(`Bij deze keuze zijn te weinig vragen te maken. Kies meer ${kiesWat()}.`); return; }
     if(kqStop) kqStop();
-    let i=0, shown=false, iv=null, wantFs=false;
+    let i=0, shown=false, iv=null, wantFs=false, opened=false;
     const ov=document.createElement("div"); ov.className="kq"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true"); ov.setAttribute("aria-label","Klas Quiz");
     document.body.appendChild(ov); document.body.classList.add("kqon");
     const fs=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else ov.requestFullscreen(); }catch(e){} };
     const stop=()=>{ clearInterval(iv); document.removeEventListener("keydown",key); try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){} ov.remove(); document.body.classList.remove("kqon"); kqStop=null; };
     kqStop=stop;
-    function go(){ if(i>=qs.length) return; if(!shown){ shown=true; draw(); } else { i++; shown=false; draw(); } }
+    function go(){ if(i>=qs.length) return; if(!shown){ if(M&&!opened){ opened=true; draw(); } else { shown=true; draw(); } } else { i++; shown=false; opened=false; draw(); } }
     function prev(){ if(i>0){ i--; shown=true; draw(); } }
     function key(e){
       if(e.ctrlKey||e.metaKey||e.altKey) return;
@@ -3783,16 +3786,16 @@ function klasQuiz({scope,back}){
           <div class="kqnav"><button class="kqb" id="kqprev">‹ Vorige</button><span class="kqsp"></span><button class="kqb" id="kqmenu">Terug naar oefeningen</button><button class="kqgo" id="kqnew">Nieuwe ronde</button></div>`;
         wire(); ov.querySelector("#kqprev").onclick=prev; ov.querySelector("#kqmenu").onclick=()=>{ stop(); back(); }; ov.querySelector("#kqnew").onclick=()=>{ stop(); run(); }; ov.scrollTop=0; return;
       }
-      const q=qs[i], tag=kqKind(q), ask=String(q.ask||"").replace(/<span class="qtag">[^<]*<\/span>\s*/,""), ql=(q.q||"").length, ol=Math.max(...q.opts.map(o=>kqTxt(o).length));
-      ov.innerHTML=top(`<span class="kqtag">Vraag ${i+1} van ${qs.length}</span>${tag?`<span class="kqtag">${esc(tag)}</span>`:""}`,T&&!shown?`<span class="kqtime" id="kqtime" aria-live="off">${T}</span>`:"")
-        +(T&&!shown?`<div class="kqbar" aria-hidden="true"><i id="kqbar"></i></div>`:"")
+      const q=qs[i], tag=kqKind(q), ask=String(q.ask||"").replace(/<span class="qtag">[^<]*<\/span>\s*/,""), ql=(q.q||"").length, ol=Math.max(...q.opts.map(o=>kqTxt(o).length)), hid=!!M&&!opened&&!shown, run_=!hid&&!shown;
+      ov.innerHTML=top(`<span class="kqtag">Vraag ${i+1} van ${qs.length}</span>${tag?`<span class="kqtag">${esc(tag)}</span>`:""}`,T&&run_?`<span class="kqtime" id="kqtime" aria-live="off">${T}</span>`:"")
+        +(T&&run_?`<div class="kqbar" aria-hidden="true"><i id="kqbar"></i></div>`:"")
         +`<div class="kqq ${ql>170?"long":ql>80?"mid":""}"><p class="kqask">${ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="kqtext">${esc(q.q||"")}</p>`}</div>
-        <div class="kqopts">${q.opts.map((o,j)=>{ const [n,c,bg,fg]=KQ_COL[j], ok=String(o.id)===q.right;
-          return `<div class="kqo ${fg!=="#fff"?"dark":""} ${shown?(ok?"ok":"no"):""}" style="--bg:${bg};--fg:${fg}"><span class="kqnum" aria-label="${n}, ${c}">${n}</span><span class="kqlab ${ol>75?"small":""}">${o.html||esc(o.label)}</span>${shown&&ok?'<span class="kqcheck" aria-label="goed antwoord">✓</span>':""}</div>`; }).join("")}</div>
+        ${hid?"":`<div class="kqopts">${q.opts.map((o,j)=>{ const [n,c,bg,fg]=KQ_COL[j], ok=String(o.id)===q.right;
+          return `<div class="kqo ${fg!=="#fff"?"dark":""} ${shown?(ok?"ok":"no"):""}" style="--bg:${bg};--fg:${fg}"><span class="kqnum" aria-label="${n}, ${c}">${n}</span><span class="kqlab ${ol>75?"small":""}">${o.html||esc(o.label)}</span>${shown&&ok?'<span class="kqcheck" aria-label="goed antwoord">✓</span>':""}</div>`; }).join("")}</div>`}
         ${shown?`<div class="kqexp" role="status"><p>${q.uitleg||""}</p>${q.extra?`<p class="kqextra">${esc(q.extra)}</p>`:""}</div>`:""}
-        <div class="kqnav"><button class="kqb" id="kqprev" ${i?"":"disabled"}>‹ Vorige</button><span class="kqsp"></span><span id="kqupslot"></span><button class="kqgo" id="kqgo">${shown?(i<qs.length-1?"Volgende vraag ›":"Naar het overzicht ›"):"Toon het antwoord"}</button></div>`;
+        <div class="kqnav"><button class="kqb" id="kqprev" ${i?"":"disabled"}>‹ Vorige</button><span class="kqsp"></span><span id="kqupslot"></span><button class="kqgo" id="kqgo">${shown?(i<qs.length-1?"Volgende vraag ›":"Naar het overzicht ›"):hid?"Toon antwoordopties":"Toon het antwoord"}</button></div>`;
       wire(); ov.querySelector("#kqgo").onclick=go; ov.querySelector("#kqprev").onclick=prev; ov.scrollTop=0;
-      if(T&&!shown){
+      if(T&&run_){
         let left=T; const t=ov.querySelector("#kqtime"), bar=ov.querySelector("#kqbar");
         requestAnimationFrame(()=>requestAnimationFrame(()=>{ bar.style.transition=`width ${T}s linear`; bar.style.width="0%"; }));
         iv=setInterval(()=>{ left--; t.textContent=Math.max(0,left);
@@ -6872,7 +6875,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119131333"; let last=0, shown=false;
+  const BUILD="20261119132327"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
