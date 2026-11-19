@@ -6258,7 +6258,6 @@ const WBI_RAW = [
  ["Newton",[6],"verlichting:1",["Ik leefde in de 17e eeuw.","Ik was natuurkundige.","Mijn ontdekkingen zorgden voor discussie over de plaats van religie.","Ik zocht wetten die overal gelden.","Ik ontdekte universele natuurwetten."],"Newton ontdekte universele natuurwetten."],
  ["Descartes",[6],"verlichting:1",["Ik leefde in de 17e eeuw.","Ik was filosoof.","Ik zocht naar zekere, ware kennis.","Volgens mij kom je tot waarheid door logisch te redeneren.","Ik sta bekend om het rationalisme."],"Descartes stond voor het rationalisme: ware kennis door logisch redeneren."],
  ["Locke",[6,7],"verlichting:1 brits:1",["Ik was een verlichte denker.","Volgens mij krijg je kennis door te observeren: het empirisme.","Ik vond dat ieder mens natuurrechten heeft.","Ik bedacht het idee van een sociaal contract.","Het volk mag volgens mij in verzet komen als het bestuur zijn rechten niet beschermt."],"Locke ging uit van natuurrechten en het sociaal contract."],
- ["Pocahontas",[6],"brits:1",["Ik leefde aan het begin van de 17e eeuw.","Ik woonde in Noord-Amerika.","Ik was de dochter van een Powhatan-hoofdman.","Ik bekeerde me tot het christendom en kreeg de naam Rebecca.","Ik reisde naar Londen."],"Pocahontas bekeerde zich in 1614 tot het christendom en reisde later naar Londen."],
  ["Montesquieu",[7],"verlichting:1 brits:1",["Ik leefde in de 18e eeuw in Frankrijk.","Ik was een verlichte denker.","Ik had kritiek op de absolute macht van vorsten.","Volgens mij moest je de macht verdelen.","Ik bedacht de trias politica: de scheiding der machten."],"Montesquieu bedacht de trias politica."],
  ["Rousseau",[7],"verlichting:1",["Ik leefde in de 18e eeuw in Zwitserland en Frankrijk.","Ik was een verlichte denker.","Ik schreef over vrijheid en gelijkheid, ook voor armen en slaven.","Ik dacht aan een directe democratie.","Volgens mij moest het bestuur de algemene wil volgen."],"Rousseau pleitte voor een directe democratie op basis van de algemene wil."],
  ["Adam Smith",[7],"verlichting:1",["Ik leefde in de 18e eeuw in Groot-Brittannië.","Ik was een verlichte denker over economie.","Ik keerde me tegen het mercantilisme.","Ik schreef The Wealth of Nations.","Volgens mij leiden vrije handel en concurrentie tot welvaart."],"Adam Smith betoogde dat vrije handel en concurrentie tot welvaart leiden."],
@@ -6768,7 +6767,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261118154107"; let last=0, shown=false;
+  const BUILD="20261119094544"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
