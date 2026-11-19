@@ -1824,7 +1824,7 @@ const NEDERLAND = mkHC({
 });
 /* ---------- TL: Periode 1848–1914 ---------- */
 const TL_STAATS = mkHC({
-  id:"staats", niveau:"tl", titel:"Periode 1848–1914", jaren:"1848–1914", examHc:"staats",
+  id:"staats", niveau:"tl", titel:"Staatsinrichting 1848–1914", jaren:"1848–1914", examHc:"staats",
   url:"", urlLabel:"",
   mapId:"nl", mapSub:"Klik op de kaart van Nederland en omgeving aan waar iets gebeurde",
   dv:[
@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119100649"; let last=0, shown=false;
+  const BUILD="20261119100957"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
