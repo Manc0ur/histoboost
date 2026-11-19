@@ -6959,7 +6959,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119172726"; let last=0, shown=false;
+  const BUILD="20261119173522"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7475,7 +7475,37 @@ const SOORT_ITEMS=[
  {q:"De Romeinen vereerden dezelfde goden als de Grieken, maar noemden ze anders.",s:"cul"},
  {q:"Griekse geleerden zochten met logisch nadenken naar verklaringen voor de natuur.",s:"cul"},
  {q:"De Romeinen bouwden Griekse tempels en beelden na.",s:"cul"},
- {q:"De Bataven leerden schrijven en gingen Romeinse goden vereren.",s:"cul"}];
+ {q:"De Bataven leerden schrijven en gingen Romeinse goden vereren.",s:"cul"},
+ // aanvullende voorbeelden (door Claude geschreven, docent: graag controleren)
+ {k:"b:Republiek",s:"pol"},{k:"b:Keizer",s:"pol"},{k:"b:Volksvergadering",s:"pol"},{k:"b:Consul",s:"pol"},
+ {k:"b:Grieks-Romeinse cultuur",s:"cul"},{k:"b:Beroepsleger",s:"eco"},
+ {q:"In Sparta regeerden twee koningen samen met een raad van oudsten.",s:"pol"},
+ {q:"Julius Caesar liet zich benoemen tot dictator voor het leven.",s:"pol"},
+ {q:"De Romeinse senaat besprak wetten en gaf de consuls advies.",s:"pol"},
+ {q:"Een Romeinse gouverneur bestuurde een provincie namens de keizer.",s:"pol"},
+ {q:"In de Romeinse Republiek werden elk jaar nieuwe consuls gekozen.",s:"pol"},
+ {q:"In Athene konden de burgers stemmen om iemand tien jaar uit de stad te verbannen.",s:"pol"},
+ {q:"Een Romeinse slaaf kon door zijn eigenaar worden vrijgelaten en kreeg dan meer vrijheid.",s:"soc"},
+ {q:"Een Atheense vrouw bleef meestal thuis en zorgde voor het huishouden.",s:"soc"},
+ {q:"Een Romeinse burger had meer rechten dan een inwoner van een veroverd gebied.",s:"soc"},
+ {q:"In Rome bestond de bevolking uit burgers, vrijen en slaven, met elk andere rechten.",s:"soc"},
+ {q:"In het begin van de Republiek hadden gewone Romeinen minder rechten dan de leden van de rijke families.",s:"soc"},
+ {q:"In Athene mochten buitenlanders geen burger worden, ook al woonden ze er al jaren.",s:"soc"},
+ {q:"De rijke families van Rome hadden veel slaven in dienst, de armen niet.",s:"soc"},
+ {q:"De Romeinen sloegen munten van zilver en goud om mee te betalen.",s:"eco"},
+ {q:"In de haven van Athene werden graan, wijn en olijfolie aan- en afgevoerd.",s:"eco"},
+ {q:"Dankzij de Romeinse wegen kon handelswaar snel door het hele rijk worden vervoerd.",s:"eco"},
+ {q:"Op de markt van een Griekse stad verkochten vissers hun vangst.",s:"eco"},
+ {q:"Grote landgoederen in Italië leverden graan voor de stad Rome.",s:"eco"},
+ {q:"Handelaren uit Griekse kolonies verkochten aardewerk aan mensen langs de kust.",s:"eco"},
+ {q:"De Grieken hielden elke vier jaar de Olympische Spelen ter ere van Zeus.",s:"cul"},
+ {q:"In het theater van Athene werden tragedies en komedies opgevoerd.",s:"cul"},
+ {q:"Romeinse schrijvers zoals Vergilius schreven gedichten in het Latijn.",s:"cul"},
+ {q:"Het Latijn werd de taal die in een groot deel van het Romeinse Rijk werd gesproken.",s:"cul"},
+ {q:"Griekse filosofen zoals Socrates stelden vragen over wat goed en slecht is.",s:"cul"},
+ {q:"Romeinen keken in het Colosseum naar gladiatorengevechten, een populair vermaak.",s:"cul"},
+ {q:"Het christendom ontstond in het Romeinse Rijk en verspreidde zich langzaam.",s:"cul"},
+ {q:"De Romeinen vierden feesten voor hun goden, zoals de Saturnalia.",s:"cul"}];
 function obSoortItems(){ const H=S.hc, out=[];
   SOORT_ITEMS.forEach(it=>{ if(it.q){ out.push({id:"s:"+it.q,q:it.q,s:it.s}); return; }
     const [t,k]=it.k.split(":");
