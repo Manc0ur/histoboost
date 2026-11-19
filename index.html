@@ -6636,11 +6636,11 @@ function kruiswoord({scope,back,again}){
     el.addEventListener("mousedown",e=>{ if(sel===k){ e.preventDefault(); selDir=selDir?0:1; select(k,selDir); } });
     el.addEventListener("focus",()=>{ if(sel!==k) select(k); });
     el.addEventListener("keydown",e=>{
-      if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){ e.preventDefault(); const ch=kwNorm(e.key); if(ch){ show(k,ch); val.set(k,ch); d.classList.remove("bad","ok"); move(1); if(checked) checkAll(true); } return; }
+      if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){ e.preventDefault(); const ch=kwNorm(e.key); if(ch){ show(k,ch); val.set(k,ch); d.classList.remove("bad","ok"); move(1); } return; }
       if(e.key==="Backspace"){ e.preventDefault(); if(el.value){ show(k,""); val.delete(k); } else { move(-1); if(sel){ show(sel,""); val.delete(sel); } } d.classList.remove("bad","ok"); return; }
       const arrows={ArrowRight:[0,1,0],ArrowLeft:[0,-1,0],ArrowDown:[1,0,1],ArrowUp:[-1,0,1]}; if(arrows[e.key]){ e.preventDefault(); const [dr,dc,dir]=arrows[e.key]; const [r,c]=k.split(",").map(Number); const nk=(r+dr)+","+(c+dc); if(cell.has(nk)) select(nk,dir); else selDir=dir, paint(); return; }
     });
-    el.addEventListener("input",()=>{ const ch=kwNorm(el.value).slice(-1); show(k,ch); if(ch){ val.set(k,ch); d.classList.remove("bad","ok"); move(1); } else val.delete(k); if(checked) checkAll(true); });
+    el.addEventListener("input",()=>{ const ch=kwNorm(el.value).slice(-1); show(k,ch); if(ch){ val.set(k,ch); d.classList.remove("bad","ok"); move(1); } else val.delete(k); d.classList.remove("bad","ok"); });
   });
   app.querySelectorAll(".kwclues li").forEach(li=>li.onclick=()=>{ const w=P.placed[+li.dataset.w]; const cs=wordCells(w); select(cs[0],w.dir); });
   function checkAll(quiet){
@@ -6652,7 +6652,7 @@ function kruiswoord({scope,back,again}){
   }
   app.querySelector("#kwcheck").onclick=()=>{ checked=true; checkAll(false); };
   app.querySelector("#kwhint").onclick=()=>{ const w=curWord()||P.placed.find(w=>wordCells(w).some(k=>val.get(k)!==cell.get(k).ch)); if(!w) return;
-    const k=wordCells(w).find(k=>val.get(k)!==cell.get(k).ch); if(!k) return; val.set(k,cell.get(k).ch); show(k,cell.get(k).ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); select(k,w.dir); if(checked) checkAll(true); };
+    const k=wordCells(w).find(k=>val.get(k)!==cell.get(k).ch); if(!k) return; val.set(k,cell.get(k).ch); show(k,cell.get(k).ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); select(k,w.dir); };
   app.querySelector("#kwshow").onclick=()=>{ cell.forEach((o,k)=>{ if(val.get(k)!==o.ch){ val.set(k,o.ch); show(k,o.ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); } });
     app.querySelector("#kwfb").innerHTML=`<div class="feedback badf" role="status"><p><strong>Dit is de oplossing.</strong> De antwoorden: ${order.map(w=>`${w.n}${w.dir?" verticaal":" horizontaal"}: ${esc(w.a)}`).join("; ")}.</p></div>`; };
   app.querySelector("#kwnew").onclick=again;
@@ -6792,7 +6792,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119122930"; let last=0, shown=false;
+  const BUILD="20261119125154"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
