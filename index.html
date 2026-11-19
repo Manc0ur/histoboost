@@ -6765,7 +6765,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119095458"; let last=0, shown=false;
+  const BUILD="20261119100649"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -6830,9 +6830,9 @@ function leesVideos(){
   bindOv(); app.querySelector("#back").onclick=hcMenu; window.scrollTo(0,0); ytTitles(app);
 }
 
-/* ---------- TL: Staatsinrichting en Periode 1848–1914 apart ---------- */
+/* ---------- TL: Staatsinrichting en Periode 1848–1914 weer samen (splitsing uitgeschakeld) ---------- */
 (function(){
-  const H=HCDATA.staats; if(!H||HCDATA.staatsinr) return;
+  return; /* TL: staatsinrichting en 1848–1914 weer samen */ const H=HCDATA.staats;
   const sub=(keep,id,over)=>{ const m={}; keep.forEach((n,i)=>m[n]=i+1); const F=a=>a?a.filter(x=>m[x.dv]).map(x=>({...x,dv:m[x.dv]})):a;
     return {...H,...over,id,examHc:"staats",dv:H.dv.filter(d=>m[d.nr]).map(d=>({...d,nr:m[d.nr]})),begrippen:F(H.begrippen),tijdlijn:F(H.tijdlijn),ketens:F(H.ketens),koppel:F(H.koppel),map:F(H.map),gk:F(H.gk)}; };
   const A=sub([1],"staatsinr",{titel:"Staatsinrichting van Nederland",jaren:"vanaf 1848"});
