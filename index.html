@@ -6558,20 +6558,6 @@ function wbHcBegrippen(H){ const X=H.bext||(typeof BEXT!=="undefined"?BEXT:{});
   return (H.begrippen||[]).filter(b=>b.d&&b.d.length>=30).map(b=>{ const d=(H.dv||[]).find(x=>x.nr===b.dv)||{}, e=X[b.b]||[];
     const h2=e[1]?wbMask(e[1],b.b):wbHalf(b.d,b.b), h3=e[0]?wbMask(e[0],b.b):wbHalf(b.d,b.b);
     const o=wbBeg(b.b,b.d,`Ik kom voor bij het onderwerp “${H.titel}”${d.periode?`, in de periode ${d.periode}`:""}.`,h2,h3,[d.c],b.dv); return o; }); }
-/* confetti bij een foutloze reeks */
-function confetti(){
-  try{ if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const c=document.createElement("canvas"); c.setAttribute("aria-hidden","true"); c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:400";
-    const W=c.width=innerWidth, Hh=c.height=innerHeight; document.body.appendChild(c); const x=c.getContext("2d");
-    const col=["#E5334E","#FFC400","#1E6FD9","#2A9D3A","#8E44AD","#F28C28"];
-    const P=Array.from({length:170},()=>({x:W/2+(Math.random()-.5)*W*.3,y:Hh*.35,vx:(Math.random()-.5)*16,vy:-Math.random()*15-4,w:6+Math.random()*7,h:4+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:col[Math.floor(Math.random()*col.length)]}));
-    const t0=performance.now(); (function f(t){ const e=t-t0; x.clearRect(0,0,W,Hh);
-      P.forEach(p=>{ p.vy+=.35; p.vx*=.995; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; x.save(); x.translate(p.x,p.y); x.rotate(p.r); x.globalAlpha=Math.max(0,1-e/3200); x.fillStyle=p.c; x.fillRect(-p.w/2,-p.h/2,p.w,p.h); x.restore(); });
-      if(e<3300) requestAnimationFrame(f); else c.remove(); })(t0);
-  }catch(e){} }
-(function(){ const root=document.getElementById("app"); if(!root||!window.MutationObserver) return; let lastEl=null;
-  new MutationObserver(()=>{ const el=root.querySelector(".score"); if(!el||el===lastEl) return; lastEl=el;
-    const m=/^\s*(\d+)\s*\/\s*(\d+)\s*$/.exec(el.textContent||""); if(el.dataset.perfect==="1"||(m&&+m[2]>0&&+m[1]===+m[2])) confetti(); }).observe(root,{childList:true,subtree:true}); })();
 /* ---------- Wie of wat ben ik? ---------- */
 function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
   if(pool.length<1&&!begr.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Wie ben ik?</h2><p class="note">Bij deze keuze horen nog geen personen. Kies andere ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
@@ -6624,7 +6610,7 @@ function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
   function result(){
     const max=round.length*NH;
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
-      <p class="score" ${results.length&&results.every(r=>r.pts>0)?'data-perfect="1"':""}>${total}/${max}</p>
+      <p class="score">${total}/${max}</p>
       <h2 style="margin-top:.5rem">${total>=max*0.8?"Uitstekend!":total>=max*0.5?"Goed bezig.":"Blijf oefenen."}</h2>
       <p style="color:var(--muted)">Je krijgt 5 punten als je het weet met één hint, 4 met twee hints, en zo verder.</p>
       <div class="review"><h3>Overzicht</h3><ul>${results.map(r=>`<li><strong>${esc(r.p.n)}</strong>: ${r.pts} ${r.pts===1?"punt":"punten"}. ${esc(r.p.u)}</li>`).join("")}</ul></div>
