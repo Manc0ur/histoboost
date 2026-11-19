@@ -6062,19 +6062,30 @@ const sywords=s=>synorm(s).split(" ").filter(w=>w.length>=4&&!SYSTOP.has(w));
 const system=w=>w.slice(0,Math.max(5,w.length-2));
 function sylKA(){ SYL=" "+synorm(KA.map(k=>k.t).join(" ")+" "+TV.map(t=>t.naam+" "+(t.per||"")).join(" "))+" "; }
 function sylHC(H){ SYL=" "+synorm(H.dv.flatMap(d=>d.tekst).join(" ")+" "+H.dv.map(d=>d.vraag).join(" ")+" "+H.dv.flatMap(d=>d.ka).map(i=>KA.find(k=>k.n===i).t).join(" "))+" "; }
-let VITEMS=null;
-function vitems(){ if(VITEMS) return VITEMS; const set=new Set(), add=x=>{ const k=synorm(String(x||"").replace(/\(.*?\)/g,"")).trim(); if(k) set.add(k); };
-  for(const id in HCDATA){ const H=HCDATA[id]; (H.begrippen||[]).forEach(b=>add(b.b)); (H.tijdlijn||[]).forEach(e=>add(e.t)); }
-  WBI.forEach(p=>add(p.n)); KA_TL.forEach(e=>add(e.t));
-  for(const k in KW_EVENTS) (KW_EVENTS[k]||[]).forEach(e=>add(e[1]));
-  return VITEMS=set; }
+let VSETS=null;
+function vsets(){ if(VSETS) return VSETS;
+  const nk=x=>synorm(String(x||"").replace(/\(.*?\)/g,"")).trim();
+  const beg=new Set(), per=new Map(), evt=new Set();
+  const TIT=new Set(["koning","koningin","keizer","keizerin","president","paus","prins","dr"]), EPI=new Set(["grote","goede","stoute","veroveraar","vrome"]);
+  for(const id in HCDATA){ const H=HCDATA[id]; (H.begrippen||[]).forEach(b=>{ const k=nk(b.b); if(k) beg.add(k); }); (H.tijdlijn||[]).forEach(e=>{ const k=nk(e.t); if(k) evt.add(k); }); }
+  KA_TL.forEach(e=>{ const k=nk(e.t); if(k) evt.add(k); });
+  for(const k in KW_EVENTS) (KW_EVENTS[k]||[]).forEach(e=>{ const x=nk(e[1]); if(x) beg.add(x); });
+  WBI.forEach(p=>{ const k=nk(p.n); if(!k) return; const w=k.split(" "), c=new Set([k]);
+    const base=TIT.has(w[0])&&w.length>1?w.slice(1):w; c.add(base.join(" "));
+    const last=w[w.length-1]; if(last.length>=4&&!/^[ivx]+$/.test(last)&&!EPI.has(last)) c.add(last);
+    per.set(k,[...c]); });
+  return VSETS={beg,per,evt}; }
 function verplicht(t){
-  if(!SYL||!t) return false; if(!vitems().has(synorm(String(t).replace(/\(.*?\)/g,"")).trim())) return false; const raw=String(t).replace(/\(.*?\)/g,""); { const nn=synorm(raw).trim(); if(nn.split(" ").length>=2&&SYL.includes(" "+nn+" ")) return true; }
+  if(!SYL||!t) return false; const raw=String(t).replace(/\(.*?\)/g,""), key=synorm(raw).trim(), V=vsets();
+  const lit=p=>SYL.includes(" "+p+" ");
+  if(V.beg.has(key)) return lit(key);
+  if(V.per.has(key)) return V.per.get(key).some(lit);
+  if(!V.evt.has(key)) return false;
   const toks=raw.split(/[^A-Za-zÀ-ÿ0-9'’-]+/).filter(Boolean);
   const hitW=w=>{ const n=synorm(w).trim(); return n.length>=3 && SYL.includes(n.length<4?" "+n+" ":system(n)); };
   const ws=toks.filter(w=>/^[A-Z]{2,}$/.test(w)||sywords(w).length);
   if(!ws.length) return false;
-  const hits=ws.filter(hitW), prop=ws.filter((w,i)=>/^[A-Z]{2,}$/.test(w)||(/^[A-ZÀ-Ý]/.test(w)&&toks.indexOf(w)>0));
+  const hits=ws.filter(hitW);
   if(ws.length===1) return hits.length===1;
   const longest=ws.reduce((a,b)=>b.length>a.length?b:a);
   return hits.length/ws.length>=0.5 && hits.includes(longest);
@@ -6781,7 +6792,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261119122236"; let last=0, shown=false;
+  const BUILD="20261119122930"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
