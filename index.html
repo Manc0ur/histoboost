@@ -4369,7 +4369,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
   }
   function setVB(svg){ svg.setAttribute("viewBox",`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); renderMarks(); }
   function clampVB(){ vb.w=Math.min(M.W,Math.max(M.W/60,vb.w)); vb.h=vb.w*M.H/M.W; vb.x=Math.max(-vb.w*.25,Math.min(M.W-vb.w*.75,vb.x)); vb.y=Math.max(-vb.h*.25,Math.min(M.H-vb.h*.75,vb.y)); }
-  function zoomAt(svg,f,cx,cy){ const nw=vb.w*f; vb.x=cx-(cx-vb.x)*(nw/vb.w); vb.y=cy-(cy-vb.y)*(nw/vb.w); vb.w=nw; vb.h=nw*M.H/M.W; clampVB(); setVB(svg); }
+  function zoomAt(svg,f,cx,cy){ const nw=Math.min(M.W,Math.max(M.W/60,vb.w*f)); vb.x=cx-(cx-vb.x)*(nw/vb.w); vb.y=cy-(cy-vb.y)*(nw/vb.w); vb.w=nw; vb.h=nw*M.H/M.W; clampVB(); setVB(svg); }
   function svgPt(svg,e){ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
   function setupMap(svg){
     const ptrs=new Map(); let start=null, moved=false, pinch=null;
@@ -4382,6 +4382,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
       if(ptrs.size===2&&pinch){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const mid=svgPt(svg,{clientX:(a.x+b.x)/2,clientY:(a.y+b.y)/2}); zoomAt(svg,(pinch.w*pinch.d/d)/vb.w,mid.x,mid.y); return; }
       if(ptrs.size===1&&start){ const dx=e.clientX-start.x, dy=e.clientY-start.y; if(Math.hypot(dx,dy)>5) moved=true; if(moved){ vb.x=start.vx-dx*k; vb.y=start.vy-dy*k; clampVB(); setVB(svg); } } });
     const up=e=>{ const wasSingle=ptrs.size===1; ptrs.delete(e.pointerId); if(ptrs.size<2) pinch=null;
+      if(ptrs.size===1){ const [r]=[...ptrs.values()]; start={x:r.x,y:r.y,vx:vb.x,vy:vb.y}; moved=true; }
       if(e.type==="pointerup"&&wasSingle&&!moved&&!checked){ const p=svgPt(svg,e); const [lat,lon]=toLL(p.x,p.y); guess={lat,lon,x:p.x,y:p.y}; renderMarks(); const c=app.querySelector("#check"); if(c) c.disabled=!canCheck(); }
       if(ptrs.size===0) start=null; };
     svg.addEventListener("pointerup",up); svg.addEventListener("pointercancel",up);
@@ -6959,7 +6960,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261120094845"; let last=0, shown=false;
+  const BUILD="20261120094939"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
