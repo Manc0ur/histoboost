@@ -6962,7 +6962,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261120210726"; let last=0, shown=false;
+  const BUILD="20261120221929"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8307,14 +8307,14 @@ function kolLev(a,b){ const m=a.length,n=b.length; let p=Array.from({length:n+1}
 function kolCheck(t,txt){ const x=kolNorm(txt); if(x.length<3) return false;
   return t.al.some(a=>{ const y=kolNorm(a); if(x===y) return true; const tol=y.length>=10?2:y.length>=6?1:0; return tol>0&&kolLev(x,y)<=tol; }); }
 /* Eenvoudige oefenrondes (klikken en typen), met dezelfde opmaak en score als de meerkeuzeoefeningen */
-function kolRun({title,qs,back,again}){
+function kolRun({title,qs,back,again,extra}){
   let i=0, score=0; const wrong=[];
   function draw(){ const q=qs[i];
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button><div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${qs.length}</span></div><div class="progress"><i style="width:${i/qs.length*100}%"></i></div>
-    <div class="qcard"><p class="ask">${esc(title)}</p><div class="kbron">${q.html}</div>${q.type?`<form class="koltype" autocomplete="off"><input id="kin" type="text" aria-label="Naam van de kolonie" placeholder="Typ de naam van de kolonie" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">Controleer</button><button class="btn ghost" type="button" id="kdk">Ik weet het niet</button></form>`:""}</div><div id="fb"></div>`;
+    <div class="qcard"><p class="ask">${esc(title)}</p><div class="kbron">${q.html}</div>${q.type?`<form class="koltype" autocomplete="off"><input id="kin" type="text" inputmode="${q.im||"text"}" aria-label="${q.ph||"Naam van de kolonie"}" placeholder="${q.ph||"Typ de naam van de kolonie"}" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">Controleer</button><button class="btn ghost" type="button" id="kdk">Ik weet het niet</button></form>`:""}</div><div id="fb"></div>`;
     app.querySelector("#back").onclick=back; q.tried=false;
     if(q.type){ const f=app.querySelector("form"), inp=app.querySelector("#kin"); inp.focus();
-      f.onsubmit=e=>{ e.preventDefault(); if(!inp.value.trim()) return; answer(kolCheck(q.t,inp.value),inp.value); };
+      f.onsubmit=e=>{ e.preventDefault(); if(!inp.value.trim()) return; answer(q.check?q.check(inp.value):kolCheck(q.t,inp.value),inp.value); };
       app.querySelector("#kdk").onclick=()=>answer(false,"",true); }
     else { const svg=app.querySelector("svg");
       app.querySelectorAll(".kolreg button").forEach(b=>b.onclick=()=>{ kolAnim(svg,b.dataset.vb.split(" ").map(Number)); app.querySelectorAll(".kolreg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); });
@@ -8328,9 +8328,10 @@ function kolRun({title,qs,back,again}){
       const c=document.createElementNS("http://www.w3.org/2000/svg","circle"); c.setAttribute("class","ring"); c.setAttribute("cx",q.t.cx); c.setAttribute("cy",q.t.cy); c.setAttribute("r",Math.round(Math.max(q.t.w,q.t.h)/2+9)); svg.appendChild(c); kolFocus(svg,q.t); }
     const head=good?(first?"Goed!":"Goed, in de tweede poging."):(giveUp?"Dat is niet erg.":"Helaas.");
     app.querySelector("#fb").innerHTML=`<div class="feedback ${good?"good":"badf"}" role="status"><p><strong>${head}</strong> ${q.uitleg}</p></div><div class="row" style="margin-top:1rem"><button class="btn" id="next">${i+1<qs.length?"Volgende vraag":"Bekijk je score"}</button></div>`;
+    if(q.after) q.after(app.querySelector("svg"),good);
     const nx=app.querySelector("#next"); nx.focus(); nx.onclick=()=>{ i++; i<qs.length?draw():result(); }; }
   function result(){
-    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="score">${score}/${qs.length}</p><h2 style="margin-top:.5rem">${score===qs.length?"Alles goed!":score>=qs.length*0.7?"Goed bezig.":"Blijf oefenen."}</h2><p style="color:var(--muted)">Je score telt de vragen die je in één keer goed had.</p>${kolOverzicht()}${wrong.length?`<div class="review"><h3>Nog eens bekijken</h3><ul>${wrong.map(q=>`<li>${q.review}</li>`).join("")}</ul></div>`:""}<div class="row" style="margin-top:1.5rem"><button class="btn" id="again">Nieuwe ronde</button><button class="btn ghost" id="menu">Andere oefening</button></div>`;
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="score">${score}/${qs.length}</p><h2 style="margin-top:.5rem">${score===qs.length?"Alles goed!":score>=qs.length*0.7?"Goed bezig.":"Blijf oefenen."}</h2><p style="color:var(--muted)">Je score telt de vragen die je in één keer goed had.</p>${extra?extra():kolOverzicht()}${wrong.length?`<div class="review"><h3>Nog eens bekijken</h3><ul>${wrong.map(q=>`<li>${q.review}</li>`).join("")}</ul></div>`:""}<div class="row" style="margin-top:1.5rem"><button class="btn" id="again">Nieuwe ronde</button><button class="btn ghost" id="menu">Andere oefening</button></div>`;
     app.querySelector("#back").onclick=back; app.querySelector("#menu").onclick=back; app.querySelector("#again").onclick=again; }
   draw(); window.scrollTo(0,0); }
 /* Per ronde: eerst één gebied per moederland, dan aanvullen tot 10 */
@@ -8363,8 +8364,11 @@ function grKolonie(back){ /* menu van de Kolonie Quiz */
   <div class="card" style="padding:1rem 1.1rem"><p>Rond 1900 hadden Europese landen grote delen van Afrika en Azië in handen. Dat hoort bij kenmerkend aspect 33: de moderne vorm van imperialisme. Het gaat om koloniën van Frankrijk, Groot-Brittannië, Nederland, Duitsland, Portugal en Spanje.</p>
   <p class="hchint">Let op: op de kaart staan de landsgrenzen van nu. De koloniën rond 1900 waren soms groter of kleiner. Ook België, Italië en de Verenigde Staten hadden koloniën, maar die komen in deze oefening niet voor.</p></div>
   <h3 style="margin:1.2rem 0 .5rem">Kies een variant (10 vragen)</h3>
-  <div class="list">${V.map((v,i)=>`<button class="item" data-v="${i}"><span class="txt"><strong>${v[0]}</strong><span class="sub">${v[1]}</span></span></button>`).join("")}</div>`;
+  <div class="list">${V.map((v,i)=>`<button class="item" data-v="${i}" data-m="${["kol-moeder","kol-klik","kol-noem"][i]}"><span class="txt"><strong>${v[0]}</strong><span class="sub">${v[1]}</span></span></button>`).join("")}</div>`;
   app.querySelector("#back").onclick=back; app.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>V[+b.dataset.v][2]()); if(typeof decorate==="function") decorate(); window.scrollTo(0,0); }
+ICONS["m:kol-moeder"]='<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>';
+ICONS["m:kol-klik"]='<path d="M7 3l10 8-4.5 1 2.5 5.5-2.5 1-2.5-5.5L7 16z"/>';
+ICONS["m:kol-noem"]='<path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/>';
 ICONS["m:kolonie"]='<circle cx="10" cy="14" r="7"/><path d="M3 14h14"/><path d="M10 7c2.5 2.5 2.5 11 0 14"/><path d="M10 7c-2.5 2.5-2.5 11 0 14"/><path d="M18 3v8"/><path d="M18 3h4l-1.5 2L22 7h-4"/>';
 { const _ka2=kaMenu;
   kaMenu=function(){ _ka2.apply(this,arguments);
@@ -8374,6 +8378,161 @@ ICONS["m:kolonie"]='<circle cx="10" cy="14" r="7"/><path d="M3 14h14"/><path d="
     const ref=box.querySelector('[data-m="tijdmachine"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b);
     b.onclick=()=>grKolonie(kaMenu);
     if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Tegel toevoegen aan het menu van tijdvak + kenmerkend aspect ---------- */
+function kaAddTile({m,tv,ka,tvNaam,title,sub,go}){
+  const _k=kaMenu;
+  kaMenu=function(){ _k.apply(this,arguments);
+    const list=app.querySelector(".list > [data-m]"); if(!list) return; const box=list.parentElement;
+    const ok=S.sel.has(tv)&&!S.kaOff.has(ka), why=S.sel.has(tv)?`Zet kenmerkend aspect ${ka} aan om deze oefening te doen`:`Kies tijdvak ${tv} (${tvNaam}) om deze oefening te doen`, b=document.createElement("button"); b.className="item"; b.dataset.m=m; if(!ok) b.disabled=true;
+    b.innerHTML=`<span class="txt"><strong>${title}</strong><span class="sub">${ok?sub:why}</span></span>`;
+    const ref=box.querySelector('[data-m="tijdmachine"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b);
+    b.onclick=()=>go(kaMenu);
+    if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Welke stroming? (tijdvak 8, KA 36) ---------- */
+/* Uitspraken en uitleg zijn door Claude geschreven: docent graag controleren. */
+const STR_DEF={
+ liberalisme:["Liberalisme","Liberalen vinden de vrijheid van het individu het belangrijkst. Ze willen grondrechten, een beperkte macht voor de koning en zo weinig mogelijk bemoeienis van de overheid met de economie."],
+ socialisme:["Socialisme","Socialisten willen meer gelijkheid. Ze vinden dat arbeiders te weinig krijgen en willen betere arbeidsomstandigheden en een eerlijkere verdeling van het geld."],
+ nationalisme:["Nationalisme","Nationalisten vinden dat een volk met dezelfde taal, cultuur en geschiedenis een eigen staat hoort te hebben, en dat mensen trots moeten zijn op hun volk."],
+ confessionalisme:["Confessionalisme","Confessionelen laten hun politiek leiden door hun geloof (confessie betekent geloofsbelijdenis). In Nederland ontstonden protestantse en katholieke partijen."],
+ feminisme:["Feminisme","Feministen strijden voor gelijke rechten voor vrouwen en mannen, bijvoorbeeld stemrecht, onderwijs en werk."]};
+const STR=[
+ ["liberalisme","Mensen moeten vrij zijn om zelf te kiezen wat ze geloven, zeggen en doen."],
+ ["liberalisme","De overheid moet zich zo min mogelijk met de economie bemoeien. Ondernemers regelen dat zelf."],
+ ["liberalisme","Iedereen heeft recht op vrijheid van meningsuiting en vrijheid van de pers."],
+ ["liberalisme","Thorbecke bedacht in 1848 een nieuwe grondwet: de koning kreeg minder macht en de ministers werden verantwoordelijk."],
+ ["liberalisme","De macht van de koning moet beperkt worden door een grondwet."],
+ ["liberalisme","Vrije handel tussen landen, zonder hoge invoerrechten, is goed voor de welvaart."],
+ ["socialisme","De fabrieken en machines moeten van iedereen samen zijn, niet van een paar rijke eigenaren."],
+ ["socialisme","Arbeiders moeten zich verenigen in vakbonden voor een hoger loon en een kortere werkdag."],
+ ["socialisme","De SDAP (opgericht in 1894) streed voor algemeen kiesrecht en betere arbeidsomstandigheden."],
+ ["socialisme","Het verschil tussen arm en rijk is te groot. De rijkdom moet eerlijker worden verdeeld."],
+ ["socialisme","‘Arbeiders aller landen, verenigt u!’ (Karl Marx)"],
+ ["socialisme","Fabrikanten verdienen veel geld aan arbeiders die weinig loon krijgen. Dat is uitbuiting."],
+ ["nationalisme","Alle Duitsers horen in één land."],
+ ["nationalisme","Een volk met dezelfde taal en dezelfde geschiedenis wil een eigen staat."],
+ ["nationalisme","In 1830 kwamen de Belgen in opstand tegen de Nederlandse koning en richtten een eigen land op."],
+ ["nationalisme","Giuseppe Garibaldi vocht voor de eenwording van Italië."],
+ ["nationalisme","Op school leren kinderen liederen en verhalen over het eigen land, zodat ze trots zijn op hun volk."],
+ ["nationalisme","De Grieken kwamen in 1821 in opstand om vrij te worden van de Turken en een eigen land te krijgen."],
+ ["confessionalisme","Abraham Kuyper richtte in 1879 de ARP op: de politiek moet gebaseerd zijn op de Bijbel."],
+ ["confessionalisme","Ouders willen dat de overheid ook scholen met een godsdienstige opvoeding betaalt (de schoolstrijd)."],
+ ["confessionalisme","Katholieken en protestanten richtten eigen partijen, kranten en verenigingen op."],
+ ["confessionalisme","Politieke besluiten moeten passen bij de regels van het christelijk geloof."],
+ ["confessionalisme","Schaepman, een katholieke priester en Kamerlid, wilde dat katholieken meer invloed kregen in de politiek."],
+ ["confessionalisme","Een partij wil dat de overheid God erkent en dat de zondag een rustdag blijft."],
+ ["feminisme","Vrouwen moeten dezelfde rechten hebben als mannen, zoals het recht om te stemmen."],
+ ["feminisme","Aletta Jacobs streed voor vrouwenkiesrecht en voor het recht van vrouwen om te studeren."],
+ ["feminisme","Vrouwen die hetzelfde werk doen als mannen moeten hetzelfde loon krijgen."],
+ ["feminisme","Wilhelmina Drucker richtte in 1894 de Vereeniging voor Vrouwenkiesrecht op."],
+ ["feminisme","Ook getrouwde vrouwen moeten buitenshuis mogen werken. Zij moeten daar zelf over beslissen."],
+ ["feminisme","Een getrouwde vrouw moet zelf mogen beslissen over haar eigen geld en bezit."]];
+function grStroming(back){
+  back=typeof back==="function"?back:hcMenu; otStyle();
+  if(!document.getElementById("strcss")){ const c=document.createElement("style"); c.id="strcss"; c.textContent=`.strq{margin:.4rem 0 .9rem;padding:.8rem 1rem;border-left:5px solid var(--focus,#4b7bec);background:color-mix(in srgb,var(--line) 35%,var(--surface));border-radius:0 10px 10px 0;font-size:1.05rem}`; document.head.appendChild(c); }
+  const keys=Object.keys(STR_DEF), pick=[]; keys.forEach(k=>pickN(STR.filter(x=>x[0]===k),2).forEach(x=>pick.push(x)));
+  const qs=shuffle(pick).map((x,n)=>{ const dist=pickN(keys.filter(k=>k!==x[0]),3), d=STR_DEF[x[0]];
+    return {id:"str:"+x[1].slice(0,30),ask:"Welke stroming?",qhtml:`<p class="q">Bij welke stroming past deze uitspraak?</p><blockquote class="strq">${otEsc(x[1])}</blockquote>`,
+      opts:shuffle([x[0],...dist]).map((k,i)=>({id:k,label:"ABCD"[i]+". "+STR_DEF[k][0]})),right:x[0],
+      uitleg:`Dit is <strong>${d[0]}</strong>. ${otEsc(d[1])}`,review:`‘${otEsc(x[1])}’: ${d[0]}. ${otEsc(d[1])}`,
+      hint:"Let op het belangrijkste doel in de uitspraak: gaat het om vrijheid, om gelijkheid voor arbeiders, om het eigen volk, om geloof of om gelijke rechten voor vrouwen?"}; });
+  mcEx({title:"Welke stroming?",qs,back,again:()=>grStroming(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De vijf stromingen in het kort</h3><ul>${keys.map(k=>`<li><strong>${STR_DEF[k][0]}:</strong> ${otEsc(STR_DEF[k][1])}</li>`).join("")}</ul></div>`}); }
+ICONS["m:stroming"]='<path d="M12 3v18"/><path d="M9 21h6"/><path d="M12 5h6.5l2 2.2-2 2.3H12z"/><path d="M12 11.5H5.5l-2 2.2 2 2.3H12z"/>';
+kaAddTile({m:"stroming",tv:8,ka:36,tvNaam:"Tijd van burgers en stoommachines",title:"Welke stroming?",sub:"Een uitspraak of gebeurtenis hoort bij liberalisme, socialisme, nationalisme, confessionalisme of feminisme. Kies de goede stroming. (KA 36: politiek-maatschappelijke stromingen)",go:grStroming});
+
+/* ---------- Dekolonisatie Quiz (tijdvak 10, KA 46) ---------- */
+/* Jaartallen en toelichtingen zijn door Claude samengesteld: docent graag controleren. [naam in de kaartdata, Nederlandse naam, jaar, ook goed, moederland, toelichting] */
+const DEK=[
+ ["India","India",1947,[],"Groot-Brittannië","Brits-Indië werd in 1947 verdeeld in India en Pakistan."],
+ ["Pakistan","Pakistan",1947,[],"Groot-Brittannië","Brits-Indië werd in 1947 verdeeld in India en Pakistan."],
+ ["Myanmar","Myanmar (Birma)",1948,[],"Groot-Brittannië","Birma, nu Myanmar, werd in 1948 onafhankelijk."],
+ ["Sri Lanka","Sri Lanka (Ceylon)",1948,[],"Groot-Brittannië","Ceylon, nu Sri Lanka, werd in 1948 onafhankelijk."],
+ ["Indonesia","Indonesië",1949,[1945],"Nederland","Indonesië riep de onafhankelijkheid uit op 17 augustus 1945. Nederland erkende die pas op 27 december 1949, na de politionele acties. Beide jaartallen zijn goed."],
+ ["Philippines","de Filipijnen",1946,[],"de Verenigde Staten","De Filipijnen waren sinds 1898 een Amerikaanse kolonie en werden in 1946 onafhankelijk."],
+ ["Laos","Laos",1953,[],"Frankrijk","Laos was onderdeel van Frans-Indochina en werd in 1953 onafhankelijk."],
+ ["Cambodia","Cambodja",1953,[],"Frankrijk","Cambodja was onderdeel van Frans-Indochina en werd in 1953 onafhankelijk."],
+ ["Vietnam","Vietnam",1954,[1945],"Frankrijk","Vietnam riep in 1945 de onafhankelijkheid uit. Frankrijk verloor in 1954 de strijd bij Dien Bien Phu en trok zich terug. Beide jaartallen zijn goed."],
+ ["Morocco","Marokko",1956,[],"Frankrijk","Marokko en Tunesië werden in 1956 onafhankelijk van Frankrijk."],
+ ["Tunisia","Tunesië",1956,[],"Frankrijk","Marokko en Tunesië werden in 1956 onafhankelijk van Frankrijk."],
+ ["Sudan","Soedan",1956,[],"Groot-Brittannië en Egypte","Soedan werd tot 1956 samen door Groot-Brittannië en Egypte bestuurd."],
+ ["Ghana","Ghana",1957,[],"Groot-Brittannië","Ghana was het eerste land in Afrika ten zuiden van de Sahara dat onafhankelijk werd, onder leiding van Kwame Nkrumah."],
+ ["Guinea","Guinee",1958,[],"Frankrijk","Guinee koos in 1958 als enige Franse kolonie voor directe onafhankelijkheid."],
+ ["Nigeria","Nigeria",1960,[],"Groot-Brittannië","In 1960 werden zeventien Afrikaanse landen onafhankelijk. Nigeria heeft nu de meeste inwoners van Afrika."],
+ ["Dem. Rep. Congo","Congo (Kinshasa)",1960,[],"België","Congo werd in 1960 onafhankelijk van België. Patrice Lumumba werd de eerste premier."],
+ ["Senegal","Senegal",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Madagascar","Madagaskar",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Côte d'Ivoire","Ivoorkust",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Mali","Mali",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Cameroon","Kameroen",1960,[],"Frankrijk","Het Franse deel van Kameroen werd in 1960 onafhankelijk."],
+ ["Togo","Togo",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Chad","Tsjaad",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Niger","Niger",1960,[],"Frankrijk","In 1960 werden zeventien Afrikaanse landen onafhankelijk, de meeste van Frankrijk."],
+ ["Sierra Leone","Sierra Leone",1961,[],"Groot-Brittannië","Sierra Leone werd in 1961 onafhankelijk."],
+ ["Tanzania","Tanzania (Tanganyika)",1961,[1964],"Groot-Brittannië","Tanganyika werd in 1961 onafhankelijk. In 1964 ging het samen met Zanzibar verder als Tanzania. Beide jaartallen zijn goed."],
+ ["Algeria","Algerije",1962,[],"Frankrijk","Algerije werd in 1962 onafhankelijk, na een bloedige oorlog van ruim zeven jaar."],
+ ["Uganda","Oeganda",1962,[],"Groot-Brittannië","Oeganda werd in 1962 onafhankelijk."],
+ ["Rwanda","Rwanda",1962,[],"België","Rwanda en Burundi werden in 1962 onafhankelijk van België."],
+ ["Burundi","Burundi",1962,[],"België","Rwanda en Burundi werden in 1962 onafhankelijk van België."],
+ ["Jamaica","Jamaica",1962,[],"Groot-Brittannië","Jamaica werd in 1962 onafhankelijk."],
+ ["Kenya","Kenia",1963,[],"Groot-Brittannië","Kenia werd in 1963 onafhankelijk, na de Mau Mau-opstand tegen het Britse bestuur."],
+ ["Zambia","Zambia",1964,[],"Groot-Brittannië","Zambia (toen Noord-Rhodesië) werd in 1964 onafhankelijk."],
+ ["Malawi","Malawi",1964,[],"Groot-Brittannië","Malawi (toen Nyasaland) werd in 1964 onafhankelijk."],
+ ["Gambia","Gambia",1965,[],"Groot-Brittannië","Gambia werd in 1965 onafhankelijk."],
+ ["Botswana","Botswana",1966,[],"Groot-Brittannië","Botswana (toen Bechuanaland) werd in 1966 onafhankelijk."],
+ ["Lesotho","Lesotho",1966,[],"Groot-Brittannië","Lesotho (toen Basoetoland) werd in 1966 onafhankelijk."],
+ ["Guyana","Guyana",1966,[],"Groot-Brittannië","Brits-Guyana werd in 1966 onafhankelijk."],
+ ["Eq. Guinea","Equatoriaal-Guinea",1968,[],"Spanje","Equatoriaal-Guinea (toen Spaans-Guinea) werd in 1968 onafhankelijk."],
+ ["Fiji","Fiji",1970,[],"Groot-Brittannië","Fiji werd in 1970 onafhankelijk."],
+ ["Angola","Angola",1975,[],"Portugal","Na de Anjerrevolutie in Portugal (1974) gaf Portugal zijn koloniën in Afrika onafhankelijkheid."],
+ ["Mozambique","Mozambique",1975,[],"Portugal","Na de Anjerrevolutie in Portugal (1974) gaf Portugal zijn koloniën in Afrika onafhankelijkheid."],
+ ["Suriname","Suriname",1975,[],"Nederland","Suriname werd op 25 november 1975 onafhankelijk van Nederland."],
+ ["Papua New Guinea","Papoea-Nieuw-Guinea",1975,[],"Australië","Papoea-Nieuw-Guinea werd in 1975 onafhankelijk van Australië."],
+ ["Zimbabwe","Zimbabwe",1980,[],"Groot-Brittannië","Zimbabwe (toen Rhodesië) werd in 1980 onafhankelijk, na een burgeroorlog."],
+ ["Namibia","Namibië",1990,[],"Zuid-Afrika","Namibië, vroeger een Duitse kolonie, werd in 1990 onafhankelijk van Zuid-Afrika."]
+].map(a=>({n:a[0],nl:a[1],y:a[2],ok:[a[2],...a[3]],van:a[4],u:a[5]}));
+const DEK_KL=[[1949,"#f6d55c","1940-1949"],[1959,"#f29e4c","1950-1959"],[1969,"#d95f43","1960-1969"],[2100,"#8c2d6b","1970 en later"]];
+const dekKl=y=>DEK_KL.find(k=>y<=k[0])[1];
+const _dekBox={};
+function dekBox(n){ if(_dekBox[n]) return _dekBox[n]; const xs=[],ys=[]; (KOL.d[n].match(/-?\d+\.?\d*,-?\d+\.?\d*/g)||[]).forEach(p=>{ const [x,y]=p.split(",").map(Number); xs.push(x); ys.push(y); });
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys); return _dekBox[n]={lnd:[n],cx:(x0+x1)/2,cy:(y0+y1)/2,w:x1-x0,h:y1-y0}; }
+function dekOverzicht(){
+  const by={}; DEK.forEach(d=>by[d.n]=d.y);
+  const all=Object.keys(KOL.d).map(n=>by[n]?`<path style="fill:${dekKl(by[n])}" d="${KOL.d[n]}"/>`:`<path d="${KOL.d[n]}"/>`).join("");
+  return `<figure style="margin:1rem 0"><svg class="kolmap" viewBox="${KOL.vb.join(" ")}" role="img" aria-label="Wereldkaart met landen gekleurd naar het jaar van onafhankelijkheid"><rect class="sea" width="960" height="430"/>${all}</svg><ul class="kolleg">${DEK_KL.map(k=>`<li><i style="background:${k[1]}"></i>${k[2]}</li>`).join("")}</ul><figcaption style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Gekleurd: landen die in deze oefening voorkomen, naar het decennium van hun onafhankelijkheid. Grijs: andere landen (met de huidige landsgrenzen).</figcaption></figure>`; }
+function dekWanneer(back){
+  otStyle(); kolCss();
+  const qs=pickN(DEK,10).map(d=>({t:d,type:true,ph:"Typ het jaartal",im:"numeric",
+    check:txt=>{ const m=String(txt).match(/\d{4}/); return !!m&&d.ok.includes(+m[0]); },
+    html:`${kolSvg(dekBox(d.n))}<p class="q" style="margin-top:.8rem">Wanneer werd <strong>${otEsc(d.nl)}</strong> (het blauwe gebied) onafhankelijk van ${otEsc(d.van)}? Typ het jaartal.</p>`,
+    hint:`Het was tussen ${Math.floor(d.y/10)*10} en ${Math.floor(d.y/10)*10+9}.`,
+    uitleg:`<strong>${otEsc(d.nl)}</strong> werd onafhankelijk in <strong>${d.y}</strong> (van ${otEsc(d.van)}). ${otEsc(d.u)}`,review:`${otEsc(d.nl)}: ${d.y}. ${otEsc(d.u)}`,
+    after:svg=>{ if(!svg) return; const b=dekBox(d.n); kolFocus(svg,b); }}));
+  kolRun({title:"Wanneer onafhankelijk?",qs,back,again:()=>dekWanneer(back),extra:dekOverzicht}); }
+function dekChrono(back){
+  otStyle();
+  let set=null; for(let k=0;k<60&&!set;k++){ const c=pickN(DEK,5), ys=c.map(x=>x.y).sort((a,b)=>a-b); if(ys.every((y,i)=>!i||y-ys[i-1]>=2)) set=c; }
+  if(!set){ for(let k=0;k<200&&!set;k++){ const c=pickN(DEK,5); if(new Set(c.map(x=>x.y)).size===5) set=c; } }
+  set.sort((a,b)=>a.y-b.y);
+  orderEx({title:"Dekolonisatie chronologie",intro:"Zet deze vijf landen op volgorde van onafhankelijkheid. Het land dat het eerst onafhankelijk werd, komt bovenaan.",
+    items:set.map(d=>({id:d.n,label:d.nl,detail:`${d.y}, van ${d.van}`,uitleg:d.u})),back,meta:["Dekolonisatie chronologie","5 landen"],nextLabel:"Nieuwe ronde",onNext:()=>dekChrono(back),
+    explain:"Goed gedaan! De jaartallen staan achter de landen.",hintAll:"Denk aan de golven van dekolonisatie: Azië rond 1945-1955, Afrika vooral rond 1960, en de Portugese koloniën in 1975."}); }
+function grDekolonie(back){
+  back=typeof back==="function"?back:hcMenu; otStyle(); kolCss();
+  const V=[["Wanneer onafhankelijk?","Je ziet de naam van een land en het licht op op de kaart. Typ het jaartal waarin het onafhankelijk werd.",()=>dekWanneer(()=>grDekolonie(back)),"dek-wanneer"],["Dekolonisatie chronologie","Zet vijf landen op volgorde van onafhankelijkheid.",()=>dekChrono(()=>grDekolonie(back)),"dek-chrono"]];
+  app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2 style="margin:.5rem 0">Dekolonisatie Quiz</h2>
+  <div class="card" style="padding:1rem 1.1rem"><p>Na de Tweede Wereldoorlog werden bijna alle koloniën onafhankelijk. Dat hoort bij kenmerkend aspect 46: de dekolonisatie die een eind maakte aan de westerse hegemonie in de wereld.</p>
+  <p class="hchint">Let op: op de kaart staan de landsgrenzen van nu. Soms noemen mensen twee jaartallen voor onafhankelijkheid, bijvoorbeeld het jaar van de onafhankelijkheidsverklaring en het jaar van de erkenning. Bij Indonesië, Vietnam en Tanzania zijn beide goed.</p></div>
+  <h3 style="margin:1.2rem 0 .5rem">Kies een onderdeel</h3>
+  <div class="list">${V.map((v,i)=>`<button class="item" data-v="${i}" data-m="${v[3]}"><span class="txt"><strong>${v[0]}</strong><span class="sub">${v[1]}</span></span></button>`).join("")}</div>`;
+  app.querySelector("#back").onclick=back; app.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>V[+b.dataset.v][2]()); if(typeof decorate==="function") decorate(); window.scrollTo(0,0); }
+ICONS["m:dekolonie"]='<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 017.5-2"/><circle cx="12" cy="15.5" r="1.2"/>';
+ICONS["m:dek-wanneer"]='<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M9 14h2M13 14h2M9 17h2"/>';
+ICONS["m:dek-chrono"]='<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 5l2-1v4M4 11h3l-3 3h3M4 17h3v4H4"/>';
+const SHOW_DEKOLONIE=false; /*live: uit, tot akkoord*/
+if(SHOW_DEKOLONIE) kaAddTile({m:"dekolonie",tv:10,ka:46,tvNaam:"Tijd van televisie en computer",title:"Dekolonisatie Quiz",sub:"Twee onderdelen over dekolonisatie: Wanneer onafhankelijk? (jaartal typen bij een land op de kaart) en Dekolonisatie chronologie (vijf landen op volgorde). (KA 46: dekolonisatie)",go:grDekolonie});
 
 /* Als er een tijdvak is gekozen: oefeningen die er niet bij horen helemaal niet tonen (niet grijs) */
 { const _ka3=kaMenu;
