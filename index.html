@@ -3389,7 +3389,7 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
   sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","mc","quiz","klas","otoets","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
-  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),soort:()=>obSoort(),piramide:()=>obPiramide(),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),otoets:()=>grToets(),imperium:()=>grImperium(),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),soort:()=>obSoort(),piramide:()=>obPiramide(),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),otoets:()=>grToets(),imperium:()=>grImperium(),stadstaat:()=>grStadstaat(),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
   menuScroll("hc:"+S.hc.id);
 }
 
@@ -6962,7 +6962,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261120231627"; let last=0, shown=false;
+  const BUILD="20261120233415"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8536,6 +8536,62 @@ ICONS["m:dek-wanneer"]='<rect x="4" y="5" width="16" height="15" rx="2"/><path d
 ICONS["m:dek-chrono"]='<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 5l2-1v4M4 11h3l-3 3h3M4 17h3v4H4"/>';
 const SHOW_DEKOLONIE=false; /*live: uit, tot akkoord*/
 if(SHOW_DEKOLONIE) kaAddTile({m:"dekolonie",tv:10,ka:46,tvNaam:"Tijd van televisie en computer",title:"Dekolonisatie Quiz",sub:"Twee onderdelen over dekolonisatie: Wanneer onafhankelijk? (jaartal typen bij een land op de kaart) en Dekolonisatie chronologie (vijf landen op volgorde). (KA 46: dekolonisatie)",go:grDekolonie});
+
+/* ---------- Zat er een Griekse stadstaat? (onderbouw Grieken en Romeinen; bovenbouw tijdvak 2, KA 4) ---------- */
+/* Gebaseerd op de kaart van de Griekse koloniën (8e-6e eeuw v.C.) van de docent. Landenlijst en toelichtingen door Claude samengesteld: docent graag controleren. */
+const STAD_XY={"Griekenland":[["Athene",362.2,386.3],["Korinthe",354.9,387.8],["Sparta",351.9,397.5]],"Turkije":[["Ephesus",393.4,382.7],["Miletus",393.6,387.2],["Byzantium",401.7,347.1],["Sinope",448.8,325.5],["Trapezos",488,326]],"Italië":[["Syracusae",289,400.5],["Tarente",305.2,362.8],["Neapolis",280.2,358.8],["Kroton",304.7,378.1]],"Frankrijk":[["Massilia",209.9,327.4],["Nikaia",225.4,324.7]],"Spanje":[["Emporion",190.2,337.7]],"Libië":[["Cyrene",350.9,445],["Barca",341.5,449.4]],"Egypte":[["Naukratis",436.3,454.8]],"Bulgarije":[["Apollonia",388.8,333.5],["Mesembria",388.6,330.9]],"Roemenië":[["Istros",393.4,309.1]],"Oekraïne":[["Olbia",412.6,281.7],["Tyras",401.7,289.4],["Chersonesos",429.3,301.2],["Panticapaeum",449.7,287.7]],"Albanië":[["Epidamnos",323.1,352.7],["Apollonia",323.6,359.2]],"Cyprus":[["Salamis",456.5,401.4],["Paphos",444.3,409]],"Georgië":[["Phasis",499.3,309.1]]};
+const STAD_JA=[["Griekenland",["Greece"],"Athene, Korinthe en Sparta. In en rond Griekenland lagen honderden stadstaten."],
+ ["Turkije",["Turkey"],"Ephesus, Miletus, Byzantium (nu Istanbul), Sinope en Trapezos (nu Trabzon). De westkust van Turkije heette Ionië."],
+ ["Italië",["Italy"],"Syracusae (Siracusa), Tarente (Taranto), Neapolis (Napels) en Kroton. Het zuiden van Italië en Sicilië werden zelfs ‘Groot-Griekenland’ genoemd."],
+ ["Frankrijk",["France"],"Massilia (nu Marseille) en Nikaia (nu Nice)."],
+ ["Spanje",["Spain"],"Emporion (nu Empúries), in het noordoosten van Spanje."],
+ ["Libië",["Libya"],"Cyrene en Barca, in het oosten van Libië."],
+ ["Egypte",["Egypt"],"Naukratis, een Griekse handelsstad in de Nijldelta."],
+ ["Bulgarije",["Bulgaria"],"Apollonia (nu Sozopol) en Mesembria (nu Nesebar), aan de Zwarte Zee."],
+ ["Roemenië",["Romania"],"Istros, aan de Zwarte Zee bij de monding van de Donau."],
+ ["Oekraïne",["Ukraine"],"Olbia, Tyras en Chersonesos, aan de noordkust van de Zwarte Zee. Ook op de Krim lag Panticapaeum."],
+ ["Albanië",["Albania"],"Epidamnos (nu Durrës) en Apollonia."],
+ ["Cyprus",["Cyprus","N. Cyprus"],"Salamis en Paphos."],
+ ["Georgië",["Georgia"],"Phasis (nu Poti), aan de Zwarte Zee."]];
+const STAD_NEE=[["Duitsland",["Germany"],"Hier woonden Germanen en Kelten."],["Polen",["Poland"],"Hier woonden Germaanse en Slavische volken."],["Oostenrijk",["Austria"],"Hier woonden Kelten en andere volken van Midden-Europa."],["Zwitserland",["Switzerland"],"Hier woonden Kelten."],["Hongarije",["Hungary"],"Hier woonden o.a. Kelten en ruitervolken."],["Tsjechië",["Czechia"],"Hier woonden Kelten en Germanen."],["Slowakije",["Slovakia"],"Hier woonden Kelten en Germanen."],["Portugal",["Portugal"],"Hier woonden Kelten en Iberiërs."],["Algerije",["Algeria"],"Algerije ligt wel aan de Middellandse Zee, maar het westen van die zee werd beheerst door Carthago, een stad van de Feniciërs. Hier woonden Berbers en lagen Fenicische handelsposten, geen Griekse stadstaten.",1],["Tunesië",["Tunisia"],"Tunesië ligt wel aan de Middellandse Zee, maar hier lag Carthago, een stad van de Feniciërs. De Feniciërs en de Grieken waren concurrenten: aan de kust van Noord-Afrika hadden de Grieken alleen in het oosten van Libië stadstaten.",1],["Servië",["Serbia"],"Hier woonden o.a. Illyriërs en Thraciërs."],["Wit-Rusland",["Belarus"],"Hier woonden o.a. Baltische en Slavische volken."],["Zweden",["Sweden"],"Hier woonden Germaanse volken."],["Noorwegen",["Norway"],"Hier woonden Germaanse volken."],["Denemarken",["Denmark"],"Hier woonden Germaanse volken."],["Ierland",["Ireland"],"Hier woonden Kelten."],["Verenigd Koninkrijk",["United Kingdom"],"Hier woonden Kelten."],["Nederland",["Netherlands"],"Hier woonden Kelten en Germanen."],["België",["Belgium"],"Hier woonden Kelten en Germanen."],["Litouwen",["Lithuania"],"Hier woonden Baltische volken."]];
+function stadCss(){ if(document.getElementById("stdcss")) return; const s=document.createElement("style"); s.id="stdcss";
+  s.textContent=`.stdmap{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:12px}.stdmap .sea{fill:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}.stdmap path{fill:var(--line);stroke:var(--surface);stroke-width:.8;stroke-linejoin:round}.stdmap path.hl{fill:var(--focus,#4b7bec);stroke:var(--ink);stroke-width:1.2}.stdmap path.gr{fill:#2f9d5a}.stdmap .stad{display:none}.stdmap.toon .stad{display:block}.stdmap .stad circle{fill:#d4453b;stroke:#fff;stroke-width:1.2}.stdmap .stad text{font-size:10.5px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}`;
+  document.head.appendChild(s); }
+function stadSvg(g,steden,groen,toon,label){
+  const hl=new Set(g), gr=new Set(groen||[]);
+  const paths=Object.keys(IMP_GEO).map(k=>`<path${hl.has(k)?' class="hl"':gr.has(k)?' class="gr"':""} d="${IMP_GEO[k]}"/>`).join("");
+  const dots=(steden||[]).map(([n,x,y])=>`<circle cx="${x}" cy="${y}" r="3.4"/>${toon==="alle"?"":`<text x="${x+5}" y="${y-5}">${otEsc(n)}</text>`}`).join("");
+  return `<svg class="stdmap${toon==="alle"?" toon":""}" viewBox="0 0 640 560" role="img" aria-label="${otEsc(label)}"><rect width="640" height="560" class="sea"/>${paths}<g class="stad">${dots}</g></svg>`; }
+function stadIntro(back){
+  otStyle(); stadCss();
+  app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2 style="margin:.5rem 0">Zat er een Griekse stadstaat?</h2>
+  <div class="card" style="padding:1rem 1.1rem">
+    <p>Tussen 800 en 500 voor Christus stichtten de Grieken nieuwe stadstaten (koloniën) langs de kusten van de Middellandse Zee en de Zwarte Zee. Zo was er niet alleen in Griekenland zelf een stadstaat.</p>
+    <p>Zo werkt het: een modern land licht op de kaart op. Was er in dat land een Griekse stadstaat? Kies <strong>ja</strong> of <strong>nee</strong>. Een kolonie telt ook als stadstaat. Na je antwoord zie je de Griekse steden op de kaart.</p>
+    <p class="hchint">Let op: op de kaart staan de landsgrenzen van nu. Het gaat erom of er ergens in dat land een Griekse stadstaat lag.</p>
+    <div class="row" style="margin-top:1rem"><button class="btn" id="go">Start (10 landen)</button></div>
+  </div>`;
+  app.querySelector("#back").onclick=back; app.querySelector("#go").onclick=()=>grStadstaat(back,true); window.scrollTo(0,0); }
+function grStadstaat(back,skipIntro){
+  back=typeof back==="function"?back:hcMenu;
+  if(!skipIntro) return stadIntro(back);
+  otStyle(); stadCss();
+  const qs=shuffle([...pickN(STAD_JA,5).map(x=>[x[0],x[1],x[2],true,0]),...pickN(STAD_NEE,5).map(x=>[x[0],x[1],x[2],false,x[3]])]).map(([n,g,u,ja,vol])=>{
+    const st=ja?(STAD_XY[n]||[]):[];
+    return {id:"stad:"+n,ask:"Zat er een Griekse stadstaat?",qhtml:`${stadSvg(g,st,[],null,"Kaart van Europa, het Middellandse Zeegebied en het Midden-Oosten met "+n+" gemarkeerd")}<p class="q" style="margin-top:.8rem">Was er in <strong>${otEsc(n)}</strong> (het blauwe land) tussen 800 en 500 voor Christus een Griekse stadstaat?</p>`,
+      opts:[{id:"ja",label:"Ja"},{id:"nee",label:"Nee"}],right:ja?"ja":"nee",
+      uitleg:ja?`<strong>Ja.</strong> In ${otEsc(n)} lagen Griekse stadstaten of koloniën, zoals ${otEsc(u)} Je ziet ze op de kaart.`:`<strong>Nee.</strong> In ${otEsc(n)} lag geen Griekse stadstaat. ${vol?"":"De Grieken stichtten hun koloniën alleen op bepaalde plekken aan de kust van de Middellandse Zee en de Zwarte Zee. "}${otEsc(u)}`,
+      review:ja?`${otEsc(n)}: ja. ${otEsc(u)}`:`${otEsc(n)}: nee. ${otEsc(u)}`,
+      after:()=>{ const sv=document.querySelector(".stdmap"); if(sv) sv.classList.add("toon"); }}; });
+  mcEx({title:"Zat er een Griekse stadstaat?",qs,back,again:()=>grStadstaat(back,true),resultExtra:()=>{ stadCss(); const all=[].concat(...Object.values(STAD_XY)), groen=[].concat(...STAD_JA.map(x=>x[1]));
+    return `<figure style="margin:1rem 0">${stadSvg([],all,groen,"alle","Kaart met de landen waar Griekse stadstaten lagen")}<figcaption style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Groene landen: hier lagen Griekse stadstaten of koloniën (8e-6e eeuw v.C.). De rode stippen zijn enkele Griekse steden. Het zijn er veel meer dan hier staan.</figcaption></figure>`; }}); }
+ICONS["m:stadstaat"]='<path d="M3 9l9-5 9 5"/><path d="M5 9v9M9.5 9v9M14.5 9v9M19 9v9"/><path d="M3 20h18"/>';
+kaAddTile({m:"stadstaat",tv:2,ka:4,tvNaam:"Tijd van Grieken en Romeinen",title:"Zat er een Griekse stadstaat?",sub:"Een modern land licht op de kaart op. Was er een Griekse stadstaat? Ja of nee. (KA 4: denken over burgerschap en politiek)",go:grStadstaat});
+{ const _m3=hcModes;
+  hcModes=function(H){ const m=_m3(H); if(!H.ob||H.id!=="gr") return m;
+    const i=m.findIndex(x=>x[0]==="imperium"); const at=i<0?m.length:i+1;
+    m.splice(at,0,["stadstaat","Zat er een Griekse stadstaat?","Een modern land licht op de kaart op. Was er een Griekse stadstaat? Ja of nee."]); return m; }; }
 
 /* Als er een tijdvak is gekozen: oefeningen die er niet bij horen helemaal niet tonen (niet grijs) */
 { const _ka3=kaMenu;
