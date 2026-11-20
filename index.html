@@ -6962,7 +6962,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261120194252"; let last=0, shown=false;
+  const BUILD="20261120194443"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7189,7 +7189,7 @@ const YLAB={"-800":"Rond 800 v.C.","-750":"Rond 750 v.C.","-600":"Rond 600 v.C."
 S.deel="bb"; try{ if(localStorage.getItem("deel")==="ob") S.deel="ob"; }catch(e){}
 let NIV_BB=S.niveau; if(S.deel==="ob") S.niveau="tl";
 (function(){ const st=document.createElement("style"); st.textContent=`
-.deelseg{margin:.1rem 0 1.1rem}.deelseg button{padding:.35rem .95rem;font-size:.85rem}
+.deelseg{margin:1.1rem 0 1.3rem}
 .obdoelen{margin:.6rem 0 1rem;padding:.7rem 1rem;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .obdoelen summary{cursor:pointer;font-weight:800}
 .obdoelen ul{margin:.4rem 0 .4rem 1.1rem;padding:0}.obdoelen li{margin:.25rem 0}
@@ -8174,7 +8174,7 @@ function obKN(){ let k=1,n="tlh"; try{ k=+localStorage.getItem("obKlas")||1; n=l
     app.querySelectorAll("[data-klas]").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem("obKlas",b.dataset.klas); }catch(e){} home(); });
     app.querySelectorAll("[data-niv]").forEach(b=>b.onclick=()=>{ try{ localStorage.setItem("obNiv",b.dataset.niv); }catch(e){} home(); }); }; }
 { const st=document.createElement("style");
-  st.textContent=".obkns{margin:1.2rem 0 .2rem}.obkn{margin:.5rem 0}.obknl{font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.3rem}.obkn .seg{flex-wrap:wrap;border-radius:18px}";
+  st.textContent=".obkns{margin:1.2rem 0 .2rem}.obkn{margin:.5rem 0}.obknl{font-size:.82rem;font-weight:700;color:var(--muted);margin-bottom:.3rem}.obkn .seg{flex-wrap:wrap;border-radius:18px}.deelseg,.obkn .seg{display:flex;width:100%;max-width:34rem}.deelseg button,.obkn .seg button{flex:1 1 auto;text-align:center;padding:.55rem .7rem;font-size:.95rem;line-height:1.2}";
   document.head.appendChild(st); }
 
 ICONS["m:ov"]='<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h.01M8 12h.01M8 16h.01"/><path d="M11.5 8H16M11.5 12H16M11.5 16H14"/>';
