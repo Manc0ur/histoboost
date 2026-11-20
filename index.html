@@ -6962,7 +6962,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261120221929"; let last=0, shown=false;
+  const BUILD="20261120225803"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8133,7 +8133,7 @@ function grProvincie(back,skipIntro){
     const g=P[n], near=pool.filter(k=>k!==n).sort((x,y)=>Math.hypot(P[x].cx-g.cx,P[x].cy-g.cy)-Math.hypot(P[y].cx-g.cx,P[y].cy-g.cy));
     const dist=[...pickN(near.slice(0,6),2)]; const rest=near.filter(k=>!dist.includes(k)); dist.push(pickN(rest,1)[0]);
     const opts=shuffle([n,...dist]).map((k,i)=>({id:k,label:"ABCD"[i]+". "+k}));
-    const st=PROV_STEDEN[n]?` Bekende steden op de kaart: ${PROV_STEDEN[n]}.`:"";
+    const st=PROV_STEDEN[n]?` ${/ en |, /.test(PROV_STEDEN[n])?"Bekende steden":"Bekende stad"} in deze provincie: ${PROV_STEDEN[n]}.`:"";
     return {id:"prov:"+n,ask:"Welke provincie?",qhtml:`${provSvg(n)}<p class="q" style="margin-top:.8rem">Welke provincie licht op?</p>`,opts,right:n,
       uitleg:`Dit is <strong>${n}</strong>, ${g.t?"een senatoriale provincie (bestuurd door een proconsul uit de senaat)":"een keizerlijke provincie (bestuurd door een gouverneur die de keizer aanstelde)"}, volgens de kaart.${st}`,
       review:`${n}: ${g.t?"senatoriale":"keizerlijke"} provincie.${st}`,
