@@ -3042,7 +3042,7 @@ function kaMixGens(){
     ()=>{ const m=mp[Math.floor(Math.random()*mp.length)]; return m?qWaar(m,MAP_KA,x=>x.tv):null; },
     ()=>{ const k=kt[Math.floor(Math.random()*kt.length)]; return k?qKeten(k,KA_KETENS,x=>x.tv):null; },
     ()=>{ const t=gk[Math.floor(Math.random()*gk.length)]; return t?qGat(t,x=>x.tv[0]):null; },
-    ...(typeof mcGensKA==="function"?[mcGensKA()[0],mcGensKA()[1],mcGensKA()[2]]:[])
+    ...(typeof mcGensKA==="function"?mcGensKA():[])
   ];
   return gens;
 }
@@ -3067,7 +3067,7 @@ function hcMixGens(){
     ()=>{ const m=MP[Math.floor(Math.random()*MP.length)]; return m?qWaar(m,(H.map||MAP_HC),cc):null; },
     ()=>{ const k=KT[Math.floor(Math.random()*KT.length)]; return k?qKeten(k,H.ketens,cc):null; },
     ()=>{ const t=GK[Math.floor(Math.random()*GK.length)]; return t?qGat(t,cc):null; },
-    ...(typeof mcGensHC==="function"?[mcGensHC()[0],mcGensHC()[1],mcGensHC()[2]]:[])
+    ...(typeof mcGensHC==="function"?mcGensHC():[])
   ];
   return gens;
 }
@@ -3169,7 +3169,6 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="chrono" ${KA_TL.filter(e=>S.sel.has(e.tv)&&kaOk(e)).length>=3?"":"disabled"}><span class="txt"><strong>Chronologie</strong><span class="sub">${KA_TL.filter(e=>S.sel.has(e.tv)&&kaOk(e)).length>=3?"Zet zes gebeurtenissen in de goede volgorde":"Kies meer tijdvakken: er zijn te weinig gebeurtenissen"}</span></span></button>
       <button class="item" data-m="tl" ${KA_TL.some(e=>S.sel.has(e.tv)&&kaOk(e))?"":"disabled"}><span class="txt"><strong>Tijdlijn</strong><span class="sub">Sleep gebeurtenissen naar het juiste jaartal</span></span></button>
       <button class="item" data-m="memory" ${count?"":"disabled"}><span class="txt"><strong>Memory</strong><span class="sub">Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving</span></span></button>
-      <button class="item" data-m="mc" ${count?"":"disabled"}><span class="txt"><strong>Meerkeuzevragen</strong><span class="sub">Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen</span></span></button>
       <button class="item" data-m="kruis" ${count?"":"disabled"}><span class="txt"><strong>Kruiswoordpuzzel</strong><span class="sub">Elke keer een nieuwe puzzel met personen, plaatsen en begrippen uit de gekozen tijdvakken</span></span></button>
       <button class="item" data-m="wie" ${WBI.some(p=>p.tv.some(t=>S.sel.has(t))&&kaOk(p))?"":"disabled"}><span class="txt"><strong>Wie ben ik?</strong><span class="sub">Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten</span></span></button>
       <button class="item" data-m="hitster" ${KA_TL.some(e=>S.sel.has(e.tv)&&kaOk(e))?"":"disabled"}><span class="txt"><strong>Hitster</strong><span class="sub">Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!</span></span></button>
@@ -3340,7 +3339,6 @@ function hcModes(H){ return [...(lzPass(H).length&&false?[["uitleg","Lees en bea
          ["tijd","Chronologie","Sleep gebeurtenissen in de goede volgorde"],
          ["tijdlijn","Tijdlijn","Sleep elke gebeurtenis naar het juiste jaartal"],
          ["memory","Memory","Zoek bij begrippen, personen en gebeurtenissen de juiste omschrijving"],
-         ["mc","Meerkeuzevragen","Tien vragen over wie, wat, wanneer, oorzaak en gevolg en begrippen"],
          ["kruis","Kruiswoordpuzzel","Elke keer een nieuwe puzzel met begrippen, personen, plaatsen en zinnen uit "+(H.parts?"deze stof":"deze context")],
          ["wie","Wie ben ik?","Raad de historische persoon. Vraag steeds een nieuwe hint; hoe minder hints, hoe meer punten"],
          ["hitster","Hitster","Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!"],
@@ -6962,7 +6960,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261121085330"; let last=0, shown=false;
+  const BUILD="20261121100040"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7552,7 +7550,7 @@ const DOEL_LINKS=[
  [/macht hadden in de Romeinse Republiek/,["fabel","mc","gk"]],
  [/vijf sociale lagen/,["gk","mc"]],
  [/Grieks-Romeinse cultuur/,["fabel","mc"]]];
-const DOEL_MODE={tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Meerkeuzevragen",()=>hcMC()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
+const DOEL_MODE={tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Quiz",()=>hcMix()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
 function obDoelLinks(root){ if(!S.hc||!S.hc.ob) return;
   root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return; const sm=li.parentElement.previousElementSibling; if(!sm||!/^Algemene/.test(sm.textContent)) return;
     const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit) return;
