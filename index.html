@@ -7008,7 +7008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122171442"; let last=0, shown=false;
+  const BUILD="20261122171847"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8334,8 +8334,8 @@ function grReis(back){
   back=typeof back==="function"?back:kaMenu;
   if(!mapData().world){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>We gaan op reis</h2><p class="note" data-mapload="1">De kaart wordt geladen…</p>`; app.querySelector("#back").onclick=back;
     loadMap("world").then(()=>{ if(app.querySelector("[data-mapload]")) grReis(back); }).catch(()=>{ const n=app.querySelector("[data-mapload]"); if(n) n.textContent="De kaart kon niet worden geladen. Controleer je internetverbinding."; }); return; }
-  otStyle(); if(!document.getElementById("reiscss")){ const s=document.createElement("style"); s.id="reiscss"; s.textContent=`.reismap~*{} #app .opts:has(.opt[data-a=polo]){grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.35rem;margin-top:.6rem}#app .opts:has(.opt[data-a=polo]) .opt{padding:.4rem .6rem;font-size:.92rem;text-align:center}.reismap{width:100%;max-height:38vh;height:auto;display:block;border:1px solid var(--line);border-radius:12px}.reismap .sea{fill:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}.reismap .land{fill:color-mix(in srgb,var(--muted) 32%,var(--surface))}.reismap .rl{fill:none;stroke:var(--or);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}.reismap .rs{fill:#2f9d5a;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}.reismap .re{fill:#d4453b;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}`; document.head.appendChild(s); }
-  const opts=REIS.map(r=>({id:r.id,label:r.n}));
+  otStyle(); if(!document.getElementById("reiscss")){ const s=document.createElement("style"); s.id="reiscss"; s.textContent=`.reismap~*{} #app .opts:has(.opt[data-a=polo]){grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.35rem;margin-top:.6rem}#app .opts:has(.opt[data-a=polo]) .opt{padding:.4rem .6rem;font-size:.92rem;text-align:center}.reismap{width:100%;max-height:38vh;height:auto;display:block;border:1px solid var(--line);border-radius:12px}.reismap .sea{fill:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}.reismap .land{fill:color-mix(in srgb,var(--muted) 32%,var(--surface))}.reismap .rl{fill:none;stroke:var(--or);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}.reismap .rs{fill:#2f9d5a;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}.reismap .re{fill:#d4453b;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}`; document.head.appendChild(s); }
+  const opts=REIS.map(r=>({id:r.id,label:r.n+" ("+r.j+")"}));
   const qs=shuffle(REIS.slice()).map(r=>({id:"reis:"+r.id,c:5,ask:"We gaan op reis",qhtml:`${reisSvg(r)}<p class="q" style="margin-top:.8rem">Bij welk persoon past deze ontdekkingsreis?</p>`,
     opts:shuffle(opts.slice()),right:r.id,review:`${otEsc(r.n)} (${otEsc(r.j)}). ${otEsc(r.u)}`,uitleg:`<strong>${otEsc(r.n)} (${otEsc(r.j)})</strong>. ${otEsc(r.u)}`}));
   mcEx({title:"We gaan op reis",qs,back,again:()=>grReis(back)});
