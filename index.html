@@ -90,6 +90,7 @@ button{font:inherit;color:inherit}
 .qcard .ask{color:var(--ink);font-size:1.25rem;font-weight:700;line-height:1.35;margin:0 0 .6rem}
 .qcard .ask .qtag{font-size:1em;font-weight:700;padding:.05rem .65rem;color:var(--ink);vertical-align:.05em}
 .qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--focus)}
+.qcard .q[data-k]{color:var(--or)}
 .opts{display:grid;gap:.5rem;margin-top:1rem}
 .opts.tv{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:.75rem .9rem;cursor:pointer}
@@ -4362,7 +4363,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${round.length} · ${total} punten</span></div>
     <div class="progress"><i style="width:${i/round.length*100}%"></i></div>
     <div class="qcard" ${q.tv?`style="--c:${col(q.tv)}"`:""}><p class="ask">${tm?"Je staat in het heden en wilt met de tijdmachine naar de volgende gebeurtenis. Typ het jaartal in en klik op de kaart op de plek waar je heen wilt.":"Klik op de kaart aan waar dit gebeurde."}</p><p class="q" data-k="${esc(q.plaats||"")}">${esc(q.t)}</p></div>
-    ${tm?`<div class="jaarin tmjaar"><label for="jaar"><strong>Jaartal</strong></label><input id="jaar" type="text" inputmode="numeric" autocomplete="off" placeholder="${S.hc&&S.hc.ob?"bijv. 300":"bijv. 1648"}" value="${esc(val)}" ${checked?"disabled":""}>${vc?`<label class="vcbox"><input type="checkbox" id="bc" ${bc?"checked":""} ${checked?"disabled":""}> v.C.</label>`:""}</div>`:""}
+    ${tm?`<div class="jaarin tmjaar"><label for="jaar"><strong>Jaartal</strong></label><input id="jaar" type="text" inputmode="numeric" autocomplete="off" placeholder="${S.hc&&S.hc.ob?"bijv. 300":"bijv. 1648"}" value="${esc(val)}" ${checked?"disabled":""}>${vc?`<label class="vcbox"><input type="checkbox" id="bc" ${bc?"checked":""} ${checked?"disabled":""}> v.C.</label>`:""}<span class="tmgo" style="margin-left:auto">${checked?`<button class="btn" id="next">${i+1<round.length?"Volgende vraag":"Bekijk je score"}</button>`:`<button class="btn" id="check" ${canCheck()?"":"disabled"}>Controleer</button>`}</span></div>`:""}
     <div class="mapwrap">
       <svg id="map" class="map" style="aspect-ratio:${M.W}/${M.H}" viewBox="${vb.x} ${vb.y} ${vb.w} ${vb.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kaart: klik om je antwoord te plaatsen">
         <rect class="sea" x="-${M.W}" y="-${M.H}" width="${M.W*3}" height="${M.H*3}"/>
@@ -4374,7 +4375,7 @@ function mapGame({key,items,mapId,back,title,prev,tm,vc}){ const ARGS=arguments[
     </div>
     <p style="color:var(--muted);font-size:.85rem;margin:.4rem 0 0">Zoom met het scrollwiel, met twee vingers of met de knoppen. Sleep om de kaart te verschuiven. ${oldNL?"De kaart toont de huidige grenzen; de Zuiderzee en de Haarlemmermeer zijn getekend zoals ze vroeger waren.":"De kaart toont de huidige landsgrenzen."}</p>
     <div id="mapfb"></div>
-    <div class="row" style="margin-top:1rem">${checked?`<button class="btn" id="next">${i+1<round.length?"Volgende vraag":"Bekijk je score"}</button>`:`<button class="btn" id="check" ${canCheck()?"":"disabled"}>Controleer</button>`}</div>`;
+    ${tm?"":`<div class="row" style="margin-top:1rem">${checked?`<button class="btn" id="next">${i+1<round.length?"Volgende vraag":"Bekijk je score"}</button>`:`<button class="btn" id="check" ${canCheck()?"":"disabled"}>Controleer</button>`}</div>`}`;
     app.querySelector("#back").onclick=back;
     const svg=app.querySelector("#map");
     setupMap(svg);
@@ -7008,7 +7009,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122172625"; let last=0, shown=false;
+  const BUILD="20261122173052"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
