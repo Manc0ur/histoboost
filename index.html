@@ -3173,7 +3173,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
   <section class="section">
     <h2>Kies een oefening</h2>
     <div class="list">
-      <button class="item" data-m="ka2tv" ${count?"":"disabled"}><span class="txt"><strong>In welk tijdvak?</strong><span class="sub">Je ziet een kenmerkend aspect en kiest het tijdvak</span></span></button>
+      ${S.sel.size>1?`<button class="item" data-m="ka2tv" ${count?"":"disabled"}><span class="txt"><strong>In welk tijdvak?</strong><span class="sub">Je ziet een kenmerkend aspect en kiest het tijdvak</span></span></button>`:""}
       <button class="item" data-m="vb2ka" ${count?"":"disabled"}><span class="txt"><strong>Herken het kenmerkend aspect</strong><span class="sub">Je ziet een historisch voorbeeld of een bron uit het examen en kiest het kenmerkend aspect dat erbij past</span></span></button>
       <button class="item" data-m="chrono" ${KA_TL.filter(e=>S.sel.has(e.tv)&&kaOk(e)).length>=3?"":"disabled"}><span class="txt"><strong>Chronologie</strong><span class="sub">${KA_TL.filter(e=>S.sel.has(e.tv)&&kaOk(e)).length>=3?"Zet zes gebeurtenissen in de goede volgorde":"Kies meer tijdvakken: er zijn te weinig gebeurtenissen"}</span></span></button>
       <button class="item" data-m="tl" ${KA_TL.some(e=>S.sel.has(e.tv)&&kaOk(e))?"":"disabled"}><span class="txt"><strong>Tijdlijn</strong><span class="sub">Sleep gebeurtenissen naar het juiste jaartal</span></span></button>
@@ -3189,11 +3189,10 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="exam" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Examenvragen</strong><span class="sub">Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken (${kaExamList().length} vragen)</span></span></button>
       <button class="item" data-m="proef" ${kaExamList().length?"":"disabled"}><span class="txt"><strong>Proefexamen</strong><span class="sub">${PESUB}</span></span></button>
       <button class="item" data-m="ov" ${count?"":"disabled"}><span class="txt"><strong>Stofoverzicht</strong><span class="sub">Per tijdvak een lijst met begrippen, personen en een tijdlijn, elk met een korte uitleg</span></span></button>
-      <button class="item" data-m="cards" ${count?"":"disabled"}><span class="txt"><strong>Leerkaarten</strong><span class="sub">Lees het kenmerkend aspect, draai de kaart om voor tijdvak, toelichting en voorbeelden</span></span></button>
       <button class="item" data-m="flash" ${count?"":"disabled"}><span class="txt"><strong>Flashcards</strong><span class="sub">Begrippen, personen en gebeurtenissen: bedenk het antwoord, draai de kaart om en kijk of je het wist</span></span></button>
     </div>
   </section>`;
-  sorteerMenu(["ov","cards","flash","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","klas","exam","proef"]);
+  sorteerMenu(["ov","flash","ka2tv","vb2ka","keten","memory","gk","kruis","wie","chrono","tl","hitster","tijdmachine","mc","quiz","klas","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-tv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.tv; S.sel.has(n)?S.sel.delete(n):S.sel.add(n); kaMenu();});
   app.querySelectorAll("[data-tvper]").forEach(b=>b.onclick=()=>{const tvs=TVPER[+b.dataset.tvper][1]; if(tvs.every(n=>S.sel.has(n))) tvs.forEach(n=>S.sel.delete(n)); else tvs.forEach(n=>S.sel.add(n)); kaMenu();});
@@ -7009,7 +7008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122173052"; let last=0, shown=false;
+  const BUILD="20261122173537"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
