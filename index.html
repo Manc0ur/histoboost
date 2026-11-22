@@ -7026,7 +7026,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122180509"; let last=0, shown=false;
+  const BUILD="20261122182410"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8367,6 +8367,56 @@ ICONS["m:reis"]='<circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><pa
     const ref=box.querySelector('[data-m="tijdmachine"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b);
     b.onclick=()=>grReis(kaMenu);
     if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Welk recht? (tl bovenbouw, Staatsinrichting): rechten van de Tweede en Eerste Kamer ---------- */
+/* Situaties verzonnen (docent graag controleren). Stap 1: welk recht; stap 2: welke Kamer (vervalt bij "geen"). */
+const SHOW_RECHTEN=true;
+const RECHT_NAAM={budget:"recht van budget",enquete:"recht van enquête",interpellatie:"recht van interpellatie",initiatief:"recht van initiatief",amendement:"recht van amendement",geen:"geen van deze rechten"};
+const RECHT_OPTS=[["budget","Recht van budget"],["enquete","Recht van enquête"],["interpellatie","Recht van interpellatie"],["initiatief","Recht van initiatief"],["amendement","Recht van amendement"],["geen","Geen van deze rechten"]];
+const RECHT_KAMER={budget:"beide",enquete:"beide",interpellatie:"beide",initiatief:"tk",amendement:"tk"};
+const RECHTEN=[
+ ["Een Tweede Kamerlid vindt dat een wetsvoorstel over schoolvakanties de zomervakantie te kort maakt. Het Kamerlid stelt voor één artikel van het wetsvoorstel te wijzigen.","amendement","Een amendement is een voorstel om een wetsvoorstel van de regering te wijzigen."],
+ ["Een Kamerlid van de oppositie schrijft zelf een volledig wetsvoorstel om de energiebelasting voor huishoudens te verlagen.","initiatief","Bij het recht van initiatief maakt een Kamerlid zelf een nieuw wetsvoorstel."],
+ ["De regering stelt voor hoeveel geld volgend jaar naar Defensie gaat. De Tweede Kamer stemt over het plan van de regering.","budget","Het parlement beslist over de begroting. Elke begroting moet door beide Kamers worden goedgekeurd."],
+ ["Een groot bouwproject van de overheid kost drie keer zoveel als gepland. De Tweede Kamer wil zelf uitzoeken wat er misging. Betrokkenen worden onder ede verhoord.","enquete","Bij een parlementaire enquête doet de Kamer zelf onderzoek en hoort getuigen onder ede."],
+ ["Na een krantenbericht over lange wachtlijsten in ziekenhuizen wil een Kamerlid de minister van Volksgezondheid in een apart debat ter verantwoording roepen.","interpellatie","Bij een interpellatie roept de Kamer een minister op voor een apart debat over één onderwerp."],
+ ["De Eerste Kamer is het oneens met één artikel in een wetsvoorstel. De Eerste Kamer wil alleen dat ene artikel aanpassen.","geen","De Eerste Kamer heeft geen recht van amendement. De Eerste Kamer kan een wetsvoorstel alleen aannemen of verwerpen."],
+ ["Een lid van de Eerste Kamer wil een nieuwe wet over dierenwelzijn indienen.","geen","Alleen leden van de Tweede Kamer hebben het recht van initiatief."],
+ ["Een commissie van Kamerleden roept een oud-minister op. De oud-minister moet verplicht verschijnen en onder ede de waarheid spreken.","enquete","Verplicht verschijnen en verhoor onder ede zijn kenmerken van een parlementaire enquête."],
+ ["Tijdens de behandeling van een wet over rijlessen stelt een groep Kamerleden voor om de minimumleeftijd in het wetsvoorstel van 17 naar 16 jaar te verlagen.","amendement","De Kamerleden veranderen een wetsvoorstel van de regering. Er komt geen nieuw wetsvoorstel."],
+ ["De Eerste Kamer stemt tegen de begroting van het ministerie van Onderwijs.","budget","Ook de Eerste Kamer stemt over de begroting. De Eerste Kamer kan de begroting alleen aannemen of verwerpen."],
+ ["Een Kamerlid vindt dat de minister van Justitie een besluit van de Tweede Kamer niet uitvoert. Het Kamerlid vraagt om een speciaal debat met de minister over alleen dat onderwerp.","interpellatie","Een apart debat waarin een minister uitleg moet geven, heet een interpellatie."],
+ ["Twee Kamerleden van verschillende partijen vinden dat er een wet tegen nepnieuws moet komen. De regering maakt die wet niet, dus schrijven de twee Kamerleden samen het wetsvoorstel.","initiatief","Ook meerdere Kamerleden samen kunnen een initiatiefwetsvoorstel indienen."],
+ ["De regering wil volgend jaar meer belasting innen om meer geld uit te geven aan de zorg. Het parlement moet goedkeuren hoeveel geld de regering mag ontvangen en uitgeven.","budget","Het recht van budget gaat over de inkomsten en de uitgaven van de overheid."],
+ ["De Eerste Kamer wil zelf onderzoeken waarom een overheidsprogramma mislukt is. Getuigen worden onder ede verhoord.","enquete","Het recht van enquête hoort niet alleen bij de Tweede Kamer. Ook de Eerste Kamer mag een enquête houden."],
+ ["Een minister geeft in gewone debatten geen uitleg over een uitgelekt rapport. Een Kamerlid vraagt daarom een debat aan waarin alleen het uitgelekte rapport centraal staat.","interpellatie","Het Kamerlid vraagt een apart debat aan met de minister over één onderwerp."],
+ ["Een lid van de Eerste Kamer wil de minister van Landbouw in een apart debat ter verantwoording roepen over de mestregels.","interpellatie","Ook leden van de Eerste Kamer mogen een minister interpelleren."],
+ ["De Tweede Kamer is boos over een uitspraak van een rechter en wil de rechter ontslaan.","geen","Door de machtenscheiding is de rechtspraak onafhankelijk. Het parlement kan een rechter niet ontslaan om een uitspraak."],
+ ["Een Kamerlid wil aan een wetsvoorstel over huurwoningen een extra regel toevoegen: verhuurders moeten een energielabel laten zien.","amendement","Ook iets toevoegen aan een wetsvoorstel van de regering is een amendement."],
+ ["Een Kamerlid vindt dat jongeren onder de 16 jaar geen energiedrank mogen kopen. Er bestaat nog geen wetsvoorstel over energiedrank, dus het Kamerlid maakt zelf een wetsvoorstel.","initiatief","Het Kamerlid wijzigt geen bestaand voorstel. Het Kamerlid maakt een nieuw wetsvoorstel."]
+];
+function tlRechten(back){
+  back=typeof back==="function"?back:hcMenu;
+  let pick=shuffle(RECHTEN.slice()).slice(0,10);
+  if(!pick.some(x=>x[1]==="geen")){ const g=shuffle(RECHTEN.filter(x=>x[1]==="geen"))[0]; pick[pick.length-1]=g; pick=shuffle(pick); }
+  const qs=[];
+  pick.forEach((x,i)=>{ const [sit,r,uit]=x, id="rcht:"+RECHTEN.indexOf(x);
+    qs.push({id:id+"a",ask:"Welk recht van het parlement past bij deze situatie?",q:sit,or:true,opts:RECHT_OPTS.map(o=>({id:o[0],label:o[1]})),right:r,
+      uitleg:`<strong>${r==="geen"?"Geen van deze rechten":otEsc(RECHT_NAAM[r].replace(/^r/,"R"))}.</strong> ${otEsc(uit)}`,review:`${otEsc(sit)} <strong>${otEsc(RECHT_NAAM[r])}</strong>`});
+    if(r!=="geen") qs.push({id:id+"b",ask:"Welke Kamer heeft dit recht?",qhtml:`<p class="q">${otEsc(sit)}</p><p style="margin:.5rem 0 0">Het gaat om het <strong>${otEsc(RECHT_NAAM[r])}</strong>.</p>`,
+      opts:[{id:"tk",label:"Alleen de Tweede Kamer"},{id:"beide",label:"De Tweede én de Eerste Kamer"}],right:RECHT_KAMER[r],
+      uitleg:RECHT_KAMER[r]==="tk"?`<strong>Alleen de Tweede Kamer.</strong> De rechten van initiatief en amendement heeft alleen de Tweede Kamer. De Eerste Kamer kan een wetsvoorstel alleen aannemen of verwerpen.`:`<strong>De Tweede én de Eerste Kamer.</strong> De rechten van budget, enquête en interpellatie hebben beide Kamers.`,
+      review:`${otEsc(RECHT_NAAM[r])}: <strong>${RECHT_KAMER[r]==="tk"?"alleen de Tweede Kamer":"de Tweede én de Eerste Kamer"}</strong>`});
+  });
+  otStyle(); mcEx({title:"Welk recht?",qs,back,again:()=>tlRechten(back)});
+}
+ICONS["m:rechten"]='<path d="M12 3v18M5 21h14"/><path d="M4 7h16"/><path d="M6 7l-3 7a3 3 0 006 0L6 7zM18 7l-3 7a3 3 0 006 0l-3-7z"/>';
+if(SHOW_RECHTEN){ const _hr=hcMenu;
+  hcMenu=function(){ _hr.apply(this,arguments); const H=S.hc; if(!H||H.niveau!=="tl"||!(H.id==="staats"||(H.parts||[]).includes("staats"))) return;
+    const ref=app.querySelector('.list > [data-m="keten"]'); if(!ref) return;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="rechten";
+    b.innerHTML='<span class="txt"><strong>Welk recht?</strong><span class="sub">Je leest een situatie en kiest welk recht van het parlement erbij past, en welke Kamer dat recht heeft</span></span>';
+    ref.insertAdjacentElement("afterend",b); b.onclick=()=>tlRechten(hcMenu); if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Kolonie Quiz (tijdvak 8, havo en vwo bovenbouw, KA 33 modern imperialisme): Welk moederland? / Klik de kolonie / Noem de kolonie ---------- */
 /* Kaart: huidige landsgrenzen (Natural Earth via world-atlas, vereenvoudigd). Indeling in koloniën rond 1900 en de toelichtingen zijn door Claude samengesteld: docent graag controleren. */
