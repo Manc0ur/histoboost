@@ -89,8 +89,9 @@ button{font:inherit;color:inherit}
 .qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.3rem;border-top:6px solid var(--c,var(--ink))}
 .qcard .ask{color:var(--ink);font-size:1.25rem;font-weight:700;line-height:1.35;margin:0 0 .6rem}
 .qcard .ask .qtag{font-size:1em;font-weight:700;padding:.05rem .65rem;color:var(--ink);vertical-align:.05em}
-.qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--focus)}
+.qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--or)}
 .qcard .q[data-k]{color:var(--or)}
+.qcard .q.qor{color:var(--or)}
 .opts{display:grid;gap:.5rem;margin-top:1rem}
 .opts.tv{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:.75rem .9rem;cursor:pointer}
@@ -2885,7 +2886,7 @@ function mcEx({title,qs,back,again,tvGrid,key,ids,resultExtra}){
     app.innerHTML = `<button class="back" id="back">‹ Stoppen</button>
       <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${qs.length}</span></div>
       <div class="progress"><i style="width:${i/qs.length*100}%"></i></div>
-      <div class="qcard" ${q.c?`style="--c:${col(q.c)}"`:""}><p class="ask">${q.ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="q"${q.k!==undefined?` data-k="${esc(q.k)}"`:""}>${esc(q.q)}</p>`}
+      <div class="qcard" ${q.c?`style="--c:${col(q.c)}"`:""}><p class="ask">${q.ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="q${q.or?" qor":""}"${q.k!==undefined?` data-k="${esc(q.k)}"`:""}>${esc(q.q)}</p>`}
       <div class="opts ${tvGrid?"tv":""}">${q.opts.map(o=>`<button class="opt ${o.c?"tvopt":""}" ${o.c?`style="--c:${col(o.c)}"`:""} data-a="${o.id}">${o.html||esc(o.label)}</button>`).join("")}</div></div>
       <div id="fb"></div>`;
     app.querySelector("#back").onclick=back;
@@ -3224,7 +3225,7 @@ function kaQuiz(mode){
   let qs, ids;
   if(mode==="ka2tv"){
     ids = pool.map(k=>k.n);
-    qs = pickRound("ka2tv",pool,k=>k.n).map(k=>({id:k.n,extra:KAX[k.n][0],hint:KAX[k.n][1],ask:"In welk tijdvak hoort dit kenmerkend aspect?",q:k.t,right:k.tv,
+    qs = pickRound("ka2tv",pool,k=>k.n).map(k=>({id:k.n,extra:KAX[k.n][0],hint:KAX[k.n][1],ask:"In welk tijdvak hoort dit kenmerkend aspect?",q:k.t,or:true,right:k.tv,
       opts:TV.map(t=>({id:t.n,c:t.n,html:`<span class="n">${t.n}</span>${esc(t.naam.replace("Tijd van ",""))}<span class="uitline">${t.jaren}</span>`})),
       uitleg:kaFeedback(k),review:`<strong>KA ${k.n}</strong> (tijdvak ${k.tv}): ${esc(k.t)}`}));
   } else {
@@ -3241,7 +3242,7 @@ function kaQuiz(mode){
       }
       const ook=OOK[e.v];
       const near = kaDistract(e.k,[e.k.n,...(ook?ook.ka:[])]);
-      qs.push({id:e.v,extra:KAX[e.k.n][0],hint:KAX[e.k.n][2],ask:"Bij welk kenmerkend aspect past dit voorbeeld het best?",q:e.v,right:[e.k.n,...(ook?ook.ka:[])],
+      qs.push({id:e.v,extra:KAX[e.k.n][0],hint:KAX[e.k.n][2],ask:"Bij welk kenmerkend aspect past dit voorbeeld het best?",q:e.v,or:true,right:[e.k.n,...(ook?ook.ka:[])],
         opts:shuffle([e.k,...near]).map(x=>({id:x.n,label:x.t})),
         uitleg:kaFeedback(e.k)+(ook?`</p><p>${esc(ook.uitleg)}`:""),review:`<strong>KA ${e.k.n}</strong> (tijdvak ${e.k.tv}): ${esc(e.k.t)}`});
     }
@@ -7008,7 +7009,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122173537"; let last=0, shown=false;
+  const BUILD="20261122173819"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
