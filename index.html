@@ -60,6 +60,9 @@ button{font:inherit;color:inherit}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 .list{display:flex;flex-direction:column;gap:.5rem}
+:root{--or:#d98f00}:root[data-theme="dark"]{--or:#ffc93c}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--or:#ffc93c}}.selnames{color:var(--or);font-weight:700}
+#dvsel .list>.item,.dvcard{box-sizing:border-box;width:100%;max-width:100%}.dvcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}.dvcard:hover{border-color:var(--ink)}.dvhead{display:flex;align-items:stretch}.dvcard .item{border:0;border-radius:0;background:transparent;flex:1;min-width:0}.dvchev{border:0;border-left:1px solid var(--line);background:transparent;padding:0 1.1rem;cursor:pointer;font-size:1.2rem;color:var(--muted);transition:transform .15s}.dvchev[aria-expanded=true]{transform:scaleY(-1);color:var(--ink)}.dvchev[aria-expanded=true]::after{content:""}.dvchev[aria-expanded=true]{background:var(--bg)}.dvchev[aria-expanded=false]{}.dvpanel{padding:.2rem 1.1rem 1rem;border-top:1px solid var(--line)}.dvpanel[hidden]{display:none}.dvpt{margin:.7rem 0 .5rem;font-weight:700}
+.dvlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:.45rem}.dvlist .dvgrp{grid-column:1/-1;margin:.6rem 0 .1rem}.dvlist .item{box-sizing:border-box;width:auto;min-width:0;max-width:100%;padding:.55rem .75rem;gap:.6rem;align-items:flex-start}.dvlist .item .txt{min-width:0}.dvlist .item .tag{flex:none}.dvlist .item strong{overflow-wrap:anywhere;hyphens:none;font-size:.95rem;line-height:1.25}.dvlist .item .sub{font-size:.8rem;margin-top:.1rem}.dvlist .item .tag{font-size:.72rem;padding:.1rem .45rem}
 .item{display:flex;gap:1rem;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;cursor:pointer}
 .item:hover:not([disabled]){border-color:var(--ink)}
 .item[disabled]{cursor:default;opacity:.6}
@@ -338,7 +341,7 @@ body.lzhide .lzsticky .lzscroll{display:none}
 .galword span.fx{border-bottom-color:transparent}
 .galword span.miss{color:#dc4646}
 .galcat{background:var(--surface);border:2px solid var(--ink);border-radius:12px;padding:.55rem .9rem;margin:0 0 .9rem;font-size:1.45rem;font-weight:700;line-height:1.1;color:var(--ink)}
-.galcat strong{font:inherit;color:#e8710a}
+.galcat strong{font:inherit;color:var(--or)}
 .fccard .qtag{font-size:.9rem;font-weight:700;color:var(--ink);background:var(--surface);border:2px solid var(--ink);padding:.15rem .8rem}
 .galclue{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;margin:0 0 .7rem;font-size:.95rem}
 .galkeys{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0 1rem}
@@ -2636,7 +2639,7 @@ function home(){ SYL=null;
   app.querySelector("#hcnone").onclick=()=>{ sel.clear(); upd(); };
   app.querySelector("#hcgo").onclick=()=>{ const ids=chosen(), tvs=tvList(); if(!ids.length&&!tvs.length) return;
     if(!ids.length){ S.sel=new Set(tvs); S.kaOff=new Set(); kaMenu(); return; }
-    if(tvs.length){ S.hc=mkMix([kaPart(tvs),...ids]); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
+    if(tvs.length){ S.kaOff=new Set(); S.hcTvs=tvs; S.hcIds=ids; S.dvkaOpen=new Set(); S.hc=mkMix([kaPart(tvs),...ids]); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); S.dvOpen=false; }
     else if(ids.length===1){ S.hc=HCDATA[ids[0]]; S.dvSel=new Set(S.hc.niveau==="tl"?S.hc.dv.map(d=>d.nr):[1,2,3]); } else { S.hc=mkMix(ids); S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); }
     hcMenu(); };
   upd();
@@ -2648,7 +2651,8 @@ function home(){ SYL=null;
 const MIXHC={}, KAPART={};
 const partOf=id=>HCDATA[id]||KAPART[id];
 function kaPart(tvs){
-  tvs=[...tvs].map(Number).sort((a,b)=>a-b); const id="ka:"+tvs.join(","); if(KAPART[id]) return id;
+  tvs=[...tvs].map(Number).sort((a,b)=>a-b); const koff=[...(S.kaOff||[])].filter(n=>KA[n-1]&&tvs.includes(KA[n-1].tv)).sort((a,b)=>a-b); const id="ka:"+tvs.join(",")+(koff.length?"-"+koff.join("."):""); if(KAPART[id]) return id;
+  const kok=o=>{ if(!koff.length||!o) return true; const a=Array.isArray(o.ka)?o.ka:(o.ka!=null?[o.ka]:[]), r=a.filter(n=>KA[n-1]&&tvs.includes(KA[n-1].tv)); return !r.length||r.some(n=>!koff.includes(n)); };
   const dvOf={}; tvs.forEach((n,i)=>dvOf[n]=i+1); const sel=n=>n in dvOf;
   const range=tvs.length>2&&tvs.every((n,i)=>!i||n===tvs[i-1]+1);
   const P={id,isKa:true,grp:"Tijdvakken en kenmerkende aspecten",niveau:S.niveau,titel:tvs.length===1?`Tijdvak ${tvs[0]}`:range?`Tijdvak ${tvs[0]}–${tvs[tvs.length-1]}`:`Tijdvakken ${tvs.join(", ")}`,
@@ -2656,14 +2660,14 @@ function kaPart(tvs){
     dv:tvs.map((n,i)=>{ const t=tvOf(n); return {nr:i+1,c:n,vraag:`Tijdvak ${n}: ${t.naam}`,periode:t.jaren.replace(/\s/g,""),ka:KA.filter(k=>k.tv===n).map(k=>k.n),sub:"",tekst:[],kaPart:true,url:t.url}; }),
     begrippen:[],tijdlijn:[],tlx:{},ketens:[],koppel:[],map:[],gk:[],bext:{},lijkt:{}};
   const seen=new Set();
-  kwGapDefs(GK_KA.filter(t=>t.tv.some(sel))).filter(d=>!/\d/.test(d.a)).forEach(d=>{ const g=GK_KA.find(t=>t.titel===d.src), tv=g?g.tv.find(sel):tvs[0], b=d.a.charAt(0).toUpperCase()+d.a.slice(1);
+  kwGapDefs(GK_KA.filter(t=>t.tv.some(sel)&&kok(t))).filter(d=>!/\d/.test(d.a)).forEach(d=>{ const g=GK_KA.find(t=>t.titel===d.src), tv=g?g.tv.find(sel):tvs[0], b=d.a.charAt(0).toUpperCase()+d.a.slice(1);
     if(!seen.has(b.toLowerCase())){ seen.add(b.toLowerCase()); P.begrippen.push({dv:dvOf[tv],b,d:d.q}); } });
-  KA_TL.filter(e=>sel(e.tv)).forEach(e=>{ if(P.tlx[e.j]) return; P.tijdlijn.push({dv:dvOf[e.tv],j:e.j,t:e.t}); P.tlx[e.j]=[e.u||(TLX[e.j]||[])[0]||"",e.h||(TLX[e.j]||[])[1]||""]; });
-  KA_KETENS.filter(k=>sel(k.tv)).forEach(k=>P.ketens.push({...k,dv:dvOf[k.tv]}));
-  MAP_KA.filter(m=>sel(m.tv)).forEach(m=>P.map.push({...m,dv:dvOf[m.tv]}));
-  GK_KA.filter(t=>t.tv.some(sel)).forEach(t=>P.gk.push({...t,dv:dvOf[t.tv.find(sel)]}));
-  KA.filter(k=>sel(k.tv)).forEach(k=>k.vb.forEach(v=>{ if(!OOK[v]) P.koppel.push({dv:dvOf[k.tv],g:v,ka:k.n,uit:(KAX[k.n]||[])[0]||"",hint:(KAX[k.n]||[])[2]||""}); }));
-  WBI.forEach(p=>{ const a=(p.tv||[]).filter(sel).map(n=>dvOf[n]); if(a.length){ if(!p.hc) p.hc={}; p.hc[id]=[...new Set(a)]; } });
+  KA_TL.filter(e=>sel(e.tv)&&kok(e)).forEach(e=>{ if(P.tlx[e.j]) return; P.tijdlijn.push({dv:dvOf[e.tv],j:e.j,t:e.t}); P.tlx[e.j]=[e.u||(TLX[e.j]||[])[0]||"",e.h||(TLX[e.j]||[])[1]||""]; });
+  KA_KETENS.filter(k=>sel(k.tv)&&kok(k)).forEach(k=>P.ketens.push({...k,dv:dvOf[k.tv]}));
+  MAP_KA.filter(m=>sel(m.tv)&&kok(m)).forEach(m=>P.map.push({...m,dv:dvOf[m.tv]}));
+  GK_KA.filter(t=>t.tv.some(sel)&&kok(t)).forEach(t=>P.gk.push({...t,dv:dvOf[t.tv.find(sel)]}));
+  KA.filter(k=>sel(k.tv)&&kok(k)).forEach(k=>k.vb.forEach(v=>{ if(!OOK[v]) P.koppel.push({dv:dvOf[k.tv],g:v,ka:k.n,uit:(KAX[k.n]||[])[0]||"",hint:(KAX[k.n]||[])[2]||""}); }));
+  WBI.forEach(p=>{ if(!kok(p)) return; const a=(p.tv||[]).filter(sel).map(n=>dvOf[n]); if(a.length){ if(!p.hc) p.hc={}; p.hc[id]=[...new Set(a)]; } });
   KW_EVENTS[id]=(KW_EVENTS.ka||[]).filter(e=>sel(e[0])).map(e=>[dvOf[e[0]],e[1],e[2]]);
   KAPART[id]=P; return id;
 }
@@ -3374,12 +3378,15 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
   app.innerHTML = `
   <button class="back" id="back">‹ Terug naar overzicht</button>
   <h1 style="font-size:2.2rem">${H.parts?(H.parts.some(i=>KAPART[i])?"Tijdvakken en contexten":"Meerdere "+(H.niveau==="tl"?"onderwerpen":"contexten")):esc(H.titel)}</h1>
-  ${H.parts?`<p class="lead">${H.parts.some(i=>KAPART[i])?`${esc(H.titel)}. Je oefent de contexten door elkaar, met de tijdvakken en kenmerkende aspecten als achtergrond.`:`${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: ${esc(H.titel)}. Je oefent de stof door elkaar.`}</p>`:`<p class="lead">${H.ob?"Onderbouw":H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"de bron"}</a>`:""}</p>`}
+  ${H.parts?`<p class="lead">${H.parts.some(i=>KAPART[i])?`<strong class="selnames">${esc(H.titel)}</strong>.<br>Je oefent de contexten door elkaar, met de tijdvakken en kenmerkende aspecten als achtergrond.`:`${H.niveau==="tl"?"Examenstof tl":"Historische contexten "+H.niveau}: <strong class="selnames">${esc(H.titel)}</strong>.<br>Je oefent de stof door elkaar.`}</p>`:`<p class="lead">${H.ob?"Onderbouw":H.niveau==="tl"?"Examenstof tl":"Historische context "+(H.niveau||"vwo")}, ${H.jaren}. ${H.url?`<a href="${H.url}" target="_blank" rel="noopener">Lees de uitleg op ${H.urlLabel||"de bron"}</a>`:""}</p>`}
   ${H.niveau==="tl"?"":`<section class="section">
     <h2>Welke deelvragen?</h2>
-    <div class="list">${H.dv.map(d=>(H.parts&&(d.nr===1||H.dv[d.nr-2].src!==d.src)?`<p class="dvgrp">${esc(d.srcT)}</p>`:"")+`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
+    ${H.dv.length>4?`<details class="kasel" id="dvsel" ${S.dvOpen?"open":""}><summary>Tijdvakken en deelvragen aan- of uitzetten <span class="kacnt">(${H.dv.filter(d=>S.dvSel.has(d.nr)).length} van ${H.dv.length})</span></summary>`:""}
+    <div class="list">${H.dv.map(d=>(H.parts&&(d.nr===1||H.dv[d.nr-2].src!==d.src)?`<p class="dvgrp">${esc(d.srcT)}</p>`:"")+(d.kaPart&&S.hcTvs?(()=>{ const off=S.kaOff||new Set(), tot=KA.filter(k=>k.tv===d.c), n=tot.filter(k=>!off.has(k.n)).length, op=S.dvkaOpen&&S.dvkaOpen.has(d.nr); return `<div class="dvcard" style="border-left:8px solid ${col(d.c)}"><div class="dvhead"><button class="item"  aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
       <span class="txt"><strong>${d.nr}. ${esc(d.vraag)}</strong><span class="sub">${d.periode}, ${d.ka.length?"kenmerkende aspecten "+d.ka.join(", "):esc(d.sub||"")}</span></span>
-      <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button>`).join("")}</div>
+      <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button><button class="dvchev" data-dvchev="${d.nr}" aria-expanded="${!!op}" aria-label="Kenmerkende aspecten van tijdvak ${d.c} aan- of uitzetten" title="Kenmerkende aspecten aan- of uitzetten">▾</button></div><div class="dvpanel" ${op?"":"hidden"}><p class="dvpt">Kenmerkende aspecten <span class="kacnt">(${n} van ${tot.length})</span></p><div class="kachips">${tot.map(k=>`<button class="chip kachip" style="--c:${col(d.c)}" aria-pressed="${!off.has(k.n)}" data-dvkachip="${k.n}" title="${esc(k.t)}"><b>${k.n}</b>${esc(KAMAP.short[k.n-1])}</button>`).join("")}</div></div></div>`; })():`<button class="item" style="border-left:8px solid ${col(d.c)}" aria-pressed="${S.dvSel.has(d.nr)}" data-dv="${d.nr}">
+      <span class="txt"><strong>${d.nr}. ${esc(d.vraag)}</strong><span class="sub">${d.periode}, ${d.ka.length?"kenmerkende aspecten "+d.ka.join(", "):esc(d.sub||"")}</span></span>
+      <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button></button>`)).join("")}</div>${H.dv.length>4?"</details>":""}
   </section>`}
   <section class="section">
     <h2>Kies een oefening</h2>
@@ -3390,7 +3397,10 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
   </section>`;
   sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","mc","quiz","klas","otoets","exam","proef"]);
   app.querySelector("#back").onclick=home;
-  app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); hcMenu();});
+  app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); S.dvOpen=true; hcMenu();});
+  app.querySelectorAll("[data-dvkachip]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvkachip; S.kaOff.has(n)?S.kaOff.delete(n):S.kaOff.add(n); S.hc=mkMix([kaPart(S.hcTvs),...S.hcIds]); S.dvOpen=true; hcMenu(); });
+  app.querySelectorAll("[data-dvchev]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvchev; if(!S.dvkaOpen) S.dvkaOpen=new Set(); const pn=b.closest(".dvcard").querySelector(".dvpanel"), o=pn.hidden; pn.hidden=!o; b.setAttribute("aria-expanded",o); o?S.dvkaOpen.add(n):S.dvkaOpen.delete(n); });
+  const dvd=app.querySelector("#dvsel"); if(dvd) dvd.addEventListener("toggle",()=>{ S.dvOpen=dvd.open; });
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),soort:()=>obSoort(),piramide:()=>obPiramide(),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),otoets:()=>grToets(),imperium:()=>grImperium(),stadstaat:()=>grStadstaat(),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
   menuScroll("hc:"+S.hc.id);
 }
@@ -6998,7 +7008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122144249"; let last=0, shown=false;
+  const BUILD="20261122171442"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8294,6 +8304,51 @@ const SHOW_GRBRON=false; /*live: uit, tot akkoord*/
       b.insertAdjacentElement("afterend",pb); pb.onclick=()=>grProvincie(kaMenu); }
     if(typeof decorate==="function") decorate(); }; }
 
+
+/* ---------- We gaan op reis (tijdvak 5, KA 18 Europese overzeese expansie): welke ontdekkingsreiziger maakte deze reis? ---------- */
+/* Routes zijn vereenvoudigd en door Claude getekend; de uitleg is door Claude geschreven: docent graag controleren. */
+const SHOW_REIS=true;
+const REIS=[
+ {id:"polo",n:"Marco Polo",j:"1272–1295",u:"Marco Polo was een koopman uit Venetië. Hij reisde over land (de Zijderoute) naar het hof van de Mongoolse heerser in China en keerde over zee terug. Zijn verslag maakte Europeanen nieuwsgierig naar Azië. Zijn reis is iets ouder dan de rest: een voorloper van de ontdekkingsreizen.",seg:[[[45.4,12.3],[32.9,35.1],[27.1,56.3],[39.5,76.0],[40.1,94.7],[39.9,116.4],[24.9,118.6],[1.3,103.8],[7.0,80.0],[27.1,56.3],[41.0,39.7],[45.4,12.3]]]},
+ {id:"hendrik",n:"Hendrik de Zeevaarder",j:"vanaf 1450",u:"Hendrik de Zeevaarder was een Portugese prins. Hij voer zelf niet mee, maar liet kapiteins langs de westkust van Afrika varen op zoek naar goud en een zeeweg naar Indië. Elke reis kwam een stukje verder naar het zuiden.",seg:[[[37.1,-8.7],[32.7,-17.0],[20.8,-17.1],[14.7,-17.5],[13.4,-16.7],[8.5,-13.2]]]},
+ {id:"columbus",n:"Christoffel Columbus",j:"1492",u:"Columbus kwam uit Genua en voer in Spaanse dienst naar het westen, om zo Indië te bereiken. Hij kwam aan op eilanden in het Caraïbisch gebied en dacht dat hij in Azië was. Daarmee begon de Europese kennismaking met Amerika.",seg:[[[37.2,-6.9],[28.1,-15.4],[24.0,-74.5]]]},
+ {id:"diaz",n:"Bartholomeus Diaz",j:"1488",u:"Diaz was een Portugees. Hij was de eerste Europeaan die om de zuidpunt van Afrika heen voer (de Kaap de Goede Hoop). Daarmee lag de zeeweg naar Indië binnen bereik.",seg:[[[38.7,-9.1],[14.7,-17.5],[-10,-8],[-30,5],[-34.4,18.5],[-33.5,27.1]]]},
+ {id:"gama",n:"Vasco da Gama",j:"1498",u:"Da Gama was een Portugees. Hij voer om Afrika heen en kwam aan in Calicut in India. Dat was de eerste zeeroute van Europa naar Azië.",seg:[[[38.7,-9.1],[14.7,-17.5],[-8,-14],[-26,-8],[-34.4,18.5],[-26,36],[-15,41],[-3.2,40.1],[11.25,75.8]]]},
+ {id:"cabral",n:"Pedro Álvares Cabral",j:"1500",u:"Cabral was een Portugees en voer met een grote vloot naar India. Onderweg werd hij ver naar het westen gedreven en kwam hij aan in Brazilië, dat hij voor Portugal claimde. Daarna voer hij om Afrika heen door naar India. Let op: zijn route lijkt op die van Da Gama, maar heeft een bocht naar Brazilië.",seg:[[[38.7,-9.1],[14.7,-17.5],[-5,-30],[-16.4,-39.0],[-30,-15],[-34.4,18.5],[-15,41],[-3.2,40.1],[11.25,75.8]]]},
+ {id:"vespucci",n:"Amerigo Vespucci",j:"1499–1504",u:"Vespucci kwam uit Florence en voer in Spaanse en Portugese dienst langs de kust van Zuid-Amerika. Hij zag dat dit een nieuw werelddeel was, geen Azië. Amerika is naar zijn voornaam genoemd.",seg:[[[36.5,-6.3],[28.1,-15.4],[14.7,-17.5],[-5,-35],[-23,-42],[-35,-55]]]},
+ {id:"magalhaes",n:"Ferdinand Magalhães",j:"1519–1521",u:"Magalhães was een Portugees in Spaanse dienst. Hij zocht een weg naar het westen naar de Molukken, voer door de Straat van Magellaan en stak de Grote Oceaan over naar de Filipijnen. Daar kwam hij om. Eén schip voltooide de reis om de wereld.",seg:[[[37.4,-6.0],[28.1,-15.4],[-23,-43],[-49.3,-67.7],[-52.5,-70.0],[-48,-90],[-30,-120],[-10,-150],[5,-180]],[[5,180],[13.4,144.8],[10.3,123.9]]]},
+ {id:"drake",n:"Francis Drake",j:"1577–1580",u:"Drake was een Engelsman. Hij overviel Spaanse schepen en havens, voer door de Straat van Magellaan, langs de westkust van Amerika en over de Grote Oceaan, en keerde via de Kaap de Goede Hoop terug. Hij was de eerste Engelsman die om de wereld voer.",seg:[[[50.4,-4.1],[14.7,-17.5],[-10,-30],[-35,-56],[-52.5,-70.0],[-33,-72],[-12,-77],[17,-100],[38,-123],[25,-155],[10,-180]],[[10,180],[8,150],[7.5,134.5],[0.8,127.4],[-8,114],[-34.4,18.5],[8.5,-13.2],[50.4,-4.1]]]},
+ {id:"barentsz",n:"Willem Barentsz",j:"1594–1597",u:"Barentsz was een Nederlander. Hij zocht een noordelijke route naar Azië, langs het noorden van Rusland. Zijn schip raakte bij Nova Zembla vast in het ijs en de bemanning overwinterde in het Behouden Huys. Barentsz overleed op de terugweg.",seg:[[[53.2,5.0],[62,3],[71.2,25.8],[72,45],[73.5,55.5],[76.5,67.0],[76.0,68.5]]]}
+];
+function reisSvg(r){
+  const M=mapData().world, RAD=Math.PI/180, toXY=(la,lo)=>[M.c*(M.tx+lo*RAD*M.s), M.ty-la*RAD*M.s];
+  const pts=r.seg.flat().map(([la,lo])=>toXY(la,lo)); const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+  let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  let w=Math.max((x1-x0)*1.25,(y1-y0)*1.25*M.W/M.H,M.W*.3); if(w>M.W*.8) w=M.W; const h=w*M.H/M.W;
+  const vx=Math.max(0,Math.min(M.W-w,(x0+x1)/2-w/2)), vy=Math.max(0,Math.min(M.H-h,(y0+y1)/2-h/2));
+  const lines=r.seg.map(s=>`<path class="rl" d="M${s.map(([la,lo])=>toXY(la,lo).map(v=>v.toFixed(1)).join(",")).join("L")}"/>`).join("");
+  const a=toXY(...r.seg[0][0]), z=toXY(...r.seg[r.seg.length-1].slice(-1)[0]), rad=(w/70).toFixed(1);
+  return `<svg class="reismap" viewBox="${vx.toFixed(1)} ${vy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" role="img" aria-label="Wereldkaart met de route van een ontdekkingsreiziger"><rect class="sea" x="-${M.W}" y="-${M.H}" width="${M.W*3}" height="${M.H*3}"/><g transform="scale(${M.c},1)"><path class="land" d="${M.land}"/></g>${lines}<circle class="rs" cx="${a[0].toFixed(1)}" cy="${a[1].toFixed(1)}" r="${(rad*1.7).toFixed(1)}"/><circle class="re" cx="${z[0].toFixed(1)}" cy="${z[1].toFixed(1)}" r="${(rad*.9).toFixed(1)}"/></svg><p style="color:var(--muted);font-size:.85rem;margin:.4rem 0 0"><span style="color:#2f9d5a">●</span> begin van de reis &nbsp; <span style="color:#d4453b">●</span> einde van de reis</p>`;
+}
+function grReis(back){
+  back=typeof back==="function"?back:kaMenu;
+  if(!mapData().world){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>We gaan op reis</h2><p class="note" data-mapload="1">De kaart wordt geladen…</p>`; app.querySelector("#back").onclick=back;
+    loadMap("world").then(()=>{ if(app.querySelector("[data-mapload]")) grReis(back); }).catch(()=>{ const n=app.querySelector("[data-mapload]"); if(n) n.textContent="De kaart kon niet worden geladen. Controleer je internetverbinding."; }); return; }
+  otStyle(); if(!document.getElementById("reiscss")){ const s=document.createElement("style"); s.id="reiscss"; s.textContent=`.reismap~*{} #app .opts:has(.opt[data-a=polo]){grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.35rem;margin-top:.6rem}#app .opts:has(.opt[data-a=polo]) .opt{padding:.4rem .6rem;font-size:.92rem;text-align:center}.reismap{width:100%;max-height:38vh;height:auto;display:block;border:1px solid var(--line);border-radius:12px}.reismap .sea{fill:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}.reismap .land{fill:color-mix(in srgb,var(--muted) 32%,var(--surface))}.reismap .rl{fill:none;stroke:var(--or);stroke-width:3.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}.reismap .rs{fill:#2f9d5a;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}.reismap .re{fill:#d4453b;stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}`; document.head.appendChild(s); }
+  const opts=REIS.map(r=>({id:r.id,label:r.n}));
+  const qs=shuffle(REIS.slice()).map(r=>({id:"reis:"+r.id,c:5,ask:"We gaan op reis",qhtml:`${reisSvg(r)}<p class="q" style="margin-top:.8rem">Bij welk persoon past deze ontdekkingsreis?</p>`,
+    opts:shuffle(opts.slice()),right:r.id,review:`${otEsc(r.n)} (${otEsc(r.j)}). ${otEsc(r.u)}`,uitleg:`<strong>${otEsc(r.n)} (${otEsc(r.j)})</strong>. ${otEsc(r.u)}`}));
+  mcEx({title:"We gaan op reis",qs,back,again:()=>grReis(back)});
+}
+ICONS["m:reis"]='<circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><path d="M7 17c6 0 2-8 8-10" stroke-dasharray="2 2"/>';
+{ const _kr=kaMenu;
+  kaMenu=function(){ _kr.apply(this,arguments); if(!SHOW_REIS) return;
+    const list=app.querySelector(".list > [data-m]"); if(!list) return; const box=list.parentElement;
+    const ok=S.sel.has(5)&&!S.kaOff.has(18), why=S.sel.has(5)?"Zet kenmerkend aspect 18 (het begin van de Europese overzeese expansie) aan om deze oefening te doen":"Kies tijdvak 5 (Tijd van ontdekkers en hervormers) om deze oefening te doen", b=document.createElement("button"); b.className="item"; b.dataset.m="reis"; if(!ok) b.disabled=true;
+    b.innerHTML=`<span class="txt"><strong>We gaan op reis</strong><span class="sub">${ok?"Je ziet de route van een reis op de wereldkaart en kiest welke ontdekkingsreiziger dat was (KA 18: Europese overzeese expansie)":why}</span></span>`;
+    const ref=box.querySelector('[data-m="tijdmachine"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b);
+    b.onclick=()=>grReis(kaMenu);
+    if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Kolonie Quiz (tijdvak 8, havo en vwo bovenbouw, KA 33 modern imperialisme): Welk moederland? / Klik de kolonie / Noem de kolonie ---------- */
 /* Kaart: huidige landsgrenzen (Natural Earth via world-atlas, vereenvoudigd). Indeling in koloniën rond 1900 en de toelichtingen zijn door Claude samengesteld: docent graag controleren. */
