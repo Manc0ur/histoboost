@@ -3397,8 +3397,8 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
   </section>`;
   sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","mc","quiz","klas","otoets","exam","proef"]);
   app.querySelector("#back").onclick=home;
-  app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); S.dvOpen=true; hcMenu();});
-  app.querySelectorAll("[data-dvkachip]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvkachip; S.kaOff.has(n)?S.kaOff.delete(n):S.kaOff.add(n); S.hc=mkMix([kaPart(S.hcTvs),...S.hcIds]); S.dvOpen=true; hcMenu(); });
+  app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"});});
+  app.querySelectorAll("[data-dvkachip]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvkachip; S.kaOff.has(n)?S.kaOff.delete(n):S.kaOff.add(n); S.hc=mkMix([kaPart(S.hcTvs),...S.hcIds]); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"}); });
   app.querySelectorAll("[data-dvchev]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvchev; if(!S.dvkaOpen) S.dvkaOpen=new Set(); const pn=b.closest(".dvcard").querySelector(".dvpanel"), o=pn.hidden; pn.hidden=!o; b.setAttribute("aria-expanded",o); o?S.dvkaOpen.add(n):S.dvkaOpen.delete(n); });
   const dvd=app.querySelector("#dvsel"); if(dvd) dvd.addEventListener("toggle",()=>{ S.dvOpen=dvd.open; });
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>({uitleg:hcUitleg,lees:hcLees,klas:()=>klasQuiz({scope:"hc",back:hcMenu}),flash:()=>flashcards({scope:"hc",key:hk("flash"),back:hcMenu}),koppelb:()=>hcKoppelB(),galgje:()=>hcGalgje(),fabel:hcFabel,tijd:hcTijd,tijdlijn:hcTijdlijn,tijdmachine:hcTijdmachine,keten:()=>ocMenu("hc"),soort:()=>obSoort(),piramide:()=>obPiramide(),koppel:hcKoppel,gk:hcGatenkaas,exam:hcExam,proef:()=>proefMenu("hc"),otoets:()=>grToets(),imperium:()=>grImperium(),stadstaat:()=>grStadstaat(),quiz:hcMix,hitster:hcHitster,wie:hcWie,kruis:hcKruis,mc:hcMC,memory:hcMemory,kaart:hcMap})[b.dataset.m]());
@@ -7008,7 +7008,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122171847"; let last=0, shown=false;
+  const BUILD="20261122172625"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
