@@ -7026,7 +7026,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122202234"; let last=0, shown=false;
+  const BUILD="20261122202939"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8434,7 +8434,7 @@ const TOT=[
  ["De Zwarthemden","i","De Zwarthemden waren de knokploegen van de fascisten in Italië."],
  ["De Mars op Rome (1922)","i","In 1922 dreigden fascisten met een mars op Rome. Daarna benoemde de koning Mussolini tot premier."],
  ["Mussolini wordt door de koning tot premier benoemd (1922)","i","Mussolini kwam in 1922 op wettige wijze aan de macht. Daarna bouwde hij Italië om tot een dictatuur."],
- ["‘Alles in de staat, niets buiten de staat, niets tegen de staat’","i","Zo omschreef Mussolini de eenpartijstaat in Italië."],
+ ["Mussolini zegt: ‘Alles in de staat, niets buiten de staat, niets tegen de staat’","i","Zo omschreef Mussolini de eenpartijstaat in Italië."],
  ["De planeconomie","s","In een planeconomie bepaalt de staat wat er wordt geproduceerd. Stalin voerde dit in."],
  ["De vijfjarenplannen","s","Stalin stelde plannen op voor vijf jaar waarin stond hoeveel de fabrieken en boerderijen moesten produceren."],
  ["De collectivisatie van de landbouw","s","Boeren moesten hun land en vee inleveren en samen werken op grote staatsboerderijen."],
