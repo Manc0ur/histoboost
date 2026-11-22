@@ -60,6 +60,7 @@ button{font:inherit;color:inherit}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 .list{display:flex;flex-direction:column;gap:.5rem}
+.tlwrap{display:block}.tlside{max-height:42vh;overflow:auto;overscroll-behavior:contain}.tlside:empty{display:none}.tlside h3{position:sticky;top:0;background:var(--bg);margin:0;padding:.3rem 0;z-index:1}@media (min-width:900px){.tlwrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1.2rem;align-items:start}.tlside{position:sticky;top:.8rem;max-height:calc(100vh - 1.6rem)}.tlside h3{margin-top:0}}
 :root{--or:#d98f00}:root[data-theme="dark"]{--or:#ffc93c}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--or:#ffc93c}}.selnames{color:var(--or);font-weight:700}
 #dvsel .list>.item,.dvcard{box-sizing:border-box;width:100%;max-width:100%}.dvcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}.dvcard:hover{border-color:var(--ink)}.dvhead{display:flex;align-items:stretch}.dvcard .item{border:0;border-radius:0;background:transparent;flex:1;min-width:0}.dvchev{border:0;border-left:1px solid var(--line);background:transparent;padding:0 1.1rem;cursor:pointer;font-size:1.2rem;color:var(--muted);transition:transform .15s}.dvchev[aria-expanded=true]{transform:scaleY(-1);color:var(--ink)}.dvchev[aria-expanded=true]::after{content:""}.dvchev[aria-expanded=true]{background:var(--bg)}.dvchev[aria-expanded=false]{}.dvpanel{padding:.2rem 1.1rem 1rem;border-top:1px solid var(--line)}.dvpanel[hidden]{display:none}.dvpt{margin:.7rem 0 .5rem;font-weight:700}
 .dvlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:.45rem}.dvlist .dvgrp{grid-column:1/-1;margin:.6rem 0 .1rem}.dvlist .item{box-sizing:border-box;width:auto;min-width:0;max-width:100%;padding:.55rem .75rem;gap:.6rem;align-items:flex-start}.dvlist .item .txt{min-width:0}.dvlist .item .tag{flex:none}.dvlist .item strong{overflow-wrap:anywhere;hyphens:none;font-size:.95rem;line-height:1.25}.dvlist .item .sub{font-size:.8rem;margin-top:.1rem}.dvlist .item .tag{font-size:.72rem;padding:.1rem .45rem}
@@ -4598,17 +4599,18 @@ function tlEx({all,key,back,again,X,tv}){
     app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>Tijdlijn</h2>
     <p class="lead">Sleep elke gebeurtenis naar het jaartal waarin hij plaatsvond. Je kunt ook op een gebeurtenis tikken en daarna op een jaartal.</p>
-    <div class="tl" style="--tlwm:${(Math.max(...years.map(y=>fmtY(y).length))*.6+.5).toFixed(1)}rem;--tlw:${Math.max(years.some(y=>y<0)?7.2:4.4,Math.max(...years.map(y=>fmtY(y).length))*.7+.6).toFixed(1)}rem">${years.map(y=>{const id=place[y], e=id?evOf(id):null, cls=checked?(id===y?"correct":"wrong"):"";
-      return `<div class="tlrow"><span class="tly">${fmtY(y)}</span><button class="slot ${cls}" data-slot="${y}" ${checked?"disabled":""} aria-label="Jaartal ${fmtY(y)}${e?`: ${esc(e.t)}`:", leeg"}">${e?`<span class="ecard ${sel===e.j?"sel":""}" data-ev="${e.j}">${esc(e.t)}${checked&&id!==y&&!shown&&X(id)?`<span class="hintline"><strong>Hint:</strong> ${esc(X(id)[1])}</span>`:""}${checked&&ok===years.length&&X(id)?`<span class="uitline">${esc(X(id)[0])}</span>`:""}</span>`:`<span class="ph">Sleep een gebeurtenis hierheen</span>`}</button></div>`;}).join("")}</div>
-    ${checked?"":`<h3>Gebeurtenissen</h3>
-    <div class="pool" data-pool="1">${pool.map(id=>`<button class="ecard ${sel===id?"sel":""}" data-ev="${id}">${esc(evOf(id).t)}</button>`).join("")||`<span class="ph">Alle gebeurtenissen staan op de tijdlijn. Sleep er een hierheen om hem terug te zetten.</span>`}</div>`}
     ${checked?`<div class="feedback ${ok===years.length?"good":"badf"}" role="status"><p><strong>${ok===years.length?"Helemaal goed!":`${ok} van de ${years.length} goed.`}</strong></p>${ok<years.length&&!shown?"<p>Verplaats de rode gebeurtenissen, of bekijk de goede antwoorden.</p>":""}</div>`:""}
-    <div class="row" style="margin-top:1rem">
+    <div class="row" style="margin:.4rem 0 1rem">
       ${checked
         ? (ok===years.length ? `<button class="btn" id="new">Nieuwe tijdlijn</button>`
           : `<button class="btn" id="fix">Verder slepen</button><button class="btn ghost" id="show">Toon goede antwoorden</button>`)
         : `<button class="btn" id="check" ${full?"":"disabled"}>Controleer</button>`}
     </div>
+    <div class="tlwrap"><div class="tlmain"><div class="tl" style="--tlwm:${(Math.max(...years.map(y=>fmtY(y).length))*.6+.5).toFixed(1)}rem;--tlw:${Math.max(years.some(y=>y<0)?7.2:4.4,Math.max(...years.map(y=>fmtY(y).length))*.7+.6).toFixed(1)}rem">${years.map(y=>{const id=place[y], e=id?evOf(id):null, cls=checked?(id===y?"correct":"wrong"):"";
+      return `<div class="tlrow"><span class="tly">${fmtY(y)}</span><button class="slot ${cls}" data-slot="${y}" ${checked?"disabled":""} aria-label="Jaartal ${fmtY(y)}${e?`: ${esc(e.t)}`:", leeg"}">${e?`<span class="ecard ${sel===e.j?"sel":""}" data-ev="${e.j}">${esc(e.t)}${checked&&id!==y&&!shown&&X(id)?`<span class="hintline"><strong>Hint:</strong> ${esc(X(id)[1])}</span>`:""}${checked&&ok===years.length&&X(id)?`<span class="uitline">${esc(X(id)[0])}</span>`:""}</span>`:`<span class="ph">Sleep een gebeurtenis hierheen</span>`}</button></div>`;}).join("")}</div></div><div class="tlside">
+    ${checked?"":`<h3>Gebeurtenissen</h3>
+    <div class="pool" data-pool="1">${pool.map(id=>`<button class="ecard ${sel===id?"sel":""}" data-ev="${id}">${esc(evOf(id).t)}</button>`).join("")||`<span class="ph">Alle gebeurtenissen staan op de tijdlijn. Sleep er een hierheen om hem terug te zetten.</span>`}</div>`}</div></div>
+    
     ${checked&&ok===years.length&&recorded?statusLine(key,all.map(e=>e.j)):""}`;
 
     app.querySelector("#back").onclick=back;
@@ -7009,7 +7011,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122174532"; let last=0, shown=false;
+  const BUILD="20261122175056"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
