@@ -7026,7 +7026,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122193222"; let last=0, shown=false;
+  const BUILD="20261122202234"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8470,6 +8470,89 @@ if(SHOW_TOTAAL){
     const b=document.createElement("button"); b.className="item"; b.dataset.m="totaal";
     b.innerHTML='<span class="txt"><strong>Totalitaire Staten</strong><span class="sub">Een kenmerk hoort bij Duitsland, Italië, de Sovjet-Unie of bij alle drie. Kies het goede antwoord.</span></span>';
     ref.insertAdjacentElement("afterend",b); b.onclick=()=>grTotaal(hcMenu); if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Totalitair Duitsland (tijdvak 9, KA 38; tl Interbellum): welk begrip hoort bij de situatie? ---------- */
+/* Situaties, afleiders en uitleg zijn door Claude geschreven: docent graag controleren. */
+const SHOW_TOTDU=true;
+const TD_B={g:["Gelijkschakeling","Gelijkschakeling betekent dat alle organisaties onder leiding van de nazi's komen of worden verboden."],
+ a:["Afschaffing van de parlementaire democratie","Zonder vrije verkiezingen en oppositie heeft het parlement geen macht meer."],
+ i:["Indoctrinatie","Bij indoctrinatie leren mensen, vooral jongeren, alleen de ideeën van de nazi's en geen andere meningen."],
+ c:["Censuur","Bij censuur controleert de overheid wat mensen mogen lezen, horen en zien."],
+ p:["Propaganda","Propaganda is eenzijdige informatie die mensen moet overtuigen van de ideeën van de nazi's."],
+ t:["Terreur","Terreur betekent dat de overheid met geweld en dreiging angst zaait."],
+ v:["Persoonsverheerlijking","Bij persoonsverheerlijking wordt de leider voorgesteld als een bijzonder en bijna perfect mens."],
+ f:["Führer-principe","Volgens het Führer-principe heeft de leider de hoogste macht en gehoorzaamt iedereen daaronder."],
+ l:["Rassenleer","De rassenleer is het idee van de nazi's dat rassen in waarde verschillen. Dat idee is wetenschappelijk onjuist."],
+ w:["Rassenwetten","Met rassenwetten maken de nazi's van Joden tweederangsburgers."]};
+/* [situatie, goede begrippen, afleiders, uitleg] */
+const TDS=[
+ ["Alle jeugdverenigingen in Duitsland worden opgeheven. Alleen de Hitlerjugend en de BDM blijven over.","g","cfw","Alle jeugdorganisaties komen onder leiding van de nazi's of verdwijnen."],
+ ["Vakbonden worden verboden. Werknemers moeten lid worden van één organisatie onder leiding van de nazi's.","g","pl v","Na de vakbonden volgen ook de andere organisaties: overal komen de nazi's aan de leiding."],
+ ["Na 1933 worden alle politieke partijen verboden, behalve de NSDAP.","a","iwv","Zonder andere partijen zijn er geen vrije verkiezingen en is er geen oppositie meer."],
+ ["De Rijksdag geeft Hitler het recht om wetten te maken zonder goedkeuring van de Rijksdag.","a","cpl","Het parlement geeft de wetgevende macht weg. Hitler krijgt de wetgevende en de uitvoerende macht tegelijk."],
+ ["Op school leren kinderen dat Hitler altijd gelijk heeft en dat andere meningen fout zijn.","i","ctw","Op school krijgen kinderen alleen de ideeën van de nazi's te horen."],
+ ["In de Hitlerjugend leren jongens marcheren, gehoorzamen en de ideeën van de nazi's herhalen.","i","cwa","De Hitlerjugend voedt jongens op tot trouwe aanhangers van de nazi's."],
+ ["Kranten mogen alleen berichten publiceren die de regering goedkeurt.","c","flt","De overheid bepaalt wat er in de krant mag staan."],
+ ["Schrijvers met kritiek op de nazi's mogen niets meer publiceren. Hun boeken worden uit de bibliotheken gehaald.","c","vwf","De nazi's halen ideeën weg die ze niet willen laten verspreiden."],
+ ["Op affiches en in films is te zien dat Duitsland onder de nazi's sterk en succesvol is.","p","twf","Affiches en films laten alleen de positieve kant van het regime zien om mensen te overtuigen."],
+ ["De nazi's organiseren grote bijeenkomsten met vlaggen, muziek en toespraken om mensen enthousiast te maken voor de nazi-ideeën.","p","wca","Massabijeenkomsten moeten de bezoekers het gevoel geven bij één groot volk te horen."],
+ ["Een nieuwe radio is goedkoop, zodat elk gezin naar de toespraken van de nazi's kan luisteren.","p","ltf","Via de radio bereikt de boodschap van de nazi's bijna elke Duitse woonkamer."],
+ ["De Gestapo arresteert tegenstanders van de nazi's zonder proces.","t","piv","Door de angst voor arrestatie durven mensen niets meer te zeggen."],
+ ["Tegenstanders van de nazi's worden zonder proces opgesloten in concentratiekampen. Uit angst voor een concentratiekamp durven veel Duitsers geen kritiek meer te geven.","t","piv","De angst voor straf zorgt ervoor dat mensen zwijgen."],
+ ["Leden van de SA slaan tegenstanders van de nazi's op straat in elkaar.","t","fpl","De SA gebruikt geweld om tegenstanders van de nazi's bang te maken."],
+ ["In elk klaslokaal en op elk kantoor hangt een portret van Hitler.","vp","tw","Het portret laat zien hoe groot en belangrijk de leider is (persoonsverheerlijking) en beïnvloedt mensen dagelijks (propaganda)."],
+ ["In toespraken wordt Hitler voorgesteld als de redder van Duitsland, een leider zonder fouten.","v","ctw","Hitler wordt geëerd als een held die Duitsland redt."],
+ ["Hitler neemt alle belangrijke beslissingen. Elke leider lager in de partij moet de bevelen van een hogere leider uitvoeren.","f","pcl","Alle macht ligt bij de leider en iedereen daaronder gehoorzaamt."],
+ ["De nazi's leren dat mensen in te delen zijn in hogere en lagere rassen, met het ‘Arische ras’ bovenaan.","l","cgf","De nazi's vinden dat sommige rassen meer waard zijn dan andere."],
+ ["Joden mogen niet meer trouwen met niet-Joden en verliezen het Duitse staatsburgerschap.","w","pi v","Met deze wetten maken de nazi's van Joden tweederangsburgers."],
+ ["Joodse ambtenaren en leraren worden ontslagen, omdat een nieuwe wet bepaalt dat Joden niet bij de overheid mogen werken.","w","piv","Met wetten sluiten de nazi's Joden stap voor stap uit van het gewone leven."],
+ ["In 1938 vernielen nazi's Joodse winkels en synagogen en mishandelen Joden (Kristallnacht).","tl","cf","De Kristallnacht was geweld tegen Joden (terreur). Het is een gevolg van de rassenleer: de nazi's zagen Joden als minderwaardig."],
+ ["Boeken van schrijvers met kritiek op de nazi's worden verbrand op een groot plein, met publiek, vlaggen en toespraken.","cp","fw","Het verbieden van de boeken is censuur. Het openbare spektakel is propaganda: het laat zien wat de nazi's willen."]
+];
+/* Examenbronnen (gl/tl) bij Totalitair Duitsland. Koppeling aan begrippen en afleiders door Claude gekozen: docent graag controleren. [examen, bron, goede begrippen, afleiders, uitleg] */
+const TDB=[
+ ["t2025-2",9,"gi","ct","De Hitlerjugend neemt de jeugdverenigingen over (gelijkschakeling) en leert de jongens de ideeën en liederen van de nazi's (indoctrinatie). Dit antwoord staat ook in het correctievoorschrift van het examen."],
+ ["t2023-1",9,"vi","cw","Kleuters bidden tot de Führer: ze leren de leider te vereren (persoonsverheerlijking) en nemen de ideeën van de nazi's al op jonge leeftijd over (indoctrinatie)."],
+ ["t2026-1",12,"v","cwl","De Duitser spreekt over ‘onze geliefde leider’ en zou zijn leven geven voor de Führer. Dat is persoonsverheerlijking. Dit staat ook in het examen."],
+ ["t2026-2",12,"iv","cw","Op school moeten kinderen tekenen wat ze ‘aan de Führer te danken hebben’. Ze leren alleen de ideeën van de nazi's (indoctrinatie) en de leider wordt als weldoener neergezet (persoonsverheerlijking). Dit antwoord staat ook in het examen."],
+ ["t2024-2",9,"t","civ","Jongens vernielen Joods bezit en jagen op Joden, terwijl de politie een dag lang niet ingrijpt. Zo zaaien de nazi's angst met geweld en dreiging: terreur."],
+ ["t2026-2",11,"w","cvf","De familie verliest burgerrechten en mag niet trouwen met niet-Joden. Met zulke wetten maken de nazi's van Joden tweederangsburgers: rassenwetten (de Neurenberger Wetten, 1935)."],
+ ["t2026-2",14,"p","fwl","De knokploeg speelt de fakkeloptocht na voor de camera, zodat het in het bioscoopjournaal lijkt alsof er veel meer aanhangers waren. Dat is propaganda. Dit antwoord staat ook in het examen."],
+ ["t2024-1",13,"pi","tw","Hitlers toespraak op de radio en in het bioscoopjournaal is propaganda. Op school moeten de kinderen de nieuwe grenzen tekenen en berichten plakken: zo nemen ze de ideeën van de nazi's over (indoctrinatie)."]
+];
+function tdBron(ex,n){ const b=exData().bron[ex][n]; if(!b) return ""; return `<p class="kbronlbl">Bron uit het centraal examen ${exLabel(ex)}</p>`+(b.img?`<img class="kbronimg" src="${b.img}" alt="Bron uit het examen ${exLabel(ex)}">`:bronTekst(ex+"|"+n,b.t,"kbrontxt")); }
+function grTotDu(back){
+  back=typeof back==="function"?back:kaMenu;
+  const tl=S.niveau==="tl"&&typeof exData==="function";
+  const bq=tl?shuffle(TDB.slice()).slice(0,3).map(x=>{ const [ex,n,r,d,u]=x, R=r.split(""), D=d.split(""), names=R.map(k=>TD_B[k][0]);
+    return {id:"tdb:"+ex+"|"+n,c:9,ask:"Welk begrip hoort bij deze bron?",qhtml:tdBron(ex,n),opts:shuffle([...R,...D].map(k=>({id:k,label:TD_B[k][0]}))),right:R,
+      uitleg:`<strong>${R.length>1?"Beide goed: "+otEsc(names[0])+" en "+otEsc(names[1].toLowerCase()):otEsc(names[0])}.</strong> ${otEsc(u)}`,
+      review:`Bron uit het examen ${otEsc(exLabel(ex))}: <strong>${names.map(otEsc).join(" / ")}</strong>`}; }):[];
+  const qs=shuffle([...shuffle(TDS.slice()).slice(0,10-bq.length).map(x=>{ const [sit,r,d,u]=x, R=r.split(""), D=d.replace(/ /g,"").split("");
+    const opts=shuffle([...R,...D].map(k=>({id:k,label:TD_B[k][0]})));
+    const names=R.map(k=>TD_B[k][0]);
+    return {id:"tdu:"+TDS.indexOf(x),c:9,ask:"Welk begrip hoort bij deze situatie?",q:sit,or:true,opts,right:R,
+      uitleg:`<strong>${R.length>1?"Beide goed: "+otEsc(names[0])+" en "+otEsc(names[1].toLowerCase()):otEsc(names[0])}.</strong> ${otEsc(u)}`,
+      review:`${otEsc(sit)} <strong>${names.map(otEsc).join(" / ")}</strong>`}; }),...bq]);
+  otStyle(); mcEx({title:"Totalitair Duitsland",qs,back,again:()=>grTotDu(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De begrippen in het kort</h3><ul>${Object.keys(TD_B).map(k=>`<li><strong>${otEsc(TD_B[k][0])}:</strong> ${otEsc(TD_B[k][1])}</li>`).join("")}</ul></div>`});
+}
+ICONS["m:totdu"]='<path d="M8.5 3H15.5L14 10L21 8.5V15.5L14 14L15.5 21H8.5L10 14L3 15.5V8.5L10 10Z"/>';
+if(SHOW_TOTDU){
+  kaAddTile({m:"totdu",tv:9,ka:38,tvNaam:"Tijd van de wereldoorlogen",title:"Totalitair Duitsland",sub:"Je leest een situatie uit Duitsland na 1933 en kiest het begrip dat erbij past, zoals gelijkschakeling, censuur of propaganda. (KA 38: totalitaire ideologieën)",go:grTotDu});
+  const _htd=hcMenu;
+  hcMenu=function(){ _htd.apply(this,arguments); const H=S.hc; if(!H||H.niveau!=="tl"||!(H.id==="interbellum"||(H.parts||[]).includes("interbellum"))) return;
+    const ref=app.querySelector('.list > [data-m="keten"]'); if(!ref) return;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="totdu";
+    b.innerHTML='<span class="txt"><strong>Totalitair Duitsland</strong><span class="sub">Je leest een situatie uit Duitsland na 1933 en kiest het begrip dat erbij past, zoals gelijkschakeling, censuur of propaganda.</span></span>';
+    ref.insertAdjacentElement("afterend",b); b.onclick=()=>grTotDu(hcMenu); if(typeof decorate==="function") decorate(); };
+  /* havo/vwo: historische context Duitsland in Europa, deelcontext 1 (opkomst nationaalsocialisme) */
+  const _htd2=hcMenu;
+  hcMenu=function(){ _htd2.apply(this,arguments); const H=S.hc; if(!H||H.niveau==="tl") return; const DU=["duitsland","duitsland-h"];
+    const ok=H.dv.some(d=>S.dvSel.has(d.nr)&&(H.parts?(DU.includes(d.src)&&d.srcNr===1):(DU.includes(H.id)&&d.nr===1))); if(!ok) return;
+    const ref=app.querySelector('.list > [data-m="keten"]')||app.querySelector('.list > .item'); if(!ref||app.querySelector('[data-m="totdu"]')) return;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="totdu";
+    b.innerHTML='<span class="txt"><strong>Totalitair Duitsland</strong><span class="sub">Je leest een situatie uit Duitsland na 1933 en kiest het begrip dat erbij past, zoals gelijkschakeling, censuur of propaganda.</span></span>';
+    ref.insertAdjacentElement("afterend",b); b.onclick=()=>grTotDu(hcMenu); if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Kolonie Quiz (tijdvak 8, havo en vwo bovenbouw, KA 33 modern imperialisme): Welk moederland? / Klik de kolonie / Noem de kolonie ---------- */
 /* Kaart: huidige landsgrenzen (Natural Earth via world-atlas, vereenvoudigd). Indeling in koloniën rond 1900 en de toelichtingen zijn door Claude samengesteld: docent graag controleren. */
