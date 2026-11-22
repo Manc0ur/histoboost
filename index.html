@@ -3137,6 +3137,13 @@ function wbiSim(p,cands,n,scopeId){
   let out=[]; for(const T of tiers){ if(out.length>=n) break; out=out.concat(simPersons(p,T,n-out.length,scopeId,q=>{ const g=wbiGap(pe,wbiEra(q.h[0])); return (g===null?0:1.0*Math.max(0,1-g/90))+.7*Object.keys(q.hc).filter(k=>p.hc[k]).length/Math.max(1,Object.keys(p.hc).length)+(/sovjet|rusland/.test(dNorm(p.h.join()))&&/sovjet|rusland/.test(dNorm(q.h.join()))?.8:0); })); }
   return out; }
 function simBegrippen(b,all,n){ return pickSim(b,all.filter(x=>x!==b),n,{text:x=>x.b,ctx:x=>x.d,near:x=>x.dv===b.dv?1:0}); }
+/* afleiders: tweederde uit de eigen groep, een derde uit een andere groep; afwisselend, zodat de eerste drie al 2+1 zijn */
+function mixSim(correct,q,own,other,n){
+  const f=(L,m)=>pickSim({s:correct,near:1},L,m,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
+  const ps=f(own,Math.ceil(n*2/3)), pe=f(other,Math.max(1,Math.floor(n/3))).filter(x=>!ps.includes(x)), mix=[];
+  for(let i=0;i<Math.max(ps.length,pe.length*2);i++){ if(ps[2*i]!==undefined) mix.push(ps[2*i]); if(ps[2*i+1]!==undefined) mix.push(ps[2*i+1]); if(pe[i]!==undefined) mix.push(pe[i]); }
+  return mix.length>=Math.min(n,3)?mix.slice(0,n):null;
+}
 function simSteps(k,stepIdx,correct,allKetens,n){
   // stappen uit dezelfde keten (behalve vraag en goed antwoord) en uit vergelijkbare ketens
   const q=k.stappen[stepIdx], pool=[];
@@ -3147,7 +3154,15 @@ function simSteps(k,stepIdx,correct,allKetens,n){
   if(k.tv!=null&&k.dv==null){ /* kenmerkende aspecten: liever afleiders uit een naastliggend tijdvak, maar over een ander onderwerp */
     const W=t=>(t.toLowerCase().match(/[a-zà-ÿ]{6,}/g)||[]).map(w=>w.slice(0,6)), mine=new Set(W(k.titel+" "+k.stappen.join(" ")));
     const era=[]; allKetens.filter(o=>o!==k&&o.tv!=null&&Math.abs(o.tv-k.tv)===1).forEach(o=>{ const ow=W(o.titel+" "+o.stappen.join(" ")); if(ow.some(w=>mine.has(w))) return; o.stappen.filter(x=>!k.stappen.includes(x)).forEach(x=>era.push({s:x,near:.3})); });
+    /* liefst twee van de drie afleiders uit hetzelfde tijdvak (andere keten, ander onderwerp), een uit een naastliggend tijdvak */
+    const same=[]; allKetens.filter(o=>o!==k&&o.tv===k.tv).forEach(o=>{ const ow=W(o.titel+" "+o.stappen.join(" ")); if(ow.some(w=>mine.has(w))) return; o.stappen.filter(x=>!k.stappen.includes(x)).forEach(x=>same.push({s:x,near:.6})); });
+    if(same.length>=3&&era.length>=2){ const m=mixSim(correct,q,same,era,n); if(m) return m; }
     if(era.length>=n+3) use=era; }
+  if(k.dv!=null&&S.hc&&S.hc.dv){ /* historische contexten: afleiders uit dezelfde context (andere keten, ander onderwerp), een uit een andere context of deelvraag */
+    const W=t=>(t.toLowerCase().match(/[a-zà-ÿ]{6,}/g)||[]).map(w=>w.slice(0,6)), mine=new Set(W(k.titel+" "+k.stappen.join(" "))), src=o=>(S.hc.dv[o.dv-1]||{}).src;
+    const own=[], oth=[]; allKetens.filter(o=>o!==k).forEach(o=>{ const ow=W(o.titel+" "+o.stappen.join(" ")); if(ow.some(w=>mine.has(w))) return; const same=src(o)===src(k)&&o.dv!==k.dv; o.stappen.filter(x=>!k.stappen.includes(x)).forEach(x=>(same?own:oth).push({s:x,near:same?.6:.3})); });
+    const o2=own.length>=3?own:own.concat(oth);
+    if(o2.length>=3){ const m=mixSim(correct,q,o2,oth.length?oth:o2,n); if(m) return m; } }
   return pickSim({s:correct,near:1},use,n,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
 }
 function simPlaces(m,all,n){
@@ -7011,7 +7026,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261122175056"; let last=0, shown=false;
+  const BUILD="20261122180509"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
