@@ -3971,7 +3971,7 @@ function hcGalgje(seen){
   if(!fresh.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
   const tags=[...new Set(fresh.map(x=>x.tag))], tg=tags[Math.floor(Math.random()*tags.length)];
   const item=pickN(fresh.filter(x=>x.tag===tg),1)[0]; seen.add(item.w);
-  const target=norm(item.w), MAX=6, guessed=new Set(); let wrong=0, done=false, hint=false; const hintOn=!!(H.ob||H.niveau==="tl");
+  const target=norm(item.w), MAX=6, guessed=new Set(); let wrong=0, done=false, hint=false; const hintOn=true;
   const isLetter=c=>/[A-Z]/.test(c);
   const letters=[...new Set(target.split("").filter(isLetter))];
   const won=()=>letters.every(l=>guessed.has(l));
@@ -7041,7 +7041,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123154232"; let last=0, shown=false;
+  const BUILD="20261123154403"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
