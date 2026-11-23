@@ -3971,7 +3971,7 @@ function hcGalgje(seen){
   if(!fresh.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
   const tags=[...new Set(fresh.map(x=>x.tag))], tg=tags[Math.floor(Math.random()*tags.length)];
   const item=pickN(fresh.filter(x=>x.tag===tg),1)[0]; seen.add(item.w);
-  const target=norm(item.w), MAX=6, guessed=new Set(); let wrong=0, done=false;
+  const target=norm(item.w), MAX=6, guessed=new Set(); let wrong=0, done=false, hint=false; const hintOn=!!(H.ob||H.niveau==="tl");
   const isLetter=c=>/[A-Z]/.test(c);
   const letters=[...new Set(target.split("").filter(isLetter))];
   const won=()=>letters.every(l=>guessed.has(l));
@@ -3991,6 +3991,7 @@ function hcGalgje(seen){
     <div class="gal">
       <svg viewBox="0 0 150 160" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-label="Galg, ${wrong} van ${MAX} fouten"><path d="M20 150h70M40 150V12h45v22"/>${parts(wrong)}</svg>
       <div class="galinfo"><div class="galcat" role="note">Categorie: <strong>${item.tag}</strong></div>
+      ${hintOn&&!done?(hint?`<div class="note galclue" role="note" style="margin:.5rem 0"><strong>Hint:</strong> ${esc(item.clue.replace(/\.\.$/,"."))}</div>`:`<button type="button" class="btn ghost" id="ghint" style="margin:.5rem 0">Toon hint</button>`):""}
       <div class="galword" style="--n:${longest}" aria-label="Het woord, ${words.length} ${words.length===1?"woord":"woorden"}, ${item.w.length} tekens">${wordHtml}</div>
       ${done?"":`<div class="note">Nog ${MAX-wrong} ${MAX-wrong===1?"fout":"fouten"} mogelijk</div>`}</div>
     </div>
@@ -4000,6 +4001,7 @@ function hcGalgje(seen){
     <form id="gform" class="row" style="margin-top:1rem;gap:.5rem;align-items:center" autocomplete="off"><input id="gin" type="text" aria-label="Weet je het hele woord? Typ het hier" placeholder="Weet je het woord? Typ het hier" autocapitalize="off" autocorrect="off" spellcheck="false" style="flex:1 1 14rem;min-width:0;padding:.65rem .8rem;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:1.05rem"><button class="btn" type="submit">Raad het woord</button></form><div id="gmsg" role="status" class="note" style="margin-top:.5rem"></div>`}`;
     app.querySelector("#back").onclick=()=>{ document.removeEventListener("keydown",kd); hcMenu(); };
     const nx=app.querySelector("#next"); if(nx) nx.onclick=()=>{ document.removeEventListener("keydown",kd); hcGalgje(seen); };
+    const gh=app.querySelector("#ghint"); if(gh) gh.onclick=()=>{ hint=true; draw(); };
     app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>guess(b.dataset.l));
     const gf=app.querySelector("#gform"); if(gf) gf.onsubmit=e=>{ e.preventDefault(); guessWord(app.querySelector("#gin").value); };
     if(done){ document.removeEventListener("keydown",kd); }
@@ -5613,8 +5615,8 @@ function peOrder(list,first){
   });
 }
 function peKey(q){ const t=peTvOf(q), sc=(typeof EXSCOPE!=="undefined"&&EXSCOPE&&EXSCOPE.size)?[...EXSCOPE].map(Number):[], i=t.filter(x=>sc.includes(x)); return Math.min(...(i.length?i:t)); }
-function peSelect(pool,target,cls){
-  cls=cls||(()=>"H");
+function peSelect(pool,target,cls,keyFn){
+  cls=cls||(()=>"H"); keyFn=keyFn||peKey;
   const mixed=pool.some(q=>cls(q)==="H")&&pool.some(q=>cls(q)!=="H");
   const dev=(h,n)=>n?Math.abs(h/n-2/3):1;
   let best=null;
@@ -5623,7 +5625,7 @@ function peSelect(pool,target,cls){
     const first=ch.length?ch[Math.floor(Math.random()*ch.length)]:null;
     const out=first?[first]:[]; let tot=first?first.cv.max:0, nH=first&&cls(first)==="H"?1:0, nT=first&&cls(first)!=="H"?1:0;
     const G={H:{},T:{},X:{}}, got={};
-    shuffle(pool.filter(x=>x!==first&&!(first&&exType(x)==="Chronologie"))).forEach(q=>{ const c=cls(q), k=peKey(q); (G[c][k]=G[c][k]||[]).push(q); got[k]=0; });
+    shuffle(pool.filter(x=>x!==first&&!(first&&exType(x)==="Chronologie"))).forEach(q=>{ const c=cls(q), k=keyFn(q); (G[c][k]=G[c][k]||[]).push(q); got[k]=0; });
     const fits=c=>Object.keys(G[c]).filter(k=>G[c][k].some(q=>tot+q.cv.max<=target));
     while(tot<target){
       /* Verhouding 2:1. Zijn er geen vragen (meer) van de gewenste soort, dan nemen we de andere soort. */
@@ -5641,6 +5643,14 @@ function peSelect(pool,target,cls){
   }
   return peOrder(best.out,best.first);
 }
+/* Proefexamen over historische contexten: de vragen worden verdeeld over de gekozen deelvragen (niet over tijdvakken), zodat elke deelvraag ongeveer evenveel punten krijgt.
+   Hoort een vraag bij meer deelvragen, dan telt ze mee voor de deelvraag met de minste vragen. */
+function peDvKey(scope,pool){
+  if(scope!=="hc"||peCls(scope)) return null; const H=S.hc; if(!H||!H.dv||(S.dvSel.size<2)) return null;
+  const keep=S.dvSel, mem=new Map(), cnt={};
+  try{ for(const n of keep){ S.dvSel=new Set([n]); const ks=new Set(hcExamList(false).map(q=>q.ex+"#"+q.nr+(q.deel||""))); cnt[n]=ks.size; ks.forEach(k=>{ if(!mem.has(k)) mem.set(k,[]); mem.get(k).push(n); }); } } finally { S.dvSel=keep; }
+  return q=>{ const ds=mem.get(q.ex+"#"+q.nr+(q.deel||"")); if(!ds||!ds.length) return "x"; return "d"+ds.slice().sort((a,b)=>cnt[a]-cnt[b]||a-b)[0]; };
+}
 function peStop(scope){ if(PE&&PE.iv) clearInterval(PE.iv); peToastOff(); PE=null; (scope==="ex"?exMenu:scope==="ka"?kaMenu:hcMenu)(); }
 const peMpp=()=>exNiv()==="tl"?120/65:2.5;
 const peMin=n=>exNiv()==="tl"?Math.round(n*peMpp()):n*2.5;
@@ -5654,7 +5664,7 @@ function proefMenu(scope){
   const def=sizes.includes(30)?30:sizes[sizes.length-1];
   app.innerHTML=`<button class="back" id="back">‹ Terug naar ${scope==="ex"?"examenvragen":"oefeningen"}</button>
   <h2>Proefexamen</h2>
-  <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat de tijdvakken (of hoofdstukken) ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste.${peCls(scope)?` Je hebt historische contexten én ${scope==="ex"?"tijdvakken of perioden":"tijdvakken"} gekozen. Net als op het echte examen gaan ongeveer twee op de drie vragen over de historische contexten: voor elke vraag over de tijdvakken krijg je twee contextvragen (zolang die er zijn).`:""} Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
+  <p class="lead">Je maakt een proefexamen met echte vragen uit de centrale examens over jouw stof. De vragen worden willekeurig gekozen en daarna op volgorde van tijd gezet, zoals op het examen. Ze worden zo gekozen dat ${scope==="hc"&&S.dvSel.size>1&&!peCls(scope)?"de deelvragen":"de tijdvakken (of hoofdstukken)"} ongeveer evenveel aan bod komen. Is er een chronologievraag die past bij jouw stof, dan staat die als eerste.${peCls(scope)?` Je hebt historische contexten én ${scope==="ex"?"tijdvakken of perioden":"tijdvakken"} gekozen. Net als op het echte examen gaan ongeveer twee op de drie vragen over de historische contexten: voor elke vraag over de tijdvakken krijg je twee contextvragen (zolang die er zijn).`:""} Tijdens het examen zie je geen correctievoorschrift: dat krijg je pas nadat je hebt ingeleverd.</p>
   <section class="section"><h3>Hoe lang?</h3>
    <div class="row" style="margin-top:.6rem"><label>Aantal punten <select id="pn" class="sel">${sizes.map(n=>`<option value="${n}" ${n===def?"selected":""}>${n} punten · ${peFmtMin(peMin(n))}${n===MAXP?" (zo lang als het echte examen)":""}${n===tot&&tot<=MAXP&&!base_.includes(n)?" (alle vragen)":""}</option>`).join("")}</select></label></div>
    <p style="color:var(--muted);margin:.5rem 0 0">${isTL_?"Zoals op het examen: <strong>65 punten in 120 minuten</strong>, dus ongeveer 1,85 minuut per punt (2 punten = ruim 3,5 minuten).":"Zoals op het examen: <strong>1 punt = 2,5 minuut</strong>, dus 2 punten = 5 minuten."} Er zijn ${pool.length} vragen beschikbaar (${tot} punten).</p>
@@ -5667,7 +5677,7 @@ function proefMenu(scope){
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start het proefexamen</button></div>
   </section>`;
   app.querySelector("#back").onclick=back;
-  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope)); if(!list.length) return; const m=(app.querySelector('input[name="pmode"]:checked')||{}).value||"timer"; peStart(scope,list,m,+app.querySelector("#prem").value); };
+  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope),peDvKey(scope,pool)); if(!list.length) return; const m=(app.querySelector('input[name="pmode"]:checked')||{}).value||"timer"; peStart(scope,list,m,+app.querySelector("#prem").value); };
   app.querySelector("#prem").onchange=()=>{ app.querySelector('input[name="pmode"][value="remind"]').checked=true; };
   window.scrollTo(0,0);
 }
@@ -7031,7 +7041,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123143126"; let last=0, shown=false;
+  const BUILD="20261123154232"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8401,7 +8411,24 @@ const RECHTEN=[
  ["Een Kamerlid wil aan een wetsvoorstel over huurwoningen een extra regel toevoegen: verhuurders moeten een energielabel laten zien.","amendement","Ook iets toevoegen aan een wetsvoorstel van de regering is een amendement."],
  ["Een Kamerlid vindt dat jongeren onder de 16 jaar geen energiedrank mogen kopen. Er bestaat nog geen wetsvoorstel over energiedrank, dus het Kamerlid maakt zelf een wetsvoorstel.","initiatief","Het Kamerlid wijzigt geen bestaand voorstel. Het Kamerlid maakt een nieuw wetsvoorstel."]
 ];
+const RECHT_UITLEG=[
+ ["Recht van budget","budget","Het parlement beslist over de begroting van de regering: hoeveel geld de overheid binnenkrijgt en uitgeeft.","De Tweede én de Eerste Kamer"],
+ ["Recht van enquête","enquete","Het parlement doet zelf onderzoek naar een misstand en verhoort getuigen onder ede.","De Tweede én de Eerste Kamer"],
+ ["Recht van interpellatie","interpellatie","Een Kamerlid roept een minister op voor een apart debat over één onderwerp.","De Tweede én de Eerste Kamer"],
+ ["Recht van initiatief","initiatief","Een Kamerlid maakt zelf een nieuw wetsvoorstel, zonder dat de regering dat doet.","Alleen de Tweede Kamer"],
+ ["Recht van amendement","amendement","Een Kamerlid stelt voor een wetsvoorstel van de regering te wijzigen.","Alleen de Tweede Kamer"]];
+/* De uitleg bij de vijf rechten is door Claude geschreven op basis van de examenstof: docent graag controleren. */
 function tlRechten(back){
+  back=typeof back==="function"?back:hcMenu;
+  app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+  <h2>Welk recht?</h2>
+  <p class="lead">Het parlement heeft rechten om de regering te controleren en wetten te maken. Lees eerst kort wat elk recht inhoudt en welke Kamer het heeft.</p>
+  <div class="list" style="gap:.6rem;margin-top:1rem">${RECHT_UITLEG.map(r=>`<div class="item" style="display:block;cursor:default"><strong>${esc(r[0])}</strong><span class="sub" style="display:block;margin-top:.2rem">${esc(r[2])}</span><span class="sub" style="display:block;margin-top:.25rem"><strong>Wie heeft dit recht:</strong> ${esc(r[3])}</span></div>`).join("")}</div>
+  <p class="note" style="margin-top:1rem">De Eerste Kamer kan een wetsvoorstel alleen aannemen of verwerpen. Zij kan het niet veranderen en zelf geen wetsvoorstel maken.</p>
+  <div class="row" style="margin-top:1.2rem"><button class="btn" id="rstart">Start de oefening</button></div>`;
+  app.querySelector("#back").onclick=back; app.querySelector("#rstart").onclick=()=>tlRechtenGo(back); window.scrollTo(0,0);
+}
+function tlRechtenGo(back){
   back=typeof back==="function"?back:hcMenu;
   let pick=shuffle(RECHTEN.slice()).slice(0,10);
   if(!pick.some(x=>x[1]==="geen")){ const g=shuffle(RECHTEN.filter(x=>x[1]==="geen"))[0]; pick[pick.length-1]=g; pick=shuffle(pick); }
@@ -8414,7 +8441,7 @@ function tlRechten(back){
       uitleg:RECHT_KAMER[r]==="tk"?`<strong>Alleen de Tweede Kamer.</strong> De rechten van initiatief en amendement heeft alleen de Tweede Kamer. De Eerste Kamer kan een wetsvoorstel alleen aannemen of verwerpen.`:`<strong>De Tweede én de Eerste Kamer.</strong> De rechten van budget, enquête en interpellatie hebben beide Kamers.`,
       review:`${otEsc(RECHT_NAAM[r])}: <strong>${RECHT_KAMER[r]==="tk"?"alleen de Tweede Kamer":"de Tweede én de Eerste Kamer"}</strong>`});
   });
-  otStyle(); mcEx({title:"Welk recht?",qs,back,again:()=>tlRechten(back)});
+  otStyle(); mcEx({title:"Welk recht?",qs,back,again:()=>tlRechtenGo(back)});
 }
 ICONS["m:rechten"]='<path d="M12 3v18M5 21h14"/><path d="M4 7h16"/><path d="M6 7l-3 7a3 3 0 006 0L6 7zM18 7l-3 7a3 3 0 006 0l-3-7z"/>';
 if(SHOW_RECHTEN){ const _hr=hcMenu;
