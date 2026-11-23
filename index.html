@@ -3487,7 +3487,7 @@ const LNK_EALIAS={"steden:1302":["Guldensporenslag"],"steden:1602":["oprichting 
 /* eigen omschrijvingen per context (gaan voor algemene begrippen) */
 const LNK_OWN={"steden":[["Republiek der Zeven Verenigde Nederlanden",["Republiek","Nederlandse Republiek"],"De staat die de zeven noordelijke gewesten na de Opstand vormden (vanaf 1588). Er werd geen nieuwe landsheer gezocht: het werd een confederatie, waarin de gewesten veel eigen bevoegdheden hielden en het overkoepelend bestuur, de Staten-Generaal, zwak was. Regenten bestuurden de steden en gewesten; de stadhouder was opperbevelhebber."]]};
 /* woorden die in een context naar een bestaand begrip van die context moeten verwijzen */
-const LNK_BALIAS={"duitsland":{"Republiek":"Republiek van Weimar"},"duitsland-h":{"Republiek":"Republiek van Weimar"}};
+const LNK_BALIAS={"duitsland":{"Republiek":"Republiek van Weimar"},"duitsland-h":{"Republiek":"Republiek van Weimar"},"gr":{"burgers":"Burger","burgerrechten":"Burgerrecht","stadstaten":"Stadstaat","mythen":"Mythe","consuls":"Consul","bondgenoten":"Bondgenoot","keizers":"Keizer"}};
 const reEsc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 function lnkDict(H,base){
   const items=[], map=new Map(), ev=[], begr=new Map(), pIt=new Map();
@@ -7031,7 +7031,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123142525"; let last=0, shown=false;
+  const BUILD="20261123143126"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7307,12 +7307,12 @@ const _sylHC=sylHC; sylHC=function(H){ if(H.ob){ SYL=null; return; } _sylHC(H); 
 /* lees-scherm voor Onderbouw */
 function obList(items,D,used){ return `<ul>${items.map(x=>`<li>${lnkHtml(esc(x),D,used)}</li>`).join("")}</ul>`; }
 function obDoelen(arr,D,used,open){ if(!arr||!arr.length) return "";
-  return `<details class="obdoelen"${open?" open":""}><summary>Leerdoelen</summary><ul>${arr.map(g=>`<li>${esc(g.t)}${g.pts?`<ul>${g.pts.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}</li>`).join("")}</ul></details>`; }
-function obArticles(H,dvs,D){ return dvs.map(d=>{ const used=new Set(); let h="",ul=[];
+  return `<details class="obdoelen"${open?" open":""}><summary>Leerdoelen</summary><ul>${arr.map(g=>`<li>${lnkHtml(esc(g.t),D,used)}${g.pts?`<ul>${g.pts.map(p=>`<li>${lnkHtml(esc(p),D,used)}</li>`).join("")}</ul>`:""}</li>`).join("")}</ul></details>`; }
+function obArticles(H,dvs,D){ return dvs.map(d=>{ const used=new Set(); const dh=obDoelen(d.doelen,D,used,true); let h="",ul=[];
   const flush=()=>{ if(ul.length){ h+=`<ul class="oblist">${ul.map(x=>`<li>${lnkHtml(esc(x),D,used)}</li>`).join("")}</ul>`; ul=[]; } };
   d.tekst.forEach(p=>{ if(p.startsWith("• ")){ ul.push(p.slice(2)); return; } flush();
     h+=p.startsWith("## ")?`<h4 class="obh">${esc(p.slice(3))}</h4>`:`<p>${lnkHtml(esc(p),D,used)}</p>`; }); flush();
-  return `<article class="dv" id="tll-${d.nr}" style="--c:${col(d.c)}"><h3>${esc(d.vraag)} (${esc(d.periode)})</h3>${obDoelen(d.doelen,D,used,true)}${h}</article>`; }).join(""); }
+  return `<article class="dv" id="tll-${d.nr}" style="--c:${col(d.c)}"><h3>${esc(d.vraag)} (${esc(d.periode)})</h3>${dh}${h}</article>`; }).join(""); }
 function obLees(){ if(LEESVID) return leesVideos(); if(LEESOV) return leesOverzicht();
   const H=S.hc, L=leesBuild(H,(g,D)=>obArticles(g.P,g.dvs,D));
   app.innerHTML=`<div class="tll lnk" id="tll"><button class="back" id="back">‹ Terug naar oefeningen</button>
