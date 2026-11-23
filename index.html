@@ -4820,7 +4820,7 @@ const VAARD = [
  {id:"betr",titel:"Betrouwbaarheid en representativiteit",sub:"De bruikbaarheid van bronnen afwegen",et:"15",qs:[
   ["Je onderzoekt hoe de slag bij Waterloo (1815) verliep. Welke maker was het best geïnformeerd?",["Een officier die de slag meemaakte en er kort daarna verslag van deed","Een dichter die er twintig jaar later een gedicht over schreef","Een Groningse boer die het hoorde van een marskramer","Een historicus uit 1990"],0,"Wie was erbij en schreef het snel op?","Geïnformeerdheid is een belangrijk criterium: ooggetuigen die kort na de gebeurtenis schrijven, weten meestal meer. Let wel op hun standplaats."],
   ["Een propagandaposter uit nazi-Duitsland toont blije arbeiders. Waarom is de poster onbetrouwbaar als bron over de werkelijke omstandigheden?",["De opdrachtgever wilde een positief beeld geven om mensen te overtuigen.","De maker was geen Duitser en kende de omstandigheden niet.","Posters zijn altijd onbetrouwbaar, welke vraag je ook stelt.","De poster is te oud om nog iets over de nazitijd te zeggen."],0,"Wat was de bedoeling van de opdrachtgever?","Kijk naar de bedoeling van maker en opdrachtgever. Voor de vraag hoe het regime zich wilde presenteren is de poster juist wél bruikbaar."],
-  ["Voor welke vraag is diezelfde propagandaposter wel betrouwbaar en bruikbaar?",["Hoe wilde het naziregime de arbeiders aanspreken?","Hoeveel verdienden Duitse arbeiders?","Waren Duitse arbeiders tevreden?","Hoeveel fabrieken had Duitsland?"],0,"Zegt deze bron iets over de werkelijkheid of over de boodschap?","Bruikbaarheid hangt af van de vraag. Een bron die onbetrouwbaar is over de feiten, kan betrouwbaar zijn over de bedoeling van de maker."],
+  ["Een propagandaposter uit nazi-Duitsland toont blije arbeiders. Voor welke vraag is deze poster wel betrouwbaar en bruikbaar?",["Hoe wilde het naziregime de arbeiders aanspreken?","Hoeveel verdienden Duitse arbeiders?","Waren Duitse arbeiders tevreden?","Hoeveel fabrieken had Duitsland?"],0,"Zegt deze bron iets over de werkelijkheid of over de boodschap?","Bruikbaarheid hangt af van de vraag. Een bron die onbetrouwbaar is over de feiten, kan betrouwbaar zijn over de bedoeling van de maker."],
   ["Een rijke Amsterdamse koopman schrijft in 1650 dat het de Republiek goed gaat. Waarom is deze bron niet representatief voor de hele bevolking?",["Hij beschrijft vooral zijn eigen situatie; armere groepen konden het anders ervaren.","Hij schreef de brief niet zelf, maar liet hem door een ander opstellen.","Een brief van één persoon is altijd onbetrouwbaar.","Hij woonde niet in Amsterdam maar in een kleine plattelandsplaats."],0,"Gold zijn ervaring voor iedereen in de Republiek?","Representativiteit gaat over de vraag of de bron voor meer mensen en situaties geldt. Een rijke koopman spreekt niet namens arbeiders of boeren."],
   ["Je onderzoekt wat Nederlanders in 1949 vonden van de onafhankelijkheid van Indonesië. Welke bron is het meest representatief?",["Een opiniepeiling onder een grote, gevarieerde groep Nederlanders","Een brief van één oud-planter","Een toespraak van de minister-president","Een interview met één soldaat"],0,"Hoeveel en welke mensen komen er in de bron aan het woord?","Hoe groter en gevarieerder de groep, hoe representatiever. Eén persoon spreekt alleen voor zichzelf."],
   ["Welke vragen stel je om de betrouwbaarheid van een bron te beoordelen?",["Wie maakte de bron, wanneer, met welk doel en voor welk publiek?","Hoe lang is de bron en in welke taal is hij geschreven?","Welke kleur heeft de bron en hoe is hij bewaard?","Waar ligt de bron nu en wie heeft hem gekocht?"],0,"Denk aan maker, moment, bedoeling en publiek.","Deze vragen helpen je de context, geïnformeerdheid, standplaats en bedoeling van de maker te beoordelen."],
@@ -7026,7 +7026,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123072103"; let last=0, shown=false;
+  const BUILD="20261123133509"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8553,6 +8553,53 @@ if(SHOW_TOTDU){
     const b=document.createElement("button"); b.className="item"; b.dataset.m="totdu";
     b.innerHTML='<span class="txt"><strong>Totalitair Duitsland</strong><span class="sub">Je leest een situatie uit Duitsland na 1933 en kiest het begrip dat erbij past, zoals gelijkschakeling, censuur of propaganda.</span></span>';
     ref.insertAdjacentElement("afterend",b); b.onclick=()=>grTotDu(hcMenu); if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Stadsvergelijker (vwo, historische context Steden en burgers in de Lage Landen): welke stad is het? De situaties zijn door Claude samengesteld uit de stofomschrijving: docent graag controleren. ---------- */
+const SHOW_STAD=false; /*live: uit, tot akkoord*/
+const STAD_N={a:"Atrecht",b:"Brugge",w:"Antwerpen",m:"Amsterdam"};
+const STAD_K={a:["Atrecht","1050–1302","Bisschopsstad en startpunt van de stedelijke dynamiek. Centrum van de lakennijverheid, met jaarmarkten in Frankrijk en koopliedengilden. Tegen 1300 overvleugeld door Vlaamse steden."],
+ b:["Brugge","1300–1500","Handelscentrum van het Vlaamse en Brabantse netwerk, aan de Noordzee en gericht op de Hanze, Spanje en Italië. Eerste koopmansbeurs. Verloor in de 15e eeuw de centrale positie aan Antwerpen."],
+ w:["Antwerpen","1450–1585","Goed verbonden met het achterland en toegankelijk voor grote zeeschepen. Centrum van de handel met de Spaanse en Portugese koloniën. Verloor na 1585 de stapelmarktfunctie door de opstand."],
+ m:["Amsterdam","1350–1700","Eerst haven voor de graanhandel met de Oostzee, daarna door de val van Antwerpen en arbeidsmigranten de grootste stad van de Republiek. Stapelmarkt, koopmansbeurs, grachtengordel. Na 1672 verloor Amsterdam leiding aan Londen."]};
+/* [dv, antwoord, situatie, uitleg] */
+const STAD_S=[
+ [1,"a","Door de hoge landbouwproductiviteit en de schapenhouderij in de omgeving werd deze bisschopsstad een centrum van de lakennijverheid.","Atrecht was het startpunt van de stedelijke dynamiek in de Nederlandse gewesten."],
+ [1,"a","Handelaren uit deze stad namen via jaarmarkten in Frankrijk deel aan een netwerk dat doorliep tot in de Italiaanse stadstaten.","Atrechtse handelaren vonden via de Franse jaarmarkten aansluiting op het Europese handelsnetwerk."],
+ [1,"a","Rijke kooplieden organiseerden zich hier in koopliedengilden en kregen door leningen aan edellieden het stadsbestuur in handen.","In Atrecht werd economische macht politieke macht."],
+ [1,"a","Rond 1300 werd deze stad als centrum van nijverheid overvleugeld door Vlaamse steden die via de Noordzee handel dreven.","Atrecht verloor haar positie aan steden als Brugge, die aan zee lagen."],
+ [1,"b","Deze stad kreeg via de Noordzee aansluiting op de handel met de Hanze en met gebieden in Spanje en Italië.","Brugge lag gunstiger dan Atrecht: aan zee, met zeeschepen die er konden komen."],
+ [2,"b","Rond 1300 vormde deze stad het handelscentrum van het netwerk van Vlaamse en Brabantse steden.","Brugge was het handelscentrum van het netwerk."],
+ [2,"b","Handelaren combineerden hier de wisselbrief en de bank tot de eerste koopmansbeurs.","Dit was de eerste koopmansbeurs. Amsterdam kreeg later zijn eigen versie."],
+ [2,"b","Deze stad werd hard aangepakt toen ze zich verzette tegen het centraliserende beleid van Maximiliaan.","Opstandige steden als Brugge kregen straf. Steden die Maximiliaan steunden, kregen privileges."],
+ [2,"b","In de 15e eeuw verloor deze stad haar centrale positie in de handel aan een andere stad, die profiteerde van de handel met de Spaanse en Portugese koloniën.","Antwerpen nam de positie van Brugge over."],
+ [2,"w","Deze stad had een goede verbinding met het Europese achterland en was bereikbaar voor de nieuwe, grotere zeeschepen.","Antwerpen kon de grote zeeschepen ontvangen en nam daardoor de positie van Brugge over."],
+ [2,"w","Deze stad nam de centrale rol over in de handel met de Spaanse en Portugese koloniën en werd het economische centrum van de Nederlanden.","Antwerpen profiteerde het meest van de koloniale handel."],
+ [2,"w","Door de opstand tegen Spanje en de blokkade van de Schelde verloor deze stad vanaf 1585 haar stapelmarktfunctie.","De opstand was in de praktijk een oorlog tegen steden. Antwerpen verloor haar stapelmarktfunctie."],
+ [2,"w","Na 1585 vertrokken veel kapitaalkrachtige inwoners van deze stad naar Holland.","Rijke Antwerpenaren en calvinisten vertrokken naar het noorden, vooral naar Amsterdam."],
+ [2,"m","In de loop van de 14e eeuw werd deze noordelijke stad een gespecialiseerde haven voor de graanhandel met het Oostzeegebied.","Amsterdam begon als graanhaven en groeide pas later uit tot wereldhandelscentrum."],
+ [3,"m","Door haar stapelmarktfunctie en een eigen koopmansbeurs kon deze stad niet anders dan zich uitbreiden, met onder andere een grachtengordel.","De grachtengordel was het gevolg van de explosieve groei van Amsterdam."],
+ [3,"m","Deze stad trok in de 17e eeuw zeer veel arbeidsmigranten aan en groeide sneller en verder dan alle andere steden van de Republiek.","De groei was het meest zichtbaar in Amsterdam."],
+ [3,"m","In deze stad vonden kunstenaars als Rembrandt een enorme markt onder rijke kooplieden.","Rijke kooplieden in Amsterdam gaven opdrachten aan kunstenaars."],
+ [3,"m","Na 1672 raakte deze stad haar rol als centrum van handel en bankwezen kwijt aan Londen.","Door concurrentie in de wereldhandel raakte de Republiek haar leidende positie kwijt."]
+];
+function grStad(back){
+  back=typeof back==="function"?back:hcMenu;
+  const H=S.hc, sel=new Set(H.parts?H.dv.filter(d=>S.dvSel.has(d.nr)&&d.src==="steden").map(d=>d.srcNr):[...S.dvSel]);
+  let pool=STAD_S.filter(x=>sel.has(x[0])); if(pool.length<5) pool=STAD_S;
+  const qs=shuffle(pool.slice()).slice(0,10).map(x=>{ const [dv,r,sit,u]=x, c=[4,5,6][dv-1];
+    return {id:"stad:"+STAD_S.indexOf(x),c,ask:"Welke stad is dit?",q:sit,or:true,opts:shuffle(Object.keys(STAD_N).map(k=>({id:k,label:STAD_N[k]}))),right:[r],
+      uitleg:`<strong>${otEsc(STAD_N[r])}.</strong> ${otEsc(u)}`,
+      review:`${otEsc(sit)} <strong>${otEsc(STAD_N[r])}</strong>`}; });
+  otStyle(); mcEx({title:"Stadsvergelijker",qs,back,again:()=>grStad(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De vier steden in het kort</h3><ul>${Object.keys(STAD_K).map(k=>`<li><strong>${otEsc(STAD_K[k][0])} (${otEsc(STAD_K[k][1])}):</strong> ${otEsc(STAD_K[k][2])}</li>`).join("")}</ul></div>`});
+}
+if(SHOW_STAD){
+  const _hst=hcMenu;
+  hcMenu=function(){ _hst.apply(this,arguments); const H=S.hc; if(!H||H.niveau!=="vwo") return;
+    const ok=H.parts?H.dv.some(d=>S.dvSel.has(d.nr)&&d.src==="steden"):H.id==="steden"&&S.dvSel.size>0; if(!ok) return;
+    const ref=app.querySelector('.list > [data-m="keten"]')||app.querySelector('.list > .item'); if(!ref||app.querySelector('[data-m="stad"]')) return;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="stad";
+    b.innerHTML='<span class="txt"><strong>Stadsvergelijker</strong><span class="sub">Je leest wat er in een stad gebeurde en kiest welke stad het is: Atrecht, Brugge, Antwerpen of Amsterdam.</span></span>';
+    ref.insertAdjacentElement("afterend",b); b.onclick=()=>grStad(hcMenu); if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Kolonie Quiz (tijdvak 8, havo en vwo bovenbouw, KA 33 modern imperialisme): Welk moederland? / Klik de kolonie / Noem de kolonie ---------- */
 /* Kaart: huidige landsgrenzen (Natural Earth via world-atlas, vereenvoudigd). Indeling in koloniën rond 1900 en de toelichtingen zijn door Claude samengesteld: docent graag controleren. */
