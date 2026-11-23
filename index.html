@@ -3417,7 +3417,7 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één ${H.niveau==="tl"?"onderdeel":"deelvraag"} om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","mc","quiz","klas","otoets","exam","proef"]);
+  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","stadstaat","mc","quiz","klas","otoets","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"});});
   app.querySelectorAll("[data-dvkachip]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvkachip; S.kaOff.has(n)?S.kaOff.delete(n):S.kaOff.add(n); S.hc=mkMix([kaPart(S.hcTvs),...S.hcIds]); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"}); });
@@ -7031,7 +7031,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123141936"; let last=0, shown=false;
+  const BUILD="20261123142133"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
