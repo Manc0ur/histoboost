@@ -2897,6 +2897,23 @@ function mcEx({title,qs,back,again,tvGrid,key,ids,resultExtra}){
       <div id="fb"></div>`;
     app.querySelector("#back").onclick=back;
     app.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>answer(b.dataset.a));
+    if(q.multi){ const sel=new Set(), n=[].concat(q.right).length, fb=app.querySelector("#fb");
+      fb.innerHTML=`<div class="row" style="margin-top:1rem"><button class="btn" id="chk" disabled>Controleer</button></div>`;
+      app.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{ const a=b.dataset.a;
+        if(sel.has(a)){ sel.delete(a); b.classList.remove("sel"); b.setAttribute("aria-pressed","false"); }
+        else if(sel.size<n){ sel.add(a); b.classList.add("sel"); b.setAttribute("aria-pressed","true"); }
+        fb.querySelector("#chk").disabled=sel.size!==n; });
+      fb.querySelector("#chk").onclick=()=>answerMulti([...sel]); }
+  }
+  function answerMulti(sel){
+    const q=qs[i], rights=[].concat(q.right).map(String), good=sel.length===rights.length&&sel.every(a=>rights.includes(a));
+    if(good) score++; else wrong.push(q);
+    if(key) record(key,q.id,good);
+    app.querySelectorAll("[data-a]").forEach(b=>{b.disabled=true; b.classList.remove("sel"); const v=b.dataset.a; if(rights.includes(v)) b.classList.add("correct"); else if(sel.includes(v)) b.classList.add("wrong");});
+    const head=good?"Goed!":"Helaas. De goede antwoorden zijn groen gemaakt.";
+    app.querySelector("#fb").innerHTML=`<div class="feedback ${good?"good":"badf"}" role="status"><p><strong>${head}</strong> ${q.uitleg}</p></div>
+    <div class="row" style="margin-top:1rem"><button class="btn" id="next">${i+1<qs.length?"Volgende vraag":"Bekijk je score"}</button></div>`;
+    const nx=app.querySelector("#next"); nx.focus(); nx.onclick=()=>{i++; i<qs.length?draw():result();};
   }
   function answer(a){
     const q=qs[i], rights=[].concat(q.right).map(String), good = rights.includes(a);
@@ -3417,7 +3434,7 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
     </div>
     ${S.dvSel.size?"":`<p class="note" style="margin-top:.8rem">Kies minstens één ${H.niveau==="tl"?"onderdeel":"deelvraag"} om te oefenen.</p>`}
   </section>`;
-  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","stadstaat","mc","quiz","klas","otoets","exam","proef"]);
+  sorteerMenu(["uitleg","lees","flash","koppelb","memory","gk","kruis","wie","denker","galgje","fabel","tijd","tijdlijn","hitster","tijdmachine","kaart","keten","soort","piramide","koppel","imperium","stadstaat","mc","quiz","klas","otoets","exam","proef"]);
   app.querySelector("#back").onclick=home;
   app.querySelectorAll("[data-dv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.dv; S.dvSel.has(n)?S.dvSel.delete(n):S.dvSel.add(n); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"});});
   app.querySelectorAll("[data-dvkachip]").forEach(b=>b.onclick=()=>{ const n=+b.dataset.dvkachip; S.kaOff.has(n)?S.kaOff.delete(n):S.kaOff.add(n); S.hc=mkMix([kaPart(S.hcTvs),...S.hcIds]); S.dvOpen=true; const y=window.scrollY; hcMenu(); window.scrollTo({top:y,behavior:"instant"}); });
@@ -6371,7 +6388,7 @@ const ICONS={
  "m:uitleg":'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 11h7M9 14h4"/><path d="M9.5 18l1.7 1.7 3.5-3.7"/>',"m:lees":I.book,"m:begrip":I.bulb,"m:tijd":I.sort,"m:chrono":I.sort,"m:tijdlijn":I.timeline,"m:tl":I.timeline,"m:jaar":I.clock,
  "m:map":I.globe,
  "m:flash":'<rect x="3" y="7" width="13" height="14" rx="2"/><path d="M7 3.5h11.5a2 2 0 0 1 2 2V17"/><path d="M7.5 12h4M7.5 15.5h4"/>',
- "m:tijdmachine":'<path d="M12 21.5s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><path d="M12 7v3.6l2.4 1.5"/>',"m:keten":I.domino,"m:koppel":I.puzzle,"m:gk":I.cheese,"m:quiz":I.quiz,"m:klas":'<rect x="2.5" y="3.5" width="19" height="13" rx="1.5"/><path d="M12 16.5v4M8 20.5h8"/><rect x="5.5" y="6.5" width="5.5" height="3" rx=".6"/><rect x="13" y="6.5" width="5.5" height="3" rx=".6"/><rect x="5.5" y="11" width="5.5" height="3" rx=".6"/><rect x="13" y="11" width="5.5" height="3" rx=".6"/>',"m:hitster":I.hitster,"m:wie":I.who,"m:kruis":I.grid,"m:mc":I.abcd,"m:memory":I.memory,"m:exam":I.cap,"m:cards":I.cards,
+ "m:tijdmachine":'<path d="M12 21.5s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><path d="M12 7v3.6l2.4 1.5"/>',"m:keten":I.domino,"m:denker":'<path d="M12 1.5v1.8M4.3 4.6l1.3 1.3M19.7 4.6l-1.3 1.3M1.7 11.2h1.8M20.5 11.2h1.8"/><path d="M9.6 17.4h4.8M10.3 20h3.4"/><path d="M12 5.4a4.9 4.9 0 0 0-2.9 8.8c.6.5.9 1 .9 1.8h4c0-.8.3-1.3.9-1.8A4.9 4.9 0 0 0 12 5.4z"/>',"m:koppel":I.puzzle,"m:gk":I.cheese,"m:quiz":I.quiz,"m:klas":'<rect x="2.5" y="3.5" width="19" height="13" rx="1.5"/><path d="M12 16.5v4M8 20.5h8"/><rect x="5.5" y="6.5" width="5.5" height="3" rx=".6"/><rect x="13" y="6.5" width="5.5" height="3" rx=".6"/><rect x="5.5" y="11" width="5.5" height="3" rx=".6"/><rect x="13" y="11" width="5.5" height="3" rx=".6"/>',"m:hitster":I.hitster,"m:wie":I.who,"m:kruis":I.grid,"m:mc":I.abcd,"m:memory":I.memory,"m:exam":I.cap,"m:cards":I.cards,
  "m:proef":I.cap,"m:ka2tv":I.hourglass,"m:vb2ka":I.search,
  "g:ka":I.layers,"g:exv":I.cap,"g:vaard":I.compass,"hc":I.landmark,
  "v:lees":I.book,"v:tijd":I.hourglass,"v:oorzaak":I.domino,"v:vc":I.change,"v:begrip":I.bulb,"v:oordeel":I.eye,"v:bron":I.search,
@@ -7043,7 +7060,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123155304"; let last=0, shown=false;
+  const BUILD="20261123182858"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8635,6 +8652,98 @@ if(SHOW_STAD){
     const b=document.createElement("button"); b.className="item"; b.dataset.m="stad";
     b.innerHTML='<span class="txt"><strong>Stadsvergelijker</strong><span class="sub">Je leest wat er in een stad gebeurde en kiest welke stad het is: Atrecht, Brugge, Antwerpen of Amsterdam.</span></span>';
     ref.insertAdjacentElement("afterend",b); b.onclick=()=>grStad(hcMenu); if(typeof decorate==="function") decorate(); }; }
+
+/* ---------- Welke denker? (VWO, Verlichting, deelvraag 1 en 2) ---------- */
+/* Alle uitspraken, voorbeelden en uitleg zijn door Claude geschreven als parafrase (geen letterlijke citaten): docent graag controleren. */
+const SHOW_DENKER=true; /*live: uit, tot akkoord*/
+const DENK_N={lo:"Locke",mo:"Montesquieu",ro:"Rousseau",sm:"Adam Smith",di:"Diderot",pa:"Thomas Paine",og:"Olympe de Gouges"};
+const DENK_K={lo:"Engelse filosoof. Natuurrechten (leven, vrijheid, bezit); een regering krijgt haar macht van het volk en mag worden afgezet als ze die rechten schendt.",
+ mo:"Franse denker. Schreef De geest van de wetten en bedacht de trias politica: wetgevende, uitvoerende en rechterlijke macht moeten gescheiden zijn.",
+ ro:"Denker uit Genève. Schreef Het sociale contract: de algemene wil van het volk is de basis van de wet, en het volk is soeverein.",
+ sm:"Schotse econoom. Schreef De welvaart der naties: vrijhandel, concurrentie en een beperkte rol voor de overheid.",
+ di:"Franse denker. Maakte met d'Alembert de Encyclopédie om kennis te verspreiden en vooroordelen van kerk en vorst aan te vallen.",
+ pa:"Brits-Amerikaanse schrijver. Common Sense (1776) pleitte voor Amerikaanse onafhankelijkheid; later verdedigde hij de Franse Revolutie.",
+ og:"Franse schrijfster. Schreef in 1791 de Verklaring van de Rechten van de Vrouw en Burgeres; werd in 1793 geguillotineerd."};
+const DENK_S=[
+ [1,"lo,ro","Een regering krijgt haar gezag doordat het volk ermee instemt. Het volk heeft het recht haar af te zetten als ze zich niet aan de afspraken houdt.","Locke en Rousseau. Beiden gaan uit van een sociaal contract: de macht van de regering komt van het volk. Bij Locke mag het volk een regering afzetten die de natuurrechten schendt."],
+ [1,"lo","Elk mens heeft van nature recht op leven, vrijheid en bezit. Die rechten mag niemand afnemen, ook een koning niet.","Locke. Dit zijn zijn natuurrechten."],
+ [1,"lo","Bij de geboorte is de geest van een kind als een onbeschreven blad. Alle kennis komt later uit ervaring.","Locke. Hij was een empirist: kennis komt uit waarneming en ervaring, niet uit aangeboren ideeën."],
+ [1,"lo,ro","Een koning krijgt zijn macht niet van God. Zijn macht is er alleen omdat het volk die aan hem heeft toevertrouwd.","Locke en Rousseau. Beiden keerden zich tegen het droit divin: de macht komt van het volk, niet van God."],
+ [1,"lo","Een overheid moet vooral het leven en het eigendom van burgers beschermen. Doet ze dat niet, dan heeft ze haar recht op macht verspeeld.","Locke. Bescherming van leven, vrijheid en bezit is voor hem de kerntaak van de overheid."],
+ [1,"lo,pa","Het begrip: natuurrechten.","Locke en Thomas Paine. Natuurrechten zijn rechten die ieder mens van nature heeft. Locke werkte ze uit, Paine gebruikte ze om onafhankelijkheid te verdedigen."],
+ [1,"lo","Deze Engelse denker schreef Twee verhandelingen over de regering en werd een grote inspiratie voor de Amerikaanse onafhankelijkheid.","Locke. Zijn ideeën over natuurrechten en volkssoevereiniteit staan terug in de Amerikaanse Onafhankelijkheidsverklaring."],
+ [1,"lo","Na een revolutie in 1688 zocht deze Engelse filosoof een rechtvaardiging voor het afzetten van een koning die zijn macht misbruikte.","Locke. Hij verdedigde het verzet tegen een heerser die de rechten van zijn onderdanen schendt."],
+ [1,"mo","De wetgevende, uitvoerende en rechterlijke macht moeten bij verschillende personen of instellingen liggen. Anders ontstaat er een tirannie.","Montesquieu. Dit is de trias politica (scheiding der machten)."],
+ [1,"mo","Macht moet door macht worden tegengehouden. Zo kan niemand te veel macht krijgen.","Montesquieu. Verschillende machten controleren elkaar (checks and balances)."],
+ [1,"mo","De rechter mag niet dezelfde zijn als degene die de wet maakt. Dan zou hij kunnen oordelen naar eigen belang.","Montesquieu. Een onafhankelijke rechterlijke macht is een deel van de trias politica."],
+ [1,"mo","Het begrip: scheiding der machten.","Montesquieu. In De geest van de wetten (1748) werkte hij de scheiding der machten uit."],
+ [1,"mo","Deze Franse denker bewonderde het Engelse bestuur, waarin de koning en het parlement elkaar beperkten.","Montesquieu. Hij vond dat in Engeland de macht beter verdeeld was dan in Frankrijk."],
+ [1,"mo","Deze denker schreef De geest van de wetten.","Montesquieu. Dit boek (1748) werd een grondslag voor moderne grondwetten, ook voor de Amerikaanse."],
+ [1,"mo","Een land waar de koning zelf wetten maakt, uitvoert en er ook over oordeelt, loopt het gevaar dat burgers hun vrijheid verliezen.","Montesquieu. Hij waarschuwde dat gebundelde macht leidt tot despotisme."],
+ [1,"mo","De Amerikaanse grondwet verdeelt de macht over president, Congres en Hooggerechtshof. Welke denker liet zich hierdoor inspireren?","Montesquieu. De opstellers van de Amerikaanse grondwet hadden zijn idee van scheiding der machten in gedachten."],
+ [1,"ro","Wetten moeten voortkomen uit de algemene wil van het volk. Wat het volk gezamenlijk wil, gaat voor het belang van één persoon.","Rousseau. De algemene wil is het centrale begrip uit zijn sociaal contract."],
+ [1,"ro,lo","De macht ligt bij het volk. Burgers moeten zelf meebeslissen over de wetten waaraan ze zich houden.","Rousseau en Locke. Beiden vinden dat de macht uiteindelijk van het volk komt. Rousseau gaat het verst: het volk maakt zelf de wetten."],
+ [1,"ro","Mensen worden vrij geboren, maar overal liggen ze in ketenen.","Rousseau. Dit is de beroemde openingszin van Het sociale contract."],
+ [1,"ro","Door privébezit en ongelijkheid is de maatschappij slechter geworden. Mensen zijn van nature goed.","Rousseau. Hij vond dat de beschaving ongelijkheid heeft geschapen."],
+ [1,"ro","Het begrip: algemene wil.","Rousseau. De algemene wil is wat het volk als geheel wil, voor het algemeen belang."],
+ [1,"ro","Deze denker uit Genève schreef Het sociale contract (1762).","Rousseau. Hij beschreef hoe mensen samen een gemeenschap vormen met het volk als bron van de macht."],
+ [1,"ro","Een volk mag zijn vertegenwoordigers niet zomaar alle beslissingen laten nemen, omdat het zelf de wetten moet maken.","Rousseau. Hij wantrouwde vertegenwoordiging en wilde dat burgers zelf besluiten."],
+ [1,"ro","In een goede staat dienen burgers het algemeen belang. Wie zich daar niet aan wil houden, wordt als het ware gedwongen vrij te zijn.","Rousseau. Voor hem is vrijheid het volgen van de wetten die het volk zichzelf heeft gegeven."],
+ [1,"ro,di","Deze denker keerde zich tegen de ongelijke Franse standenmaatschappij, waarin geboorte bepaalt wie macht heeft.","Rousseau en Diderot. Beiden bekritiseerden de standenmaatschappij en de privileges van adel en kerk."],
+ [1,"sm","Wanneer ieder voor zijn eigen belang werkt, leidt een 'onzichtbare hand' tot welvaart voor iedereen.","Adam Smith. Dit is zijn beroemde beeld van de vrije markt."],
+ [1,"sm","De regering moet geen invoerrechten en handelsbeperkingen opleggen. Landen worden rijker door vrij met elkaar te handelen.","Adam Smith. Hij was een voorstander van vrijhandel."],
+ [1,"sm","De rijkdom van een land zit niet in een grote voorraad goud en zilver, maar in wat mensen produceren.","Adam Smith. Hij keerde zich tegen het mercantilisme."],
+ [1,"sm","Een fabriek maakt spelden sneller als elke werknemer maar één onderdeel van het werk doet.","Adam Smith. Dit is zijn voorbeeld van arbeidsdeling."],
+ [1,"sm","De overheid moet zich beperken tot defensie, rechtspraak en een paar openbare werken. De economie regelt zichzelf.","Adam Smith. Dit komt overeen met het latere idee van de nachtwakerstaat."],
+ [1,"sm","Een regering geeft een bedrijf het monopolie op de handel met een ander werelddeel. Welke denker zou dat afkeuren?","Adam Smith. Monopolies en handelsbeperkingen zijn volgens hem slecht voor concurrentie en welvaart."],
+ [1,"sm","Deze Schotse denker schreef De welvaart der naties (1776).","Adam Smith. Het boek wordt gezien als de basis van de moderne economie."],
+ [1,"sm","Concurrentie tussen bedrijven houdt de prijzen laag en de kwaliteit hoog.","Adam Smith. Vrije concurrentie is een kernidee in zijn economisch denken."],
+ [1,"sm","Het begrip: vrijhandel.","Adam Smith. Hij verdedigde vrije handel tegenover het mercantilisme."],
+ [1,"di","Alle kennis moet worden verzameld en voor iedereen toegankelijk worden gemaakt. Dan kunnen mensen zelf nadenken in plaats van de kerk of de koning te geloven.","Diderot. Dit was het doel van de Encyclopédie."],
+ [1,"di","Deze Franse denker leidde met d'Alembert het grote naslagwerk de Encyclopédie (1751-1772).","Diderot. Hij was de hoofdredacteur."],
+ [1,"di","Een groot naslagwerk bevat ook artikelen over ambachten en wetenschap, en is soms verboden omdat het kritiek bevat op kerk en overheid.","Diderot. De Encyclopédie werd gecensureerd, maar bleef verschijnen."],
+ [1,"di","Het begrip: Encyclopédie.","Diderot. Het was het grote project van de Verlichting om kennis te verspreiden."],
+ [1,"di,lo","Door kennis te verspreiden krijgen mensen meer verstand, en daardoor kunnen ze vooroordelen en bijgeloof bestrijden.","Diderot en Locke. Beiden geloofden dat verstand en kennis (rationeel optimisme) mensen en de samenleving verder helpen."],
+ [1,"di","Welke denker zou het ermee eens zijn dat een boek met kennis uit alle vakgebieden, in gewone taal geschreven, de maatschappij kan veranderen?","Diderot. Daarvoor maakte hij de Encyclopédie."],
+ [1,"di","Deze denker schreef over kunst en ambachten, omdat hij vond dat het werk van gewone mensen ook in een kennisboek thuishoort.","Diderot. In de Encyclopédie stonden uitgebreide artikelen over ambachten."],
+ [2,"pa","Amerika hoeft niet door een koning aan de andere kant van de oceaan te worden bestuurd. Het is gezond verstand dat de kolonies onafhankelijk worden.","Thomas Paine. Zo betoogde hij in Common Sense (1776)."],
+ [2,"pa","Deze pamflet in gewone taal haalde veel kolonisten over om voor onafhankelijkheid te kiezen.","Thomas Paine. Common Sense werd vele tienduizenden keren verkocht."],
+ [2,"pa,lo","Een erfelijke koning is niet te rechtvaardigen. Een regering moet bestaan uit gekozen vertegenwoordigers.","Thomas Paine en Locke. Beiden vinden dat de macht van de regering van het volk moet komen. Paine pleit hier voor een republiek."],
+ [2,"pa","Het begrip: Common Sense.","Thomas Paine. Dit pamflet verscheen in 1776."],
+ [2,"pa","Deze Engelsman verdedigde zowel de Amerikaanse als de Franse revolutie, onder meer in Rights of Man.","Thomas Paine. Hij steunde beide revoluties."],
+ [2,"pa","Deze schrijver richtte zich tot gewone kolonisten en niet tot geleerden, om hen te overtuigen van de noodzaak van onafhankelijkheid.","Thomas Paine. Hij schreef bewust in eenvoudige taal."],
+ [2,"pa","Bij het uitbreken van de Amerikaanse Revolutie schreef deze man dat het tijd was om de Britse koning op te zeggen.","Thomas Paine. Common Sense kwam een half jaar voor de Onafhankelijkheidsverklaring."],
+ [2,"og","Vrouwen horen dezelfde rechten te hebben als mannen. De rechten van de mens gelden voor iedereen.","Olympe de Gouges. Zij schreef in 1791 de Verklaring van de Rechten van de Vrouw en Burgeres."],
+ [2,"og","Een vrouw mag naar het schavot, dus moet zij ook de spreekstoel in de politiek op mogen.","Olympe de Gouges. Hiermee eiste zij politieke rechten voor vrouwen."],
+ [2,"og","De Franse Revolutie sprak over gelijke rechten, maar vrouwen werden vergeten. Daarom schreef deze schrijfster een eigen verklaring.","Olympe de Gouges. Zij paste de Verklaring van de Rechten van de Mens en de Burger aan voor vrouwen."],
+ [2,"og","Het begrip: Verklaring van de Rechten van de Vrouw en Burgeres.","Olympe de Gouges. Zij schreef het in 1791."],
+ [2,"og","Deze Franse schrijfster werd in 1793 geguillotineerd, ook omdat ze kritiek had op leiders van de revolutie.","Olympe de Gouges. Haar kritiek en haar eisen kostten haar het leven."],
+ [2,"og","Deze schrijfster keerde zich in haar toneelstukken tegen de slavernij.","Olympe de Gouges. Zij was ook een tegenstander van de slavernij."],
+ [2,"og","In een tekst eist iemand dat vrouwen mogen stemmen, eigendom mogen hebben en gelijk worden behandeld in het huwelijk.","Olympe de Gouges. Zij wilde gelijke rechten voor vrouwen op veel terreinen."]
+];
+function grDenker(back){
+  back=typeof back==="function"?back:hcMenu;
+  const H=S.hc, sel=new Set(H.parts?H.dv.filter(d=>S.dvSel.has(d.nr)&&d.src==="verlichting").map(d=>d.srcNr):[...S.dvSel]);
+  let pool=DENK_S.filter(x=>sel.has(x[0])); if(pool.length<5) pool=DENK_S;
+  const keys=[...new Set(pool.map(x=>x[1].split(",")[0]))]; const allK=Object.keys(DENK_N);
+  const qs=shuffle(pool.slice()).slice(0,10).map(x=>{ const [dv,r0,sit,u,quote,cite,askx]=x, rs=r0.split(",");
+    const others=shuffle((keys.length>=4?keys:allK).filter(k=>!rs.includes(k))).slice(0,4-rs.length);
+    const nm=rs.map(k=>DENK_N[k]).join(" en ");
+    return {id:"denk:"+DENK_S.indexOf(x),c:6,ask:askx||(rs.length>1?"Welke twee denkers passen hierbij? Kies er twee.":quote?"Welke denker of schrijver past bij de ideeën in deze bron?":"Welke denker of schrijver past hierbij?"),multi:rs.length>1,...(quote?{qhtml:`<p class="kbronlbl">${otEsc(sit)}</p><blockquote class="denkq">${otEsc(quote)}</blockquote><p class="kbronlbl">Bron: ${otEsc(cite)}</p>`}:{q:sit}),or:true,
+      opts:shuffle([...rs,...others]).map(k=>({id:k,html:esc(DENK_N[k])+" "+starHtml()})),right:rs,
+      uitleg:rs.length>1?otEsc(u):`<strong>${otEsc(nm)}.</strong> ${otEsc(u.replace(/^[^.]*\.\s*/,""))}`,
+      review:`${otEsc(sit)} ${quote?"(bronfragment) ":""}<strong>${otEsc(nm)}</strong>`}; });
+  if(!document.getElementById("dkcss")){ const st=document.createElement("style"); st.id="dkcss"; st.textContent=".denkq{margin:.5rem 0;padding:.7rem 1rem;border-left:4px solid var(--focus,#4b7bec);background:color-mix(in srgb,var(--focus,#4b7bec) 8%,var(--surface));border-radius:0 8px 8px 0;font-style:italic;line-height:1.5}.opt.sel{outline:3px solid var(--focus,#4b7bec);outline-offset:1px;background:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}"; document.head.appendChild(st); }
+  otStyle(); mcEx({title:"Welke denker?",qs,back,again:()=>grDenker(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De zeven denkers in het kort</h3><ul>${Object.keys(DENK_K).map(k=>`<li><strong>${otEsc(DENK_N[k])}</strong> ${starHtml()}: ${otEsc(DENK_K[k])}</li>`).join("")}</ul></div>`});
+}
+if(SHOW_DENKER){
+  const _hdk=hcMenu;
+  hcMenu=function(){ _hdk.apply(this,arguments); const H=S.hc; if(!H||H.niveau!=="vwo") return;
+    const ok=H.parts?H.dv.some(d=>S.dvSel.has(d.nr)&&d.src==="verlichting"&&d.srcNr<=2):H.id==="verlichting"&&(S.dvSel.has(1)||S.dvSel.has(2)); if(!ok) return;
+    const ref=app.querySelector('.list > [data-m="wie"]')||app.querySelector('.list > .item'); if(!ref||app.querySelector('[data-m="denker"]')) return;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="denker";
+    b.innerHTML='<span class="txt"><strong>Welke denker?</strong><span class="sub">Je leest een idee, uitspraak of begrip en kiest welke denker erbij hoort: Locke, Montesquieu, Rousseau, Smith, Diderot, Paine of De Gouges.</span></span>';
+    ref.insertAdjacentElement("afterend",b); b.onclick=()=>grDenker(hcMenu); if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Kolonie Quiz (tijdvak 8, havo en vwo bovenbouw, KA 33 modern imperialisme): Welk moederland? / Klik de kolonie / Noem de kolonie ---------- */
 /* Kaart: huidige landsgrenzen (Natural Earth via world-atlas, vereenvoudigd). Indeling in koloniën rond 1900 en de toelichtingen zijn door Claude samengesteld: docent graag controleren. */
