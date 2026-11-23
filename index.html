@@ -7031,7 +7031,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261123142133"; let last=0, shown=false;
+  const BUILD="20261123142525"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7636,19 +7636,20 @@ const PIRAMIDE=["Bestuurders, legeraanvoerders en mensen met veel grond","Ambach
 { const st=document.createElement("style");
   st.textContent=".pir{display:flex;flex-direction:column;align-items:center;gap:.45rem;margin:1rem 0}.pir .pr{width:100%;display:flex;justify-content:center}.pir .slot{font:inherit;display:flex;align-items:center;justify-content:center;text-align:center;min-height:3.4rem;padding:.5rem .8rem;border-radius:12px;border:2px dashed var(--line);background:var(--surface);color:var(--muted);cursor:pointer}.pir .slot.full{border-style:solid;color:inherit;font-weight:700}.pir .slot.ok{border-color:#2e8b57;background:rgba(46,139,87,.15)}.pir .slot.bad{border-color:#c0392b;background:rgba(192,57,43,.15)}.pirlab{display:flex;justify-content:space-between;font-size:.82rem;font-weight:700;color:var(--muted)}.pirpool{display:flex;flex-wrap:wrap;gap:.5rem;margin:.8rem 0;min-height:3rem}.pircard{font:inherit;font-weight:700;padding:.55rem .9rem;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:inherit;cursor:pointer;text-align:left}.pircard.sel{outline:3px solid #2f6fa3}";
   document.head.appendChild(st); }
+const PIR8=[["Bestuurders",0],["Legeraanvoerders",0],["Mensen met veel grond",0],["Ambachtslieden",1],["Handelaren",1],["Boeren",2],["Mensen zonder vast werk",3],["Mensen die tot slaaf waren gemaakt",4]];
 function obPiramide(){
-  let order=shuffle(PIRAMIDE.map((_,i)=>i)); while(order.every((v,i)=>v===i)) order=shuffle(order);
-  const slots=[null,null,null,null,null]; let pool=order.slice(), sel=null, checked=false;
-  const W=[58,68,78,89,100];
+  let order=shuffle(PIR8.map((_,i)=>i)); while(order.every((v,i)=>v===i)) order=shuffle(order);
+  const slots=PIR8.map(()=>null); let pool=order.slice(), sel=null, checked=false;
+  const W=[76,82,88,94,100], ROW=PIR8.map(x=>x[1]), good=(v,i)=>v!=null&&PIR8[v][1]===ROW[i];
   const draw=()=>{
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
     <div class="meta"><span>Sociale piramide</span></div>
     <h2>Sociale lagen in de Romeinse samenleving</h2>
-    <p class="lead">Zet de vijf groepen in de goede laag van de Romeinse samenleving. Bovenaan staat de groep met de meeste macht en het meeste bezit, onderaan de groep met de minste. Sleep een groep naar een laag, of tik op een groep en daarna op een laag.</p>
+    <p class="lead">Zet de acht groepen in de goede laag van de Romeinse samenleving. Er zijn vijf lagen: in de bovenste laag horen drie groepen en in de tweede laag twee. Bovenaan staat de laag met de meeste macht en het meeste bezit, onderaan de laag met de minste. Sleep een groep naar een plek, of tik op een groep en daarna op een plek.</p>
     <div class="pirlab"><span>▲ Hoogste laag</span></div>
-    <div class="pir">${slots.map((v,i)=>`<div class="pr" style="width:${W[i]}%"><button class="slot${v!=null?" full":""}${checked&&v!=null?(v===i?" ok":" bad"):""}" data-s="${i}" style="width:100%">${v!=null?esc(PIRAMIDE[v]):`Laag ${i+1}`}</button></div>`).join("")}</div>
+    <div class="pir">${[0,1,2,3,4].map(r=>`<div class="pr" style="width:${W[r]}%;gap:.45rem">${slots.map((v,i)=>ROW[i]===r?`<button class="slot${v!=null?" full":""}${checked&&v!=null?(good(v,i)?" ok":" bad"):""}" data-s="${i}" style="flex:1;min-width:0;padding:.5rem .35rem;overflow-wrap:anywhere">${v!=null?esc(PIR8[v][0]):`Laag ${r+1}`}</button>`:"").join("")}</div>`).join("")}</div>
     <div class="pirlab"><span>▼ Laagste laag</span></div>
-    <div class="pirpool">${pool.map(v=>`<button class="pircard${sel===v?" sel":""}" data-c="${v}">${esc(PIRAMIDE[v])}</button>`).join("")}</div>
+    <div class="pirpool">${pool.map(v=>`<button class="pircard${sel===v?" sel":""}" data-c="${v}">${esc(PIR8[v][0])}</button>`).join("")}</div>
     <div class="row"><button class="btn" id="pchk"${pool.length?" disabled":""}>Controleer</button><button class="btn ghost" id="pshow">Toon oplossing</button><button class="btn ghost" id="pnew">Opnieuw</button></div>
     <div id="pfb"></div>`;
     app.querySelector("#back").onclick=hcMenu;
@@ -7657,9 +7658,9 @@ function obPiramide(){
       if(sel!=null){ slots[i]=sel; pool=pool.filter(x=>x!==sel); if(cur!=null) pool.push(cur); sel=null; }
       else if(cur!=null){ slots[i]=null; pool.push(cur); }
       checked=false; draw(); });
-    app.querySelector("#pchk").onclick=()=>{ checked=true; draw(); const n=slots.filter((v,i)=>v===i).length;
-      app.querySelector("#pfb").innerHTML=n===5?`<p class="note"><strong>Goed!</strong> Alle vijf de lagen staan op de goede plek.</p>`:`<p class="note"><strong>${n} van de 5 lagen staan goed.</strong> Tik op een rode laag om de groep terug te zetten en probeer het opnieuw.</p>`; };
-    app.querySelector("#pshow").onclick=()=>{ pool=[]; sel=null; PIRAMIDE.forEach((_,i)=>slots[i]=i); checked=true; draw(); app.querySelector("#pfb").innerHTML=`<p class="note">Dit is de goede volgorde, van de hoogste naar de laagste laag.</p>`; };
+    app.querySelector("#pchk").onclick=()=>{ checked=true; draw(); const n=slots.filter((v,i)=>good(v,i)).length;
+      app.querySelector("#pfb").innerHTML=n===PIR8.length?`<p class="note"><strong>Goed!</strong> Alle acht de groepen staan in de goede laag.</p>`:`<p class="note"><strong>${n} van de ${PIR8.length} groepen staan goed.</strong> Tik op een rode groep om hem terug te zetten en probeer het opnieuw.</p>`; };
+    app.querySelector("#pshow").onclick=()=>{ pool=[]; sel=null; PIR8.forEach((_,i)=>slots[i]=i); checked=true; draw(); app.querySelector("#pfb").innerHTML=`<p class="note">Dit is de goede indeling, van de hoogste naar de laagste laag. Binnen een laag maakt de volgorde niet uit.</p>`; };
     app.querySelector("#pnew").onclick=obPiramide;
     // slepen (muis en aanraking); tikken blijft werken
     app.querySelectorAll(".pircard,.slot.full").forEach(el=>{ el.style.touchAction="none";
@@ -7683,7 +7684,7 @@ ICONS["m:piramide"]='<path d="M12 3L2.5 20.5h19z"/><path d="M8.2 11h7.6M5.4 16h1
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!H.ob) return m;
     const i=m.findIndex(x=>x[0]==="soort");
-    m.splice(i<0?m.length:i+1,0,["piramide","Sociale piramide","Zet de vijf sociale lagen van de Romeinse samenleving in de goede volgorde, van hoog naar laag"]);
+    m.splice(i<0?m.length:i+1,0,["piramide","Sociale piramide","Zet de acht groepen van de Romeinse samenleving in de goede van de vijf lagen, van hoog naar laag"]);
     return m; }; }
 
 /* De Rijn is geen goede plekvraag (rivier door heel Europa): uit tijdmachine en kaartvragen; de gebeurtenis blijft in de tijdlijn */
