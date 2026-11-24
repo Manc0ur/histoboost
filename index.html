@@ -6310,6 +6310,7 @@ function vsets(){ if(VSETS) return VSETS;
     const last=w[w.length-1]; if(last.length>=4&&!/^[ivx]+$/.test(last)&&!EPI.has(last)) c.add(last);
     per.set(k,[...c]); });
   return VSETS={beg,per,evt}; }
+const VGEN=new Set("verdrag verdragen conferentie oorlog slag opstand revolutie crisis vrede akkoord pact plan wet politiek staking bezetting inval muur strijd aanslag overeenkomst verklaring congres".split(" "));
 function verplicht(t){
   if(!SYL||!t) return false; const raw=String(t).replace(/\(.*?\)/g,""), key=synorm(raw).trim(), V=vsets();
   const lit=p=>SYL.includes(" "+p+" ");
@@ -6322,7 +6323,9 @@ function verplicht(t){
   if(!ws.length) return false;
   const hits=ws.filter(hitW);
   if(ws.length===1) return hits.length===1;
-  const longest=ws.reduce((a,b)=>b.length>a.length?b:a);
+  /* bij een gelijke stand telt het onderscheidende woord (Locarno), niet het algemene woord (verdrag) */
+  const sp=ws.filter(w=>!VGEN.has(synorm(w).trim())), cand=sp.length?sp:ws;
+  const longest=cand.reduce((a,b)=>b.length>a.length?b:a);
   return hits.length/ws.length>=0.5 && hits.includes(longest);
 }
 const STARTIP="Staat in de stofomschrijving: dit moet je kennen";
@@ -7064,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124155339"; let last=0, shown=false;
+  const BUILD="20261124155932"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
