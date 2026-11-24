@@ -7062,7 +7062,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124140015"; let last=0, shown=false;
+  const BUILD="20261124144206"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7657,7 +7657,7 @@ function obDoelLinks(root){ if(!S.hc||!S.hc.ob) return;
   root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return; const sm=li.parentElement.previousElementSibling; if(!sm||!/^Algemene/.test(sm.textContent)) return;
     const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit) return;
     const d=document.createElement("div"); d.className="dolinks";
-    d.innerHTML="<span>Oefen:</span>"+hit[1].map(m=>`<button class="dolink" data-dm="${m}">${DOEL_MODE[m][0]}</button>`).join("");
+    d.innerHTML="<span>Oefen:</span>"+hit[1].filter(m=>SHOW_GALGJE||m!=="galgje").map(m=>`<button class="dolink" data-dm="${m}">${DOEL_MODE[m][0]}</button>`).join("");
     li.insertBefore(d,li.querySelector(":scope>ul")); });
   root.querySelectorAll(".dolink").forEach(b=>b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); CTX="hc"; S.dvSel=new Set(S.hc.dv.map(d=>d.nr)); DOEL_MODE[b.dataset.dm][1](); }); }
 { const _ol=obLees; obLees=function(){ const r=_ol.apply(this,arguments); obDoelLinks(app); return r; }; }
@@ -9378,6 +9378,10 @@ kaAddTile({m:"stadstaat",tv:2,ka:4,tvNaam:"Tijd van Grieken en Romeinen",title:"
   hcModes=function(H){ const m=_m3(H); if(!H.ob||H.id!=="gr") return m;
     const i=m.findIndex(x=>x[0]==="imperium"); const at=i<0?m.length:i+1;
     m.splice(at,0,["stadstaat","Zat er een Griekse stadstaat?","Een modern land licht op de kaart op. Was er een Griekse stadstaat? Ja of nee."]); return m; }; }
+
+/* Galgje: tijdelijk verborgen (op verzoek). Zet SHOW_GALGJE op true om hem terug te zetten. */
+const SHOW_GALGJE=false;
+if(!SHOW_GALGJE){ const _mg=hcModes; hcModes=function(H){ return _mg(H).filter(x=>x[0]!=="galgje"); }; }
 
 /* Als er een tijdvak is gekozen: oefeningen die er niet bij horen helemaal niet tonen (niet grijs) */
 { const _ka3=kaMenu;
