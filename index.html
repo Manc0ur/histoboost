@@ -7161,7 +7161,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124194029"; let last=0, shown=false;
+  const BUILD="20261124195809"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9669,6 +9669,8 @@ function dtCss(){ if(document.getElementById("dtcss")) return; const s=document.
 .dtwords{display:grid;gap:.5rem;margin:.6rem 0}.dtw{display:flex;align-items:center;gap:.8rem;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:.75rem .9rem;font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;text-align:left;width:100%}.dtw .ck{flex:none;width:1.6rem;height:1.6rem;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:1rem;color:transparent}.dtw .tg{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .dtw[aria-pressed=true]{background:#e6f4ea;border-color:#2e9d57}.dtw[aria-pressed=true] .w{text-decoration:line-through;opacity:.65}.dtw[aria-pressed=true] .ck{background:#2e9d57;border-color:#2e9d57;color:#fff}
 .dtbanner{border-radius:14px;padding:1rem;margin:.6rem 0;background:#fff4d6;border:2px solid #e0a800;color:#4a3500}.dtbanner.ok{background:#e6f4ea;border-color:#2e9d57;color:#12401f}.dtbanner strong{font-size:1.25rem;display:block}
+.vbcard{border:3px solid var(--ink);border-radius:18px;background:var(--surface);padding:1rem 1.1rem;margin:.6rem 0}.vbword{font-size:2.1rem;font-weight:900;line-height:1.15;margin:.35rem 0 .8rem;overflow-wrap:anywhere}.vbfl{font-size:.78rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#c0392b}.vbforb{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.35rem}.vbforb span{background:#fde8e6;color:#8a1c12;border:1px solid #e9a9a2;border-radius:8px;padding:.3rem .65rem;font-weight:700;text-decoration:line-through;text-decoration-thickness:2px}
+.vbpl{display:grid;gap:.5rem}.vbp{border:2px solid var(--line);border-radius:12px;background:var(--surface);padding:.55rem .75rem;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .8rem}.vbp.on{border-color:var(--focus)}.vbp.out{opacity:.45}.vbp .nm{flex:1 1 7rem}.vbp .sc{display:flex;align-items:baseline;gap:.3rem}.vbp .sc span{font-size:1.5rem;font-weight:800}.vbp .sc small{color:var(--muted)}.vbp .sc .lv{margin-left:.6rem;font-size:1.1rem;color:#c0392b}.vbp .bt{display:flex;flex-wrap:wrap;gap:.35rem}.vbp .bt button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:.45rem .7rem;font:inherit;font-weight:700;cursor:pointer}.vbp .bt button:first-child{background:#2e9d57;color:#fff;border-color:#2e9d57}.vbp .bt button.r{background:#fde8e6;color:#8a1c12;border-color:#e9a9a2}.vbp .bt button:disabled{opacity:.4;cursor:default}
 .dtrules{font-size:.88rem;color:var(--muted);margin:.4rem 0}.dtrank li{margin:.3rem 0;font-size:1.05rem}
 `; document.head.appendChild(s); }
 function dtPool(scope){
@@ -9676,16 +9678,16 @@ function dtPool(scope){
   const P=[], one=t=>{ let x=String(t||"").replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").split(/\.\s/)[0].split(/;\s*/)[0].replace(/[.]$/,"").trim(); return x; };
   if(scope==="ka"){
     const sel=n=>S.sel.has(n); sylKA();
-    Object.keys(KA_BEG).filter(n=>sel(+n)).forEach(n=>KA_BEG[n].forEach(([a])=>{ if(kaOk({ka:KABEGKA[n+"|"+a]})) P.push({a,tag:"Begrip"}); }));
-    WBI.filter(p=>p.tv.some(sel)&&kaOk(p)).forEach(p=>P.push({a:p.n,tag:"Persoon"}));
-    KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>P.push({a:one(e.t),tag:"Gebeurtenis"}));
+    Object.keys(KA_BEG).filter(n=>sel(+n)).forEach(n=>KA_BEG[n].forEach(([a,q])=>{ if(kaOk({ka:KABEGKA[n+"|"+a]})) P.push({a,tag:"Begrip",d:q}); }));
+    WBI.filter(p=>p.tv.some(sel)&&kaOk(p)).forEach(p=>P.push({a:p.n,tag:"Persoon",d:p.u||p.k||""}));
+    KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>P.push({a:one(e.t),tag:"Gebeurtenis",d:(e.t||"")+" "+(e.u||"")}));
   } else {
     const H=S.hc, inSel=x=>!S.dvSel.size||S.dvSel.has(x.dv);
-    H.begrippen.filter(inSel).forEach(b=>P.push({a:b.b,tag:"Begrip"}));
-    WBI.filter(w=>w.hc&&w.hc[H.id]&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(w=>P.push({a:w.n,tag:"Persoon"}));
-    H.tijdlijn.filter(inSel).forEach(e=>P.push({a:one(onePart(e.t)),tag:"Gebeurtenis"}));
+    H.begrippen.filter(inSel).forEach(b=>P.push({a:b.b,tag:"Begrip",d:b.d}));
+    WBI.filter(w=>w.hc&&w.hc[H.id]&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(w=>P.push({a:w.n,tag:"Persoon",d:w.u||w.k||""}));
+    H.tijdlijn.filter(inSel).forEach(e=>P.push({a:one(onePart(e.t)),tag:"Gebeurtenis",d:(EV_UITLEG[e.t]||"")+" "+e.t}));
   }
-  P.push(...memPairs(scope).map(m=>({a:m.a,tag:m.tag})));
+  P.push(...memPairs(scope).map(m=>({a:m.a,tag:m.tag,d:m.q})));
   const seen=new Set();
   return P.filter(p=>p.a&&p.a.length>=3&&p.a.length<=60&&!seen.has(p.a.toLowerCase())&&seen.add(p.a.toLowerCase()));
 }
@@ -9703,8 +9705,7 @@ function dertig(scope){
     <p class="lead">Beschrijf in korte tijd zoveel mogelijk woorden aan je teamgenoot. Geef de laptop of telefoon door na elke beurt.</p>
     <details style="margin:.4rem 0"><summary><strong>Spelregels</strong></summary>${RULES()}</details>
     <h3>Hoeveel teams spelen er?</h3>${chips([1,2,3,4],C.n,"n")}
-    <div class="dtnames">${Array.from({length:C.n},(_,i)=>`<input data-name="${i}" value="${esc(C.names[i])}" maxlength="18" aria-label="Naam van team ${i+1}">`).join("")}</div>
-    <h3>Hoeveel seconden per beurt?</h3>${chips([30,40,50,60],C.sec,"sec")}
+        <h3>Hoeveel seconden per beurt?</h3>${chips([30,40,50,60],C.sec,"sec")}
     <h3>Welke spelvorm?</h3>
     <div class="dtform">
       <div class="dtopt" role="button" tabindex="0" data-mode="doel" aria-pressed="${C.mode==="doel"}"><strong>Doel</strong><span class="sub">Wie het eerst de gekozen punten haalt, wint.</span>${chips([10,15,20,25],C.doel,"doel")}</div>
@@ -9715,13 +9716,12 @@ function dertig(scope){
     app.querySelector("#back").onclick=ex;
     app.querySelectorAll("[data-k]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const k=b.dataset.k, v=+b.dataset.v; C[k]=v; if(k==="doel") C.mode="doel"; if(k==="lev") C.mode="lev"; setup(); });
     app.querySelectorAll("[data-mode]").forEach(b=>{ const f=()=>{ C.mode=b.dataset.mode; setup(); }; b.onclick=f; b.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); f(); } }; });
-    app.querySelectorAll("[data-name]").forEach(i=>i.oninput=()=>{ C.names[+i.dataset.name]=i.value; });
     const r=app.querySelector("#dtrange"); r.oninput=()=>{ C.min=+r.value; app.querySelector("#dtmin").textContent=C.min; C.mode="tijd"; app.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===C.mode)); };
     app.querySelector("#dtgo").onclick=start;
   }
   let G;
   function start(){
-    const names=Array.from({length:C.n},(_,i)=>(C.names[i]||"").trim()||"Team "+(i+1));
+    const names=Array.from({length:C.n},(_,i)=>"Team "+(i+1));
     G={t:names.map(n=>({n,p:0,l:C.lev})),cur:0,used:new Set(),end:C.mode==="tijd"?Date.now()+C.min*60000:0};
     ready();
   }
@@ -9808,13 +9808,120 @@ if(SHOW_DERTIG){
     const b=document.createElement("button"); b.className="item"; b.dataset.m="dertig"; b.innerHTML=`<span class="txt"><strong>30 seconds</strong><span class="sub">Omschrijf in 30 seconden 5 woorden aan je teamgenoot en speel tegen andere teams</span></span>`;
     b.onclick=()=>dertig("ka"); const ref=box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
 }
+/* ---------- Verboden woord (Spellen en puzzels): omschrijf een woord zonder de verboden woorden te gebruiken ---------- */
+/* De verboden woorden worden automatisch uit de omschrijving van het woord gehaald; docent graag controleren of ze passend zijn. */
+const SHOW_VERBODEN=false; /*live: uit, tot akkoord*/
+ICONS["m:verboden"]='<circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/>';
+const VB_STOP=new Set("waarin waarbij worden wordt werd werden zoals onder tussen vanaf tegen daardoor daarvoor hierdoor waardoor andere meer meest heeft hebben kunnen konden mochten mogen moest moesten moeten deze door voor naar over maar omdat tijdens daarna eerst eerste eerder later jaren jaar vanuit binnen buiten mensen grote groot grotere nieuwe nieuw oude oud heel veel vooral vaak soms altijd nooit steeds steeds zodat zodra terwijl hierbij daarbij ervoor erna erin eraan ervan elkaar zichzelf hun haar zijn hebben gaat gingen komen kwamen kwam maken maakte gemaakt maakten waren geweest wilde wilden willen alleen alle allen iedereen niets iets hetzelfde dezelfde enkele enige diverse verschillende bijvoorbeeld bijna ongeveer eigen echt rond ruim vaak welke waar wanneer twee drie vier vijf zeven negen twaalf dertien veertien vijftien zestien zeventien achttien negentien twintig dertig veertig vijftig zestig zeventig tachtig negentig honderd duizend houdt bestaan bestond ontstaan ontstond ontstaat gebeurt gebeurde gebeuren periode aspecten vormen vormde zeggen volgens soort manier deel delen gebied gebieden verenigde staten begon begint beginnen volgde volgen bleef blijven bleven laten liet lieten kreeg krijgen kregen gaven geven geeft nemen nam namen wilde stond staat stonden".split(" "));
+function vbForbid(it){
+  const src=String(it.d||"").replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"");
+  const termParts=String(it.a).toLowerCase().split(/[^\p{L}]+/u).filter(x=>x.length>=3);
+  const toks=(src.toLowerCase().match(/[\p{L}][\p{L}'’-]*/gu)||[]), seen=new Set(), cand=[];
+  const orig=(src.match(/[\p{L}][\p{L}'’-]*/gu)||[]); toks.forEach((w,i)=>{ if(w.length<5||VB_STOP.has(w)||seen.has(w)) return; if(termParts.some(t=>w.startsWith(t.slice(0,Math.max(4,t.length-2)))||t.startsWith(w.slice(0,Math.max(4,w.length-2))))) return; seen.add(w); cand.push({w,i,s:w.length+(i<8?3:0)+(/^\p{Lu}/u.test(orig[i]||"")&&i>0?4:0)}); });
+  return cand.sort((a,b)=>b.s-a.s).slice(0,5).sort((a,b)=>a.i-b.i).map(x=>x.w);
+}
+function verboden(scope){
+  dtCss(); clearInterval(window.__dtI);
+  const back=scope==="ka"?kaMenu:hcMenu, ex=()=>{ clearInterval(window.__dtI); back(); };
+  const pool=dtPool(scope).map(p=>({...p,f:vbForbid(p)})).filter(p=>p.f.length>=3);
+  if(pool.length<5){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Verboden woord</h2><p class="note">Er zijn te weinig begrippen, personen en gebeurtenissen. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
+  const C=S.vbCfg||(S.vbCfg={who:"solo",ns:4,nt:2,mode:"doel",doel:15,lev:10,min:10});
+  const RULES=`<ul class="dtrules" style="padding-left:1.1rem"><li>Je krijgt een woord: een begrip, een persoon of een gebeurtenis. De categorie mag je noemen.</li><li>Omschrijf het woord zodat de anderen het raden. Onder het woord staan verboden woorden. Die mag je niet zeggen, en ook geen deel van het woord zelf.</li><li>Geef punten aan wie het goed raadt of omschrijft. In de vorm Levens verlies je een leven als je een verboden woord zegt.</li></ul>`;
+  const chips=(vals,cur,key)=>`<div class="dtchips">${vals.map(v=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${cur===v}">${v}</button>`).join("")}</div>`;
+  function setup(){
+    const solo=C.who==="solo";
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>Verboden woord</h2>
+    <p class="lead">Omschrijf het woord, maar zeg geen van de verboden woorden. Speel met meer personen of teams en geef elkaar punten.</p>
+    <details style="margin:.4rem 0"><summary><strong>Spelregels</strong></summary>${RULES}</details>
+    <h3>Hoe speel je?</h3>
+    <div class="dtchips"><button type="button" data-who="solo" aria-pressed="${solo}">Ieder voor zich</button><button type="button" data-who="teams" aria-pressed="${!solo}">Teams</button></div>
+    <h3>${solo?"Hoeveel spelers?":"Hoeveel teams?"}</h3>${solo?chips([2,3,4,5,6,7,8],C.ns,"ns"):chips([2,3,4],C.nt,"nt")}
+    <h3>Wanneer is het spel afgelopen?</h3>
+    <div class="dtform">
+      <div class="dtopt" role="button" tabindex="0" data-mode="doel" aria-pressed="${C.mode==="doel"}"><strong>Doel</strong><span class="sub">Wie het eerst de gekozen punten haalt, wint.</span><label>Doel: <strong id="vbv-doel">${C.doel}</strong> punten<br><input type="range" data-sl="doel" min="5" max="25" step="1" value="${C.doel}" style="width:100%"></label></div>
+      <div class="dtopt" role="button" tabindex="0" data-mode="lev" aria-pressed="${C.mode==="lev"}"><strong>Levens</strong><span class="sub">Je begint met levens. Wie een verboden woord zegt, verliest een leven. Wie geen levens meer heeft, is af. De laatste die overblijft, wint.</span><label>Levens: <strong id="vbv-lev">${C.lev}</strong><br><input type="range" data-sl="lev" min="5" max="25" step="1" value="${C.lev}" style="width:100%"></label></div>
+      <div class="dtopt" role="button" tabindex="0" data-mode="tijd" aria-pressed="${C.mode==="tijd"}"><strong>Tijd</strong><span class="sub">Je speelt een vaste tijd. Is de tijd om, dan wint wie de meeste punten heeft.</span><label>Speeltijd: <strong id="vbv-min">${C.min}</strong> minuten<br><input type="range" data-sl="min" min="5" max="20" step="1" value="${C.min}" style="width:100%"></label></div>
+    </div>
+    <button class="btn" id="vbgo">Start het spel</button>`;
+    app.querySelector("#back").onclick=ex;
+    app.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{ C.who=b.dataset.who; setup(); });
+    app.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ C[b.dataset.k]=+b.dataset.v; setup(); });
+    app.querySelectorAll("[data-mode]").forEach(b=>{ const f=()=>{ C.mode=b.dataset.mode; setup(); }; b.onclick=f; b.onkeydown=e=>{ if(e.target===b&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); f(); } }; });
+    app.querySelectorAll("[data-sl]").forEach(r=>{ r.onclick=e=>e.stopPropagation(); r.oninput=()=>{ const k=r.dataset.sl; C[k]=+r.value; C.mode=k==="min"?"tijd":k; app.querySelector("#vbv-"+k).textContent=C[k]; app.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===C.mode)); }; });
+    app.querySelector("#vbgo").onclick=start;
+  }
+  let G;
+  function start(){
+    const solo=C.who==="solo", n=solo?C.ns:C.nt;
+    G={pl:Array.from({length:n},(_,i)=>({n:(solo?"Speler ":"Team ")+(i+1),p:0,l:C.lev})),used:new Set(),cur:-1,word:null,end:C.mode==="tijd"?Date.now()+C.min*60000:0,fin:""};
+    next(); 
+  }
+  const fmt=ms=>{ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
+  function next(){
+    let fresh=pool.filter(p=>!G.used.has(p.a)); if(fresh.length<1){ G.used.clear(); fresh=pool.slice(); }
+    G.word=shuffle(fresh)[0]; G.used.add(G.word.a);
+    const alive=G.pl.map((x,i)=>i).filter(i=>C.mode!=="lev"||G.pl[i].l>0); let c=G.cur;
+    for(let k=0;k<G.pl.length;k++){ c=(c+1)%G.pl.length; if(alive.includes(c)) break; } G.cur=c;
+    draw();
+  }
+  function check(){
+    if(G.fin) return;
+    if(C.mode==="doel"){ const w=G.pl.filter(x=>x.p>=C.doel); if(w.length) G.fin=`${w.map(x=>x.n).join(" en ")} ${w.length>1?"hebben":"heeft"} ${C.doel} punten gehaald.`; }
+    else if(C.mode==="lev"){ const al=G.pl.filter(x=>x.l>0); if(al.length<=1) G.fin=al.length?`${al[0].n} is de laatste die overblijft.`:"Niemand heeft nog levens."; }
+  }
+  function draw(){
+    clearInterval(window.__dtI); const w=G.word, d=G.pl[G.cur], lev=C.mode==="lev", over=!!G.fin;
+    const alive=i=>!lev||G.pl[i].l>0;
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    ${C.mode==="tijd"?`<p class="note" style="margin:.2rem 0">Speeltijd over: <strong id="vbtot">${fmt(G.end-Date.now())}</strong></p>`:C.mode==="doel"?`<p class="note" style="margin:.2rem 0">Eerste bij <strong>${C.doel}</strong> punten wint.</p>`:`<p class="note" style="margin:.2rem 0">Laatste speler met levens wint.</p>`}
+    ${over?`<div class="dtbanner" role="alert"><strong>${C.mode==="tijd"&&G.fin==="tijd"?"⏰ Tijd is om!":"Het spel is afgelopen"}</strong>${G.fin==="tijd"?"De speeltijd is voorbij. Je kunt nog punten aanpassen en daarna de uitslag bekijken.":esc(G.fin)}<div style="margin-top:.6rem"><button class="btn" id="vbend">Bekijk de uitslag</button></div></div>`:""}
+    <div class="vbcard"><span class="qtag">${w.tag}</span><div class="vbword">${esc(w.a)}</div>
+      <div class="vbfl">Verboden woorden</div><div class="vbforb">${w.f.map(x=>`<span>${esc(x)}</span>`).join("")}</div>
+      <p class="dtrules" style="margin:.6rem 0 0">Noem ook geen deel van het woord zelf. De categorie (${w.tag.toLowerCase()}) mag je wel zeggen.</p></div>
+    <p class="note" style="margin:.4rem 0">Omschrijft: <strong>${esc(d.n)}</strong></p>
+    <button class="btn" id="vbnext" ${over?"disabled":""}>Volgend woord</button>
+    <h3 style="margin-top:1rem">Punten en levens</h3>
+    <div class="vbpl">${G.pl.map((x,i)=>`<div class="vbp ${!alive(i)?"out":""} ${i===G.cur?"on":""}"><div class="nm"><b>${esc(x.n)}</b>${!alive(i)?" · af":""}</div><div class="sc"><span>${x.p}</span><small>${x.p===1?"punt":"punten"}</small>${lev?`<span class="lv">♥ ${Math.max(0,x.l)}</span>`:""}</div>
+      <div class="bt"><button type="button" data-p="${i}" data-d="1" ${over&&G.fin!=="tijd"||!alive(i)?"disabled":""} aria-label="Punt erbij voor ${esc(x.n)}">+1 punt</button><button type="button" class="g" data-p="${i}" data-d="-1" ${!alive(i)||x.p<=0?"disabled":""} aria-label="Punt eraf voor ${esc(x.n)}">−1</button>${lev?`<button type="button" class="r" data-l="${i}" data-d="-1" ${!alive(i)||over?"disabled":""} aria-label="Leven eraf voor ${esc(x.n)}">−1 leven</button><button type="button" class="g" data-l="${i}" data-d="1" ${x.l<=0||over?"disabled":""} aria-label="Leven erbij voor ${esc(x.n)}">+1 ♥</button>`:""}</div></div>`).join("")}</div>`;
+    app.querySelector("#back").onclick=ex;
+    const nx=app.querySelector("#vbnext"); if(nx) nx.onclick=next;
+    const en=app.querySelector("#vbend"); if(en) en.onclick=einde;
+    app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ const x=G.pl[+b.dataset.p]; x.p=Math.max(0,x.p+ +b.dataset.d); check(); draw(); });
+    app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{ const x=G.pl[+b.dataset.l]; x.l=Math.max(0,x.l+ +b.dataset.d); check(); draw(); });
+    if(C.mode==="tijd"&&G.fin!=="tijd") window.__dtI=setInterval(()=>{ const el=document.getElementById("vbtot"); if(!el) return clearInterval(window.__dtI); const left=G.end-Date.now(); el.textContent=fmt(left); if(left<=0){ clearInterval(window.__dtI); G.fin="tijd"; draw(); } },500);
+  }
+  function einde(){
+    clearInterval(window.__dtI);
+    const lev=C.mode==="lev", r=[...G.pl].sort((a,b)=>lev?(b.l-a.l||b.p-a.p):(b.p-a.p||b.l-a.l));
+    const top=lev?r.filter(x=>x.l===r[0].l&&x.l>0):r.filter(x=>x.p===r[0].p);
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>Het spel is voorbij</h2>
+    <div class="dtbanner ok" role="status"><strong>${top.length===1?`${esc(top[0].n)} wint!`:top.length?`Gelijkspel: ${top.map(x=>esc(x.n)).join(" en ")}`:"Geen winnaar"}</strong></div>
+    <ol class="dtrank">${r.map(t=>`<li><strong>${esc(t.n)}</strong>: ${t.p} ${t.p===1?"punt":"punten"}${lev?`, ${t.l} ${t.l===1?"leven":"levens"} over`:""}</li>`).join("")}</ol>
+    <div class="row" style="margin:1rem 0"><button class="btn" id="vbagain">Nieuw spel</button><button class="btn ghost" id="vbmenu">Andere oefening</button></div>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#vbmenu").onclick=ex; app.querySelector("#vbagain").onclick=setup;
+  }
+  setup();
+}
+if(SHOW_VERBODEN){
+  const _vm=hcModes;
+  hcModes=function(H){ const m=_vm(H); const i=m.findIndex(x=>x[0]==="dertig")>=0?m.findIndex(x=>x[0]==="dertig"):m.findIndex(x=>x[0]==="galgje"); m.splice(i<0?m.length:i+1,0,["verboden","Verboden woord","Omschrijf het woord zonder de verboden woorden te zeggen. Speel met meer spelers of teams"]); return m; };
+  const _vh=hcMenu;
+  hcMenu=function(){ _vh.apply(this,arguments); const b=app.querySelector('[data-m="verboden"]'); if(b) b.onclick=()=>verboden("hc"); };
+  const _vk=kaMenu;
+  kaMenu=function(){ _vk.apply(this,arguments);
+    const list=app.querySelector(".list > [data-m]"); if(!list||app.querySelector('[data-m="verboden"]')) return; const box=list.parentElement;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="verboden"; b.innerHTML=`<span class="txt"><strong>Verboden woord</strong><span class="sub">Omschrijf het woord zonder de verboden woorden te zeggen. Speel met meer spelers of teams</span></span>`;
+    b.onclick=()=>verboden("ka"); const ref=box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
+}
 /* Oefeningen in het menu: eerst groeptegels, na een klik de oefeningen van die groep (een oefening mag in twee groepen staan) */
 (function(){
   const G=[["Leren en bestuderen","uitleg lees ov flash",'<path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/>'],
     ["Kennis en feiten","koppelb fabel wie gk",'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'],
     ["Tijd en plaats","ka2tv tijd tijdlijn chrono tl hitster tijdmachine kaart order",'<path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.8 12 21 12 21z"/><path d="M12 7.5v3.5l2.3 1.4"/>'],
     ["Verbanden","keten koppel vb2ka",'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'],
-    ["Spellen en puzzels","galgje dertig kruis memory hitster wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
+    ["Spellen en puzzels","galgje dertig verboden kruis memory hitster wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","quiz klas mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
   function groepeer(key){
