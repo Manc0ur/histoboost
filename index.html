@@ -7067,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124165148"; let last=0, shown=false;
+  const BUILD="20261124170237"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7768,7 +7768,7 @@ const GR_TV=[
   q:"Hoe werd de Romeinse republiek bestuurd? Gebruik in je antwoord de begrippen: consuls en senaat.",
   model:["Consuls (1 punt): de consuls waren belangrijke bestuurders en legeraanvoerders.","Senaat (1 punt): in de senaat hadden de rijke Romeinse families de macht."],
   doe:["De Romeinse republiek werd bestuurd door de consuls. Zij ...","Daarnaast was er de senaat. Daarin ..."]},
- {id:"tv9",lv:"tl",dv:3,p:2,
+ {id:"tv9",lv:"tlh",dv:3,p:2,
   ctx:["De klassieke cultuur is de naam voor de cultuur van de Grieken en Romeinen. Deze twee volken worden vaak samengevoegd, omdat er zoveel overeenkomsten zijn."],
   q:"Welke overeenkomsten zie je tussen de Griekse en de Romeinse cultuur? Noem er minimaal 3.",
   model:["Drie overeenkomsten goed = 2 punten, twee goed = 1 punt. Bijvoorbeeld:","– De Romeinen vereerden dezelfde goden als de Grieken, maar met andere namen.","– De Romeinen bouwden Griekse tempels na.","– De Romeinen bouwden Griekse beelden na.","– De Romeinen namen Griekse gewoontes over, zoals olijfolie en een warmwaterbad."],
@@ -7868,7 +7868,7 @@ function grTvrIntro(){
   window.scrollTo(0,0);
 }
 function grTvrStart(){
-  const list=shuffle(GR_TV.filter(q=>S.dvSel.has(q.dv)));
+  const pl0=GR_TV.filter(q=>S.dvSel.has(q.dv)), byVg={}; pl0.filter(q=>q.vg).forEach(q=>(byVg[q.vg]=byVg[q.vg]||[]).push(q)); const keepV=new Set(Object.values(byVg).map(a=>a[Math.floor(Math.random()*a.length)].id)); const list=shuffle(pl0.filter(q=>!q.vg||keepV.has(q.id)));
   if(!list.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minstens één onderdeel met toetsvragen.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
   TVR={list,i:0,a:{},chk:{},sc:{}}; grTvrDraw();
 }
@@ -7880,23 +7880,41 @@ function grTvrDraw(){
   <div class="row" style="gap:.4rem;margin-bottom:.8rem"><span class="tag">telt mee voor: ${OT_TAG[q.lv]}</span><span class="tag">${otEsc(H_DV(q.dv))}</span></div>
   ${otBronHtml(q.bron)}
   <div class="qcard" style="--c:var(--ink)">${q.ctx?`<div class="exctx">${otPar(q.ctx)}</div>`:""}<div class="exq"><span class="exnr">${q.p}p</span><div>${otPar(q.q)}</div></div></div>
-  <details class="otdoe"><summary>Doe het zo</summary>${otPar(q.doe)}</details>
-  <label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label>
-  <textarea id="ans" class="ans" rows="6" ${chk?"readonly":""} placeholder="Schrijf hier je antwoord.">${otEsc(TVR.a[q.id]||"")}</textarea>
-  ${chk?`<div class="feedback good otbox" role="status"><h3>Antwoordmodel</h3>${otPar(q.model)}${q.nieuw?`<p class="note"><em>Deze vraag is nieuw geschreven.</em></p>`:""}</div>
+  ${q.doe?`<details class="otdoe"><summary>Doe het zo</summary>${otPar(q.doe)}</details>`:""}
+  ${grAnsHtml(q,TVR.a[q.id],chk)}
+  ${chk?`<div class="feedback good otbox" role="status"><h3>Antwoordmodel</h3>${grModelHtml(q)}${q.nieuw?`<p class="note"><em>Deze vraag is nieuw geschreven.</em></p>`:""}</div>
    <p style="font-weight:700">Hoeveel punten geef je jezelf?</p>
    <div class="row" style="gap:.5rem">${Array.from({length:q.p+1},(_,k)=>`<button type="button" class="chip" data-s="${k}" aria-pressed="${TVR.sc[q.id]===k}">${k}</button>`).join("")}</div>
    <div class="row" style="margin-top:1.2rem">${last?`<button class="btn" id="fin" ${TVR.sc[q.id]==null?"disabled":""}>Klaar</button>`:`<button class="btn" id="nx" ${TVR.sc[q.id]==null?"disabled":""}>Volgende vraag</button>`}</div>`
   :`<div class="row" style="margin-top:1.2rem"><button class="btn" id="chk">Kijk na met het antwoordmodel</button></div>`}
   <p class="note" style="margin-top:1rem">Tot nu toe: ${got} van ${list.slice(0,i).reduce((a,x)=>a+x.p,0)+(TVR.sc[q.id]!=null?q.p:0)} punten, ${Object.keys(TVR.sc).length} vragen nagekeken.</p>`;
   app.querySelector("#back").onclick=hcMenu;
-  const ta=app.querySelector("#ans"); ta.oninput=()=>{ TVR.a[q.id]=ta.value; };
+  grAnsBind(v=>{ TVR.a[q.id]=v; });
   const c=app.querySelector("#chk"); if(c) c.onclick=()=>{ TVR.chk[q.id]=true; grTvrDraw(); };
   app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ TVR.sc[q.id]=+b.dataset.s; grTvrDraw(); });
   const nx=app.querySelector("#nx"); if(nx) nx.onclick=()=>{ TVR.i++; grTvrDraw(); window.scrollTo(0,0); };
   const fin=app.querySelector("#fin"); if(fin) fin.onclick=grTvrEnd;
   window.scrollTo(0,0);
 }
+
+/* Antwoordvelden per soort vraag: tekst (standaard), invulpiramide (kind:"pir") en soort geschiedenis (kind:"soort") */
+function grAnsHtml(q,val,ro){
+  const lab='<label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label>';
+  if(q.kind==="pir"){ const v=String(val||"").split("\n"); return `<div style="margin-top:1rem;font-weight:700">Jouw antwoord</div>`+[1,2,3,4,5].map(n=>`<div class="otrow"><span class="lt">${n}</span><div class="tx"><label>Laag ${n}${n===1?" (hoogste)":n===5?" (laagste)":""}<input class="otin" data-pk="${n-1}" type="text" autocomplete="off" ${ro?"readonly":""} value="${otEsc(v[n-1]||"")}"></label></div></div>`).join(""); }
+  if(q.kind==="soort"){ const v=String(val||"").split("|"); return `<div style="margin-top:1rem;font-weight:700">Jouw antwoord</div>`+q.soort.map((x,k)=>`<div class="otrow"><span class="lt">${"ABCD"[k]}</span><div class="tx"><p style="margin:.1rem 0 .4rem">${otEsc(x[0])}</p><select class="otsel" data-sk="${k}" ${ro?"disabled":""} aria-label="Soort geschiedenis bij omschrijving ${"ABCD"[k]}"><option value="">Kies de soort geschiedenis</option>${SOORTEN.map(z=>`<option value="${z.id}" ${v[k]===z.id?"selected":""}>${otEsc(z.label)}</option>`).join("")}</select></div></div>`).join(""); }
+  return `${lab}<textarea id="ans" class="ans" rows="6" ${ro?"readonly":""} placeholder="Schrijf hier je antwoord.">${otEsc(val||"")}</textarea>`; }
+function grAnsBind(set,after){
+  const ta=app.querySelector("#ans"); if(ta) ta.oninput=()=>{ set(ta.value); if(after) after(); };
+  const pk=[...app.querySelectorAll("[data-pk]")]; pk.forEach(i=>i.oninput=()=>{ set(pk.map(x=>x.value).join("\n")); if(after) after(); });
+  const sk=[...app.querySelectorAll("[data-sk]")]; sk.forEach(x=>x.onchange=()=>{ set(sk.map(y=>y.value).join("|")); if(after) after(); }); }
+const grAnsEmpty=v=>!String(v||"").replace(/[|\n]/g,"").trim();
+function grAnsShow(q,val){
+  if(q.kind==="pir") return `<ol>${String(val||"").split("\n").map(x=>`<li>${otEsc(x)||"<em>(niet ingevuld)</em>"}</li>`).join("")}</ol>`;
+  if(q.kind==="soort"){ const v=String(val||"").split("|"); return `<p>${q.soort.map((x,k)=>{ const z=SOORTEN.find(z=>z.id===v[k]); return `${"ABCD"[k]}: ${z?otEsc(z.label):"–"}`; }).join(" · ")}</p>`; }
+  return `<p>${otEsc(val)||"<em>(niet beantwoord)</em>"}</p>`; }
+function grSoortModel(q){ return `<ul>${q.soort.map((x,k)=>`<li>${"ABCD"[k]}: <strong>${otEsc(SOORTEN.find(z=>z.id===x[1]).label)}</strong></li>`).join("")}</ul>${otPar(q.model)}`; }
+const grModelHtml=q=>q.kind==="soort"?grSoortModel(q):otPar(q.model);
+function grSoortAuto(q,val){ const v=String(val||"").split("|"), n=q.soort.filter((x,k)=>v[k]===x[1]).length; return n===4?2:n===3?1:0; }
 const H_DV=n=>{ const d=(HCDATA.gr.dv||[]).find(x=>x.nr===n); return d?d.vraag:""; };
 function grTvrEnd(){
   const {list}=TVR, sc=q=>TVR.sc[q.id]||0;
@@ -7987,8 +8005,8 @@ function otBody(it,i){
     let h=`<div class="qcard" style="--c:var(--ink)"><div class="exq"><span class="exnr">${it.p}p</span><div><p>Kies bij elk gat het woord of jaartal dat past.</p></div></div></div><p class="otbox"><strong>Keuzewoorden:</strong> ${st.opts.map(otEsc).join(" · ")}</p><p style="line-height:2.4">`;
     P.parts.forEach((t,k)=>{ h+=otEsc(t); if(k<P.ans.length) h+=`<select class="otsel" data-k="${k}" aria-label="Gat ${k+1}"><option value="">(${k+1})</option>${st.opts.map(o=>`<option value="${otEsc(o)}" ${st.a[k]===o?"selected":""}>${otEsc(o)}</option>`).join("")}</select>`; }); return h+"</p>"; }
   const q=it.q; return `${otBronHtml(q.bron)}<div class="qcard" style="--c:var(--ink)">${q.ctx?`<div class="exctx">${otPar(q.ctx)}</div>`:""}<div class="exq"><span class="exnr">${it.p}p</span><div>${otPar(q.q)}</div></div></div>
-    <details class="otdoe"><summary>Doe het zo</summary>${otPar(q.doe)}</details>
-    <label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label><textarea id="ans" class="ans" rows="6" placeholder="Schrijf hier je antwoord.">${otEsc(st.a)}</textarea>`;
+    ${q.doe?`<details class="otdoe"><summary>Doe het zo</summary>${otPar(q.doe)}</details>`:""}
+    ${grAnsHtml(q,st.a,false)}`;
 }
 function otBodyBind(it,i){
   const st=OT.st[i], q=s=>[...app.querySelectorAll(s)];
@@ -7997,10 +8015,10 @@ function otBodyBind(it,i){
   if(it.type==="begr"||it.type==="pir") q(".otin").forEach(s=>s.oninput=()=>{ st.a[+s.dataset.k]=s.value; upd(); });
   if(it.type==="soort"||it.type==="gk") q(".otsel").forEach(s=>s.onchange=()=>{ st.a[+s.dataset.k]=s.value; upd(); });
   if(it.type==="ff") q(".otyn button").forEach(b=>b.onclick=()=>{ st.a[+b.dataset.k]=b.dataset.v==="1"; otDraw(); });
-  if(it.type==="tv"){ const ta=app.querySelector("#ans"); ta.oninput=()=>{ st.a=ta.value; upd(); }; }
+  if(it.type==="tv") grAnsBind(v=>{ st.a=v; },upd);
 }
 function otAnswered(it,st){
-  switch(it.type){ case"chrono":return st.moved; case"ff":return st.a.some(x=>x!==null); case"tv":return !!String(st.a).trim(); default:return st.a.some(x=>String(x).trim()); } }
+  switch(it.type){ case"chrono":return st.moved; case"ff":return st.a.some(x=>x!==null); case"tv":return !grAnsEmpty(st.a); default:return st.a.some(x=>String(x).trim()); } }
 const otLeft=()=>OT.lock?Math.max(0,Math.ceil((OT.qEnd-Date.now())/1000)):Math.max(0,Math.ceil((OT.end-Date.now())/1000));
 function otHead(){ const t=OT.timed?`<div class="petimer${otLeft()<=(OT.lock?30:300)?" low":""}"><span>${OT.lock?"Tijd voor deze vraag":"Tijd over"}</span><b id="ptimer">${peClock(otLeft())}</b></div>`:`<div class="petimer"><span>Zonder timer</span></div>`; return `<div class="pehead"><button class="back" id="back">‹ Stoppen</button>${t}</div>`; }
 function otNav(cur){ return `<div class="pnav" role="group" aria-label="Spring naar een vraag">${OT.items.map((x,j)=>`<button type="button" class="${j===cur?"cur":""} ${otAnswered(x,OT.st[j])?"ans":""}" data-j="${j}" aria-label="Vraag ${j+1}">${j+1}</button>`).join("")}</div>`; }
@@ -8077,6 +8095,7 @@ function otAuto(it,st){
   if(it.type==="ff"){ const n=it.st.filter((x,k)=>st.a[k]===x.t).length; return n===4?2:n===3?1:0; }
   if(it.type==="soort"){ const n=it.its.filter((x,k)=>st.a[k]===x.s).length; return n===4?2:n===3?1:0; }
   if(it.type==="gk"){ const P=otGkParts(it), n=P.ans.filter((x,k)=>st.a[k]===x).length; return n===5?2:n>=3?1:0; }
+  if(it.type==="tv"&&it.q.kind==="soort") return grSoortAuto(it.q,st.a);
   return null; }
 function otSelfPts(it,st){
   if(it.type==="begr"){ const n=st.self.filter(x=>x===true).length; return n===3?2:n===2?1:0; }
@@ -8093,7 +8112,7 @@ function otModel(it){
   if(it.type==="soort") return `<ul>${it.its.map((x,k)=>`<li>${"ABCD"[k]}: <strong>${otEsc(SOORTEN.find(z=>z.id===x.s).label)}</strong></li>`).join("")}</ul>`;
   if(it.type==="pir") return `<ol>${PIRAMIDE.map(x=>`<li>${otEsc(x)}</li>`).join("")}</ol><p class="note">Het is goed genoeg om uit elke laag één van de genoemde groepen te noemen.</p>`;
   if(it.type==="gk"){ const P=otGkParts(it); return `<p>${P.parts.map((t,k)=>otEsc(t)+(k<P.ans.length?`<strong>${otEsc(P.ans[k])}</strong>`:"")).join("")}</p>`; }
-  return otPar(it.q.model); }
+  return grModelHtml(it.q); }
 function otYours(it,st){
   if(it.type==="chrono") return `<ol>${st.order.map(k=>`<li>${otEsc(it.shown[k].t)}</li>`).join("")}</ol>`;
   if(it.type==="begr"){ const d=it.mode==="def"; return it.bs.map((b,k)=>`<p>${otEsc(d?b.b:b.d)} → <em>${otEsc(st.a[k])||"(niet ingevuld)"}</em></p>`).join(""); }
@@ -8101,7 +8120,7 @@ function otYours(it,st){
   if(it.type==="soort") return `<p>${it.its.map((x,k)=>{ const z=SOORTEN.find(z=>z.id===st.a[k]); return `${"ABCD"[k]}: ${z?otEsc(z.label):"–"}`; }).join(" · ")}</p>`;
   if(it.type==="pir") return `<ol>${st.a.map(x=>`<li>${otEsc(x)||"<em>(niet ingevuld)</em>"}</li>`).join("")}</ol>`;
   if(it.type==="gk"){ const P=otGkParts(it); return `<p>${P.parts.map((t,k)=>otEsc(t)+(k<P.ans.length?`<strong>${otEsc(st.a[k]||"…")}</strong>`:"")).join("")}</p>`; }
-  return `<p>${otEsc(st.a)||"<em>(niet beantwoord)</em>"}</p>`; }
+  return grAnsShow(it.q,st.a); }
 function otResult(){
   const rows=OT.items.map((it,i)=>{ const st=OT.st[i], a=otAuto(it,st); const self=a==null;
     const ctl=!self?`<p><strong>${a} van ${it.p} ${it.p===1?"punt":"punten"}</strong> (automatisch nagekeken)</p>`
@@ -8269,18 +8288,14 @@ function otBronHtml(b){ if(!b) return ""; return `<div class="otbron" role="note
 { const st=document.createElement("style"); st.textContent=`.grfig{margin:.6rem 0}.grfig img{display:block;max-width:100%;max-height:60vh;width:auto;height:auto;margin:0 auto;border-radius:8px;background:#fff}.grfig figcaption{font-size:.9rem;color:var(--muted);margin-top:.4rem}.grtab{border-collapse:collapse;width:100%;max-width:34rem;margin:.4rem 0}.grtab caption{text-align:left;font-weight:700;padding:.2rem 0 .4rem}.grtab td{border:1px solid var(--line);padding:.35rem .6rem}.grtab td:last-child{text-align:right;white-space:nowrap}.grtab tr.tot td{font-weight:700}`; document.head.appendChild(st); }
 /* Nieuwe toetsvragen bij de leerdoelen (door Claude geschreven, docent controleren) */
 GR_TV.push(
- {id:"tv21",lv:"tl",dv:1,p:2,nieuw:true,bron:{kop:"In de tabel staan de groepen mensen die in 430 voor Christus in Athene woonden.",tabel:true},
-  q:"Welke groep mocht stemmen in de volksvergadering? Hoeveel mensen waren dat ongeveer?",
-  model:["Groep (1 punt): de volwassen mannelijke burgers.","Aantal (1 punt): 40.000."],
-  doe:["De groep die mocht stemmen was ...","Dat waren ongeveer ... mensen."]},
  {id:"tv22",lv:"tlh",dv:1,p:2,nieuw:true,bron:{kop:"In de tabel staan de groepen mensen die in 430 voor Christus in Athene woonden.",tabel:true},
-  q:"Laat met de tabel zien dat er veel ongelijkheid was in Athene. Gebruik getallen uit de tabel.",
-  model:["Weinig mensen mochten stemmen (1 punt): maar 40.000 van de 450.000 inwoners, dat is ongeveer 1 op de 10.","Veel mensen hadden geen rechten (1 punt): bijvoorbeeld 250.000 slaven, of 80.000 burgers zonder politieke rechten."],
-  doe:["Er was veel ongelijkheid, want maar ... van de 450.000 inwoners mocht stemmen.","Daarnaast ..."]},
+  q:"Gebruik de tabel. Leg met twee argumenten uit dat er veel ongelijkheid was in Athene. Gebruik getallen uit de tabel in je antwoord.",
+  model:["Twee argumenten, elk met een getal uit de tabel (elk 1 punt):","– Weinig mensen mochten stemmen: maar 40.000 van de 450.000 inwoners, dat is ongeveer 1 op de 10.","– Veel mensen hadden geen rechten, bijvoorbeeld: 250.000 slaven, 80.000 burgers zonder politieke rechten of 80.000 elders geboren inwoners.","Een argument zonder getal uit de tabel levert geen punt op."],
+  doe:["Argument 1: er was veel ongelijkheid, want maar ... van de 450.000 inwoners mocht stemmen.","Argument 2: er was ook ongelijkheid, want ..."]},
  {id:"tv23",lv:"tlh",dv:1,p:2,nieuw:true,bron:{kop:"Een kleroterion werd gebruikt in Athene.",img:["kler"]},
-  q:"Leg uit hoe loten de Atheense democratie beschermde.",
-  model:["Iedere burger had evenveel kans om gekozen te worden, ook als hij niet rijk of machtig was (1 punt).","Tot het laatste moment was niet bekend wie jurylid werd (bron), dus niemand kon vooraf mensen uitkiezen of omkopen. Zo kregen rijke of machtige mensen geen controle over de rechtspraak en het bestuur (1 punt)."],
-  doe:["Loten beschermde de democratie, want ...","In de bron staat dat ..."]},
+  q:"Leg uit hoe de kleroterion de Atheense democratie beschermde. Verwijs in je antwoord naar de bron.",
+  model:["Iedere burger had evenveel kans om gekozen te worden, ook als hij niet rijk of machtig was (1 punt).","Verwijzing naar de bron (1 punt): tot het laatste moment was niet bekend wie jurylid werd, dus niemand kon vooraf mensen uitkiezen of omkopen. Zo kregen rijke of machtige mensen geen controle over de rechtspraak en het bestuur."],
+  doe:["De kleroterion beschermde de democratie, want ...","In de bron staat dat ..."]},
  {id:"tv24",lv:"tl",dv:1,p:2,nieuw:true,bron:{kop:"Een scherf uit Athene, gebruikt bij schervengericht.",img:["ost"]},
   q:"Op wat voor manier beschermde het schervengericht de Atheense democratie?",
   model:["De burgers beslisten zelf (1 punt): ze stemden door een naam op een scherf te krassen en de man met de meeste stemmen moest tien jaar weg uit Athene.","Een man die te machtig of te gevaarlijk werd, kon zo worden weggestuurd (1 punt). Daardoor kwam de macht niet bij één man en bleef de democratie beschermd."],
@@ -8301,25 +8316,36 @@ GR_TV.push(
   q:"Leg uit dat de bondgenoten van Rome op de ene kant van deze munt Romeinse invloed laten zien en op de andere kant juist niet.",
   model:["Romeinse invloed (1 punt): op de voorkant staat Bacchus, een Grieks-Romeinse god. De bondgenoten namen dus de Grieks-Romeinse cultuur over.","Tegen Rome (1 punt): op de achterkant valt een stier (Italië) een wolf (Rome) aan. De bondgenoten keerden zich dus tegen Rome."],
   doe:["Op de voorkant zie je Romeinse invloed, want ...","Op de achterkant zie je dat de bondgenoten ..., want ..."]},
- {id:"tv30",lv:"tl",dv:3,p:2,nieuw:true,
-  q:"Noem twee van de vijf sociale lagen (groepen mensen) in de Romeinse samenleving.",
-  model:["Twee lagen (elk 1 punt), bijvoorbeeld:","– bestuurders, legeraanvoerders en mensen met veel grond","– ambachtslieden en handelaren","– boeren","– mensen zonder vast werk","– mensen die tot slaaf waren gemaakt"],
-  doe:["Twee sociale lagen in Rome waren: 1. ... 2. ..."]},
+ {id:"tv30",lv:"tl",dv:3,p:2,nieuw:true,kind:"pir",
+  q:"Vul de sociale piramide van de Romeinse samenleving in. Er zijn vijf lagen. Schrijf in elke laag een groep mensen op. Begin bovenaan met de laag met de meeste macht en het meeste bezit.",
+  model:["Alle vijf de lagen goed: 2 punten. Drie of vier lagen goed: 1 punt.","Laag 1 (hoogste): bestuurders, legeraanvoerders en mensen met veel grond","Laag 2: ambachtslieden en handelaren","Laag 3: boeren","Laag 4: mensen zonder vast werk","Laag 5 (laagste): mensen die tot slaaf waren gemaakt","Het is goed genoeg om uit elke laag één van de genoemde groepen te noemen."],
+  doe:["Laag 1: ... Laag 2: ... Laag 3: ... Laag 4: ... Laag 5: ..."]},
  {id:"tv31",lv:"h",dv:3,p:2,nieuw:true,
   q:"Er waren vijf sociale lagen in Rome. Beschrijf één hoge en één lage sociale laag en leg uit wat het verschil in macht was.",
   model:["Hoge laag (1 punt), bijvoorbeeld: bestuurders, legeraanvoerders en mensen met veel grond. Zij hadden de macht (in de Republiek in de senaat).","Lage laag (1 punt), bijvoorbeeld: mensen die tot slaaf waren gemaakt of mensen zonder vast werk. Zij hadden weinig of geen macht en rechten."],
   doe:["Een hoge sociale laag was ..., zij ...","Een lage sociale laag was ..., zij ..."]},
- {id:"tv33",lv:"tlh",dv:1,p:2,nieuw:true,
-  ctx:["Je leert vier soorten geschiedenis: politiek-bestuurlijk, sociaal, economisch en cultureel."],
-  q:"Geef één voorbeeld van sociale geschiedenis en één voorbeeld van culturele geschiedenis uit de tijd van de Grieken.",
-  model:["Sociaal (1 punt), bijvoorbeeld: vrouwen en slaven hadden geen rechten / er was ongelijkheid tussen groepen mensen.","Cultureel (1 punt), bijvoorbeeld: de Griekse goden en mythen / de Grieken spraken allemaal Grieks."],
-  doe:["Sociaal: ...","Cultureel: ..."]},
- {id:"tv34",lv:"h",dv:2,p:2,nieuw:true,
+ {id:"tv33",lv:"tlh",dv:1,p:2,nieuw:true,kind:"soort",vg:"A3",
+  q:"Hieronder staan vier omschrijvingen. Geef bij elke omschrijving aan of het gaat over politiek-bestuurlijke, sociale, economische of culturele geschiedenis.",
+  soort:[["De Grieken vertelden mythen over goden om te verklaren wat er in de natuur gebeurde.","cul"],["In Athene besloten de burgers in de volksvergadering over wetten.","pol"],["De Grieken leefden van landbouw, nijverheid en handel.","eco"],["In Athene hadden vrouwen en slaven geen burgerrechten.","soc"]],
+  model:["Alle vier goed: 2 punten. Drie goed: 1 punt."]},
+ {id:"tv36",lv:"tlh",dv:3,p:2,nieuw:true,kind:"soort",vg:"A3",
+  q:"Hieronder staan vier omschrijvingen. Geef bij elke omschrijving aan of het gaat over politiek-bestuurlijke, sociale, economische of culturele geschiedenis.",
+  soort:[["In Rome werden Griekse goden vereerd, maar dan onder Latijnse namen.","cul"],["Ambachtslieden en handelaren in Rome verdienden hun geld met het maken en verkopen van spullen.","eco"],["In de Romeinse Republiek bestuurden de senaat en twee consuls de staat.","pol"],["In Rome waren er rijke bestuurders, boeren en mensen die tot slaaf waren gemaakt.","soc"]],
+  model:["Alle vier goed: 2 punten. Drie goed: 1 punt."]},
+ {id:"tv37",lv:"tlh",dv:2,p:2,nieuw:true,kind:"soort",vg:"A3",
+  q:"Hieronder staan vier omschrijvingen. Geef bij elke omschrijving aan of het gaat over politiek-bestuurlijke, sociale, economische of culturele geschiedenis.",
+  soort:[["Over de Romeinse wegen werden graan, wijn en olie vervoerd.","eco"],["Romeinse bestuurders en soldaten hielden het gezag in de veroverde gebieden.","pol"],["In de veroverde gebieden gingen mensen Latijn spreken en Romeinse gewoonten overnemen.","cul"],["Romeinse burgers hadden meer rechten dan slaven en vreemdelingen.","soc"]],
+  model:["Alle vier goed: 2 punten. Drie goed: 1 punt."]},
+ {id:"tv34",lv:"tlh",dv:2,p:2,nieuw:true,
   q:"De Romeinen en de overwonnen volken werden vaak bondgenoten. Leg uit wat beide partijen daaraan hadden.",
   model:["Voor de Romeinen (1 punt): de overwonnen volken betaalden belasting.","Voor de overwonnen volken (1 punt): zij mochten hun eigen bestuur houden."],
-  doe:["De Romeinen hadden eraan dat ...","De overwonnen volken hadden eraan dat ..."]}
+  doe:["De Romeinen hadden eraan dat ...","De overwonnen volken hadden eraan dat ..."]},
+ {id:"tv35",lv:"tlh",dv:3,p:2,nieuw:true,
+  q:"Noem twee overeenkomsten en twee verschillen tussen de Griekse cultuur en de Romeinse cultuur.",
+  model:["Twee overeenkomsten (1 punt), bijvoorbeeld:","– Ze vereerden veel dezelfde goden.","– Ze bouwden tempels en theaters met zuilen en maakten beelden in dezelfde stijl.","Twee verschillen (1 punt), bijvoorbeeld:","– Taal: de Grieken spraken Grieks, de Romeinen Latijn.","– Namen van de goden: Zeus heette bij de Romeinen Jupiter.","Noem je ‘dezelfde goden’ als overeenkomst, dan mag ‘andere namen van de goden’ niet ook als verschil tellen."],
+  doe:["Overeenkomsten: 1. ... 2. ...","Verschillen: 1. ... 2. ..."]}
 );
-const GR_LD={tv1:"1.1",tv2:"1.2",tv3:"1.2",tv4:"1.3",tv5:"1.3",tv6:"3.1",tv7:"2.3",tv8:"3.1",tv9:"3.3",tv10:"1.2",tv11:"1.2",tv12:"1.2",tv13:"2.2",tv14:"2.3",tv15:"1.2",tv16:"1.1",tv17:"2.1",tv18:"2.3",tv19:"3.1",tv20:"3.3",tv21:"1.2",tv22:"1.2",tv23:"1.2",tv24:"1.2",tv25:"1.2",tv26:"2.2",tv28:"3.3",tv29:"2.2",tv30:"3.2",tv31:"3.2",tv33:"A3",tv34:"2.2"};
+const GR_LD={tv1:"1.1",tv2:"1.2",tv3:"1.2",tv4:"1.3",tv5:"1.3",tv6:"3.1",tv7:"2.3",tv8:"3.1",tv9:"3.3",tv10:"1.2",tv11:"1.2",tv12:"1.2",tv13:"2.2",tv14:"2.3",tv15:"1.2",tv16:"1.1",tv17:"2.1",tv18:"2.3",tv19:"3.1",tv20:"3.3",tv22:"1.2",tv23:"1.2",tv24:"1.2",tv25:"1.2",tv26:"2.2",tv28:"3.3",tv29:"2.2",tv30:"3.2",tv31:"3.2",tv33:"A3",tv34:"2.2",tv35:"3.3",tv36:"A3",tv37:"A3"};
 GR_TV.forEach(q=>{ q.ld=GR_LD[q.id]; });
 const GR_LDK={"1.1":10,"1.2":20,"1.3":30,"A3":35,"2.1":40,"3.1":45,"2.2":50,"2.3":60,"3.2":70,"3.3":80}; /* volgorde in de toets: eerst de Grieken, dan de Romeinen, zo chronologisch mogelijk */
 function grItKey(it){ if(it.type==="tv") return GR_LDK[it.q.ld]||50; if(it.type==="ff") return 21; if(it.type==="soort") return 35; if(it.type==="pir") return 70.1;
