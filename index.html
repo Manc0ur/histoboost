@@ -7067,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124162906"; let last=0, shown=false;
+  const BUILD="20261124165148"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7975,8 +7975,7 @@ function otBody(it,i){
     <p class="note">Tip: pak een gebeurtenis bij het streepjessymbool rechts vast. Met een toetsenbord gebruik je de pijltjes omhoog en omlaag.</p>`;
   if(it.type==="begr"){ const d=it.mode==="def";
     return `<div class="qcard" style="--c:var(--ink)"><div class="exq"><span class="exnr">${it.p}p</span><div><p>${d?"Schrijf bij elk begrip op wat het betekent.":"Schrijf bij elke omschrijving het begrip op."}</p></div></div></div>
-    ${it.bs.map((b,k)=>`<div class="otrow"><span class="lt">${k+1}</span><div class="tx"><p><strong>${otEsc(d?b.b:b.d)}</strong></p><input class="otin" data-k="${k}" type="text" autocomplete="off" aria-label="${d?"Omschrijving":"Begrip"} ${k+1}" value="${otEsc(st.a[k])}" placeholder="${d?"Wat betekent dit?":"Welk begrip is dit?"}"></div></div>`).join("")}
-    <details class="otdoe"><summary>Doe het zo</summary>${d?`<p>${otEsc(it.bs[0].b)} is ...</p>`:`<p>De omschrijving ‘…’ hoort bij het begrip ...</p>`}</details>`; }
+    ${it.bs.map((b,k)=>`<div class="otrow"><span class="lt">${k+1}</span><div class="tx"><p><strong>${otEsc(d?b.b:b.d)}</strong></p><input class="otin" data-k="${k}" type="text" autocomplete="off" aria-label="${d?"Omschrijving":"Begrip"} ${k+1}" value="${otEsc(st.a[k])}" placeholder="${d?"Wat betekent dit?":"Welk begrip is dit?"}"></div></div>`).join("")}`; }
   if(it.type==="ff") return `<div class="qcard" style="--c:var(--ink)"><div class="exq"><span class="exnr">${it.p}p</span><div><p>Hieronder staan vier zinnen over de Griekse stadstaat Athene na 500 v.C. Zijn de zinnen juist of onjuist?</p></div></div></div>
     ${it.st.map((x,k)=>`<div class="otrow"><span class="lt">${"ABCD"[k]}</span><span class="tx">${otEsc(x.s)}</span><span class="otyn" role="group" aria-label="Zin ${"ABCD"[k]}"><button type="button" data-k="${k}" data-v="1" aria-pressed="${st.a[k]===true}">Juist</button><button type="button" data-k="${k}" data-v="0" aria-pressed="${st.a[k]===false}">Onjuist</button></span></div>`).join("")}`;
   if(it.type==="soort") return `<div class="qcard" style="--c:var(--ink)"><div class="exq"><span class="exnr">${it.p}p</span><div><p>Welk soort geschiedenis hoort bij elk feit: politiek-bestuurlijk, sociaal, economisch of cultuur?</p></div></div></div>
