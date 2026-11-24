@@ -7060,7 +7060,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124092252"; let last=0, shown=false;
+  const BUILD="20261124094008"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8784,6 +8784,8 @@ function pswReisHint(r){ const parts=r.n.split(/\s+/).filter(w=>w.length>3), esc
   let u=(r.u||"").split(/(?<=[.!?])\s+/)[0]; let first=true;
   u=u.replace(new RegExp("\\b("+[r.n,...parts].map(esc).join("|")+")\\b","g"),()=>{ if(first){ first=false; return "Deze ontdekkingsreiziger"; } return "hij"; });
   return u.replace(/\b[Dd]a (Deze ontdekkingsreiziger|hij)/,"$1"); }
+// gebeurtenissen die niet in Per seconde wijzer (jaartallen) mogen voorkomen
+const PSW_EXCL=new Set(["De Japanse vloot vernietigt de Chinese vloot"]);
 function pswBank(niv){
   const bank=[], ids=(HCLIST[niv]||[]).filter(h=>h.id).map(h=>h.id);
   const nine=(L,key)=>{ const seen=new Set(), out=[]; shuffle(L.slice()).forEach(x=>{ const k=key(x); if(!seen.has(k)&&out.length<9){ seen.add(k); out.push(x); } }); return out; };
@@ -8796,7 +8798,7 @@ function pswBank(niv){
     const ps=WBI.filter(w=>w.hc&&w.hc[id]&&w.u&&w.n);
     if(new Set(ps.map(p=>p.n)).size>=9) bank.push({kind:"p",theme:`${T}: personen`,
       build:()=>nine(ps,p=>p.n).map(p=>{ const u=p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""); const s=u.split(/(?<=[.!?])\s+/).slice(0,2).join(" "); return {a:p.n,d:PSW_ALT[p.n+"|"+s]||pswMask(s,[p.n,...p.n.split(/\s+/)])}; })});
-    const ev=(H.tijdlijn||[]).filter(e=>Number.isFinite(e.j)&&e.t);
+    const ev=(H.tijdlijn||[]).filter(e=>Number.isFinite(e.j)&&e.t&&!PSW_EXCL.has(e.t));
     if(new Set(ev.map(e=>Math.round(e.j))).size>=9) bank.push({kind:"y",theme:`${T}: jaartallen`,
       build:()=>nine(ev,e=>Math.round(e.j)).map(e=>({y:Math.round(e.j),a:e.j<0?Math.abs(Math.round(e.j))+" v.C.":String(Math.round(e.j)),d:"Wanneer gebeurde dit? "+String(e.t).replace(/[.]$/,"")}))});
   });
