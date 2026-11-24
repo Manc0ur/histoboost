@@ -7067,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124155932"; let last=0, shown=false;
+  const BUILD="20261124162042"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9043,6 +9043,7 @@ function pswEnd(G,mode){
 if(SHOW_PSW){
   const _home=home;
   home=function(){ _home.apply(this,arguments);
+    if(S.deel==="ob") return; /* onderbouw: geen Per seconde wijzer */
     const sec=app.querySelector("section.section:last-of-type"); if(!sec) return;
     const nv=S.niveau==="tl"?"TL":S.niveau==="vwo"?"VWO":"HAVO";
     const wrap=document.createElement("div"); wrap.id="pswwrap";
