@@ -3911,7 +3911,7 @@ function flashDeck(scope){
   const D=[];
   if(scope==="ka"){
     const sel=n=>S.sel.has(n);
-    kwGapDefs(GK_KA.filter(t=>t.tv.some(sel)&&kaOk(t))).filter(d=>d.a&&d.q&&!/\d/.test(d.a)).forEach(d=>D.push({id:"b:"+d.a,tag:"Begrip",f:d.a,a:d.q}));
+    kwGapDefs(GK_KA.filter(t=>t.tv.some(sel)&&kaOk(t))).filter(d=>d.a&&d.q&&!/\d/.test(d.a)).forEach(d=>D.push({id:"b:"+d.a,tag:BT(d.a),f:d.a,a:d.q}));
     WBI.filter(p=>p.u&&p.tv.some(sel)&&kaOk(p)).forEach(p=>D.push({id:"p:"+p.n,tag:"Persoon",f:p.n,a:p.u}));
     KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>D.push({id:"g:"+e.j+":"+e.t,tag:"Gebeurtenis",f:e.t,y:e.j,a:e.u||(TLX[e.j]||[])[0]||""}));
   } else {
@@ -7090,14 +7090,15 @@ function kaMC(){ mcEx({title:"Meerkeuzevragen",qs:fillQuiz(mcGensKA(),10),back:k
 function hcMC(){ mcEx({title:"Meerkeuzevragen",qs:fillQuiz(mcGensHC(),10),back:hcMenu,again:hcMC}); }
 
 /* ---------- Memory: zoek bij elk begrip, persoon of gebeurtenis de juiste omschrijving ---------- */
-function BT(n){ return /^(het )?rampjaar$/i.test(String(n))?"Gebeurtenis":"Begrip"; }
+const BT_EV=new Set(["11 september 2001", "anschluss", "beeldenstorm", "beurskrach", "blokkade van berlijn", "bokseropstand", "cubacrisis", "d-day", "februaristaking", "hongaarse opstand", "hongerwinter", "kristallnacht", "knieval van brandt", "lange mars", "luchtbrug", "luxemburgse kwestie", "noordelijke veldtocht", "operatie barbarossa", "operatie market garden", "praagse lente", "rampjaar", "het rampjaar", "revolutiepoging van troelstra", "rijksdagbrand", "russische revolutie", "slag om engeland", "slag om stalingrad", "smeekschrift der edelen", "soevereiniteitsoverdracht", "spaanse furie", "spartakusopstand", "spoorwegstaking", "taipingopstand", "tachtigjarige oorlog", "opiumoorlogen", "politionele acties", "montagsdemonstraties", "pacificatie", "pacificatie van 1917", "congres van wenen", "conferentie van jalta", "wannseeconferentie", "verdrag van maastricht", "verdrag van schengen", "verdrag van versailles", "vrede van augsburg", "molotov-ribbentroppact", "niet-aanvalsverdrag", "duitse hereniging", "hereniging", "uiteenvallen van de sovjet-unie", "uitbreiding van de navo", "keizerskroning", "culturele revolutie", "grote sprong voorwaarts", "oliecrisis", "kredietcrisis", "holocaust", "hagenpreken"]), BT_PE=new Set(["chiang kai-shek", "cixi", "socrates", "sun yat-sen"]);
+function BT(n){ const k=String(n).toLowerCase().trim(); return BT_EV.has(k)?"Gebeurtenis":BT_PE.has(k)?"Persoon":"Begrip"; }
 function memPairs(scope){
   let P=[];
   const short=s=>s&&s.length<=120;
   if(scope==="ka"){
     const sel=n=>S.sel.has(n); sylKA();
     P.push(...KW_EVENTS.ka.filter(e=>sel(e[0])&&verplicht(e[1])&&kaOk({ka:KAMAP.kwev[e[1]]})).map(e=>({a:e[1],q:e[2],tag:"Gebeurtenis"})));
-    P.push(...kwGapDefs(GK_KA.filter(t=>t.tv.some(sel)&&kaOk(t))).filter(d=>!/\d/.test(d.a)).map(d=>({a:d.a,q:d.q,tag:"Begrip"})));
+    P.push(...kwGapDefs(GK_KA.filter(t=>t.tv.some(sel)&&kaOk(t))).filter(d=>!/\d/.test(d.a)).map(d=>({a:d.a,q:d.q,tag:BT(d.a)})));
     P.push(...WBI.filter(p=>p.tv.some(sel)&&kaOk(p)).map(p=>({a:p.n,q:p.k||p.h[4],tag:"Persoon"})));
   } else {
     const H=S.hc, d=x=>S.dvSel.has(x.dv); sylHC(H);
@@ -7162,7 +7163,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124204535"; let last=0, shown=false;
+  const BUILD="20261124204738"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7713,7 +7714,7 @@ function obSoortItems(){ const H=S.hc, out=[];
   SOORT_ITEMS.forEach(it=>{ if(it.q){ out.push({id:"s:"+it.q,q:it.q,s:it.s}); return; }
     const [t,k]=it.k.split(":");
     if(t==="e"){ const e=H.tijdlijn.find(x=>String(x.j)===k); if(e) out.push({id:"s:"+it.k,q:`${inY(e.j,1)}: ${onePart(e.t)}.`,s:it.s,tag:"Gebeurtenis"}); }
-    else { const b=H.begrippen.find(x=>x.b===k); if(b) out.push({id:"s:"+it.k,q:`Begrip: ${b.b}. ${b.d}`,s:it.s,tag:"Begrip"}); } });
+    else { const b=H.begrippen.find(x=>x.b===k); if(b) out.push({id:"s:"+it.k,q:`${BT(b.b)==="Begrip"?"Begrip":BT(b.b)}: ${b.b}. ${b.d}`,s:it.s,tag:BT(b.b)}); } });
   return out; }
 function obSoort(){
   const items=obSoortItems();
@@ -9679,7 +9680,7 @@ function dtPool(scope){
   const P=[], one=t=>{ let x=String(t||"").replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").split(/\.\s/)[0].split(/;\s*/)[0].replace(/[.]$/,"").trim(); return x; };
   if(scope==="ka"){
     const sel=n=>S.sel.has(n); sylKA();
-    Object.keys(KA_BEG).filter(n=>sel(+n)).forEach(n=>KA_BEG[n].forEach(([a,q])=>{ if(kaOk({ka:KABEGKA[n+"|"+a]})) P.push({a,tag:"Begrip",d:q}); }));
+    Object.keys(KA_BEG).filter(n=>sel(+n)).forEach(n=>KA_BEG[n].forEach(([a,q])=>{ if(kaOk({ka:KABEGKA[n+"|"+a]})) P.push({a,tag:BT(a),d:q}); }));
     WBI.filter(p=>p.tv.some(sel)&&kaOk(p)).forEach(p=>P.push({a:p.n,tag:"Persoon",d:p.u||p.k||""}));
     KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>P.push({a:one(e.t),tag:"Gebeurtenis",d:(e.t||"")+" "+(e.u||"")}));
   } else {
