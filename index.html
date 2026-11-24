@@ -6888,7 +6888,7 @@ function kruiswoord({scope,back,again}){
     <div class="meta"><span>Kruiswoordpuzzel</span><span>${P.placed.length} woorden</span></div>
     <p class="lead" style="margin-bottom:.8rem">Klik op een vakje of een omschrijving en typ het antwoord. Klik nog een keer op hetzelfde vakje om van richting te wisselen. Spaties en streepjes laat je weg.</p>
     <div class="kwwrap" style="--kw:max(1.2rem, min(2.3rem, calc((min(100vw, 46rem) - 3.6rem) / ${P.cols} - 2px)))"><div class="kwgrid" id="kwg" style="grid-template-columns:repeat(${P.cols},var(--kw));grid-template-rows:repeat(${P.rows},var(--kw))"></div></div>
-    <div class="row" style="margin:.9rem 0 1.2rem"><button class="btn" id="kwcheck">Controleer</button><button class="btn ghost" id="kwhint">Hint: één letter</button><button class="btn ghost" id="kwshow">Toon oplossing</button><button class="btn ghost" id="kwnew">Nieuwe puzzel</button></div>
+    <div class="row" style="margin:.9rem 0 1.2rem"><button class="btn" id="kwcheck">Controleer</button><button class="btn ghost" id="kwhint">Hint: één letter</button><button class="btn ghost" id="kwnew">Nieuwe puzzel</button></div>
     <div id="kwfb"></div>
     <div class="kwclues"><section><h3>Horizontaal</h3><ol>${across.map(clueLi).join("")}</ol></section><section><h3>Verticaal</h3><ol>${down.map(clueLi).join("")}</ol></section></div>`;
   const grid=app.querySelector("#kwg");
@@ -6925,7 +6925,7 @@ function kruiswoord({scope,back,again}){
   app.querySelector("#kwcheck").onclick=()=>{ checked=true; checkAll(false); };
   app.querySelector("#kwhint").onclick=()=>{ const w=curWord()||P.placed.find(w=>wordCells(w).some(k=>val.get(k)!==cell.get(k).ch)); if(!w) return;
     const k=wordCells(w).find(k=>val.get(k)!==cell.get(k).ch); if(!k) return; val.set(k,cell.get(k).ch); show(k,cell.get(k).ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); select(k,w.dir); };
-  app.querySelector("#kwshow").onclick=()=>{ cell.forEach((o,k)=>{ if(val.get(k)!==o.ch){ val.set(k,o.ch); show(k,o.ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); } });
+  const _ks=app.querySelector("#kwshow"); if(_ks) _ks.onclick=()=>{ cell.forEach((o,k)=>{ if(val.get(k)!==o.ch){ val.set(k,o.ch); show(k,o.ch); grid.querySelector(`[data-k="${k}"]`).classList.add("given"); } });
     app.querySelector("#kwfb").innerHTML=`<div class="feedback badf" role="status"><p><strong>Dit is de oplossing.</strong> De antwoorden: ${order.map(w=>`${w.n}${w.dir?" verticaal":" horizontaal"}: ${esc(w.a)}`).join("; ")}.</p></div>`; };
   app.querySelector("#kwnew").onclick=again;
   app.querySelector("#back").onclick=back;
@@ -7064,7 +7064,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124145000"; let last=0, shown=false;
+  const BUILD="20261124155339"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
