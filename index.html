@@ -259,6 +259,7 @@ body.lzhide .lzsticky .lzscroll{display:none}
 @media (max-width:520px){.band span{height:40px;font-size:1rem}.band-years{font-size:.6rem}}
 .qtag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:.05rem .55rem;margin-right:.4rem;vertical-align:.1em;color:var(--muted)}
 /* oefeningenmenu: twee vierkantere knoppen naast elkaar */
+.mgback{grid-column:1/-1;display:flex;align-items:center;gap:1rem;margin:.1rem 0 .1rem;flex-wrap:wrap}.mgback h3{margin:0;font-size:1.15rem}.item.mgt .sub{font-size:.82rem}
 .list:has(>.item[data-m]),.list:has(>.item[data-v]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
 .list:has(>.item[data-m])>.item,.list:has(>.item[data-v])>.item{flex-direction:column;align-items:flex-start;gap:.6rem;padding:.9rem;min-height:9.5rem}
 .list:has(>.item[data-m])>.item .txt,.list:has(>.item[data-v])>.item .txt{flex:0 1 auto}
@@ -7160,7 +7161,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124172817"; let last=0, shown=false;
+  const BUILD="20261124192402"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8732,7 +8733,7 @@ if(SHOW_TOTDU){
     ref.insertAdjacentElement("afterend",b); b.onclick=()=>grTotDu(hcMenu); if(typeof decorate==="function") decorate(); }; }
 
 /* ---------- Stadsvergelijker (vwo, historische context Steden en burgers in de Lage Landen): welke stad is het? De situaties zijn door Claude samengesteld uit de stofomschrijving: docent graag controleren. ---------- */
-const SHOW_STAD=false; /*live: uit, tot akkoord*/
+const SHOW_STAD=false; /*Stadsvergelijker verwijderd op verzoek*/
 const STAD_N={a:"Atrecht",b:"Brugge",w:"Antwerpen",m:"Amsterdam"};
 const STAD_K={a:["Atrecht","1050–1302","Bisschopsstad en startpunt van de stedelijke dynamiek. Centrum van de lakennijverheid, met jaarmarkten in Frankrijk en koopliedengilden. Tegen 1300 overvleugeld door Vlaamse steden."],
  b:["Brugge","1300–1500","Handelscentrum van het Vlaamse en Brabantse netwerk, aan de Noordzee en gericht op de Hanze, Spanje en Italië. Eerste koopmansbeurs. Verloor in de 15e eeuw de centrale positie aan Antwerpen."],
@@ -9653,6 +9654,39 @@ const KAMAP={"tl":[[1],[1,2],[2],[2],[2],[3],[3],[4],[5],[6],[8],[7],[10],[10],[
   WBI.forEach(p=>{ if(KAMAP.wbi[p.id]) p.ka=KAMAP.wbi[p.id]; });
   GK_KA.forEach(t=>{ const f=String(t.uit||"").split(/(?<=[.!?])\s/)[0]; t.ka=(f.match(/\b\d{1,2}\b/g)||[]).map(Number).filter(n=>n>=1&&n<=49); });
   window.KABEGKA=KAMAP.beg;
+})();
+/* Oefeningen in het menu: eerst groeptegels, na een klik de oefeningen van die groep (een oefening mag in twee groepen staan) */
+(function(){
+  const G=[["Leren en bestuderen","uitleg lees ov flash",'<path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/>'],
+    ["Kennis en feiten","koppelb fabel wie gk",'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'],
+    ["Tijd en plaats","ka2tv tijd tijdlijn chrono tl hitster tijdmachine kaart order",'<path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.8 12 21 12 21z"/><path d="M12 7.5v3.5l2.3 1.4"/>'],
+    ["Verbanden","keten koppel vb2ka",'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'],
+    ["Spellen en puzzels","galgje kruis memory hitster wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
+    ["Toetsen en examen","quiz klas mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
+  const nm=x=>(x.querySelector("strong")||{}).textContent||"";
+  function groepeer(key){
+    if(window.__nogrp) return; const first=app.querySelector(".list > [data-m]"); if(!first) return; const list=first.parentElement; if(list.dataset.grp) return;
+    const SPEC="kolonie rechten provincie reis dekolonie imperium stadstaat totdu totaal stroming soort denker piramide".split(" "), all=[...list.children].filter(x=>x.dataset&&x.dataset.m), spec=all.filter(x=>SPEC.includes(x.dataset.m)), items=all.filter(x=>!SPEC.includes(x.dataset.m)), placed=new Set(), grp=[];
+    G.forEach(([t,ms,ico])=>{ const ids=ms.split(" "), its=items.filter(x=>ids.includes(x.dataset.m)); if(its.length){ its.forEach(x=>placed.add(x)); grp.push({t,ico,its}); } });
+    
+    if(spec.length) grp.push({t:"Losse oefeningen",ico:'<path d="M12 3l2.4 5.6 6.1.5-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.5z"/>',its:spec}); /* oefeningen voor één specifiek onderwerp */
+    items.filter(x=>!placed.has(x)).forEach(x=>{ grp[1].its.push(x); placed.add(x); }); /* niet ingedeeld: bij Kennis en feiten, nooit kwijt */
+    list.dataset.grp="1"; if(S.mgKey!==key){ S.mgKey=key; S.mg=null; } if(S.mg!=null&&!grp[S.mg]) S.mg=null;
+    const draw=()=>{ list.innerHTML="";
+      if(S.mg==null){
+        grp.forEach((g,i)=>{ const b=document.createElement("button"); b.className="item mgt"; b.dataset.m="g"+i; b.dataset.ico="1";
+          b.innerHTML=`<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${g.ico}</svg></span><span class="txt"><strong>${g.t}</strong><span class="sub">${g.its.length} ${g.its.length===1?"oefening":"oefeningen"}: ${g.its.map(nm).join(", ")}</span></span>`;
+          b.onclick=()=>{ S.mg=i; draw(); list.parentElement.scrollIntoView({behavior:"smooth",block:"start"}); }; list.appendChild(b); });
+        
+      } else {
+        const g=grp[S.mg], bar=document.createElement("div"); bar.className="mgback";
+        bar.innerHTML=`<button type="button" class="linkbtn">‹ Alle soorten oefeningen</button><h3>${g.t}</h3>`; bar.querySelector("button").onclick=()=>{ S.mg=null; draw(); };
+        list.appendChild(bar); g.its.forEach(x=>list.appendChild(x));
+      } };
+    draw();
+  }
+  const _hg=hcMenu; hcMenu=function(){ _hg.apply(this,arguments); groepeer("hc:"+(S.hc&&S.hc.id)); };
+  const _kg=kaMenu; kaMenu=function(){ _kg.apply(this,arguments); groepeer("ka"); };
 })();
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",()=>home()); else home();
 </script>
