@@ -3160,7 +3160,13 @@ function wbiSim(p,cands,n,scopeId){
     tiers[t>=1?0:t>=.45?1:2].push(q); });
   let out=[]; for(const T of tiers){ if(out.length>=n) break; out=out.concat(simPersons(p,T,n-out.length,scopeId,q=>{ const g=wbiGap(pe,wbiEra(q.h[0])); return (g===null?0:1.0*Math.max(0,1-g/90))+.7*Object.keys(q.hc).filter(k=>p.hc[k]).length/Math.max(1,Object.keys(p.hc).length)+(/sovjet|rusland/.test(dNorm(p.h.join()))&&/sovjet|rusland/.test(dNorm(q.h.join()))?.8:0); })); }
   return out; }
-function simBegrippen(b,all,n){ return pickSim(b,all.filter(x=>x!==b),n,{text:x=>x.b,ctx:x=>x.d,near:x=>x.dv===b.dv?1:0}); }
+const BG_NEAR={V:"PW",P:"VW",W:"VPD",M:"OL",O:"ML",L:"OM",D:"IW",G:"I",I:"DG"};
+function simBegrippen(b,all,n){ /* afleiders van dezelfde soort (mens, voorwerp, gebeurtenis...), daarna verwante soorten, pas dan de rest */
+  const base=all.filter(x=>x!==b), c=begrCat(b), opt={text:x=>x.b,ctx:x=>x.d,near:x=>x.dv===b.dv?1:0}; let out=[];
+  for(const tier of [x=>begrCat(x)===c, x=>(BG_NEAR[c]||"").includes(begrCat(x)), x=>true]){
+    if(out.length>=n) break; const pool=base.filter(x=>!out.includes(x)&&tier(x)); if(!pool.length) continue;
+    out=out.concat(pickSim(b,pool,n-out.length,opt)); }
+  return out.slice(0,n); }
 /* afleiders: tweederde uit de eigen groep, een derde uit een andere groep; afwisselend, zodat de eerste drie al 2+1 zijn */
 function mixSim(correct,q,own,other,n){
   const f=(L,m)=>pickSim({s:correct,near:1},L,m,{text:x=>x.s,ctx:()=>q,near:x=>x.near}).map(x=>x.s);
@@ -7154,7 +7160,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124172313"; let last=0, shown=false;
+  const BUILD="20261124172817"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
