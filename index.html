@@ -7060,7 +7060,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124131613"; let last=0, shown=false;
+  const BUILD="20261124132710"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9016,7 +9016,7 @@ function pswTussen(G){
   <h2>Tussenstand na ronde ${N}</h2>
   ${pswStats(G,"")}
   <table class="pswrows" aria-label="Resultaten van ronde ${N}"><tbody>${rows.map(h=>`<tr class="ok"><td>${otEsc(h.theme)}</td><td>${h.c} van 9</td><td>+${h.pts}</td></tr>`).join("")}</tbody></table>
-  <div class="note" style="margin:.8rem 0">${last?`Je hebt alle drie de rondes gehaald. Je mag nu stoppen of de <strong>bonusronde</strong> spelen: vier vragen waarin je steeds 9 van 9 moet halen. Lukt dat, dan wordt je score verdubbeld. Je neemt al je jokers mee en de tijd die je in de rondes over had (${G.carry||0} seconden) komt bovenop de ${PSW_R[3].t} seconden van de bonusronde. Elke joker die je overhoudt, levert aan het eind 25 punten op.`:`In ronde ${N+1} heb je <strong>${nx.t} seconden</strong> voor vier vragen en moet je bij elke vraag minstens <strong>${nx.need} van de 9</strong> goed hebben.`}</div>
+  <div class="note" style="margin:.8rem 0">${last?`Je hebt alle drie de rondes gehaald. Je mag nu stoppen of de <strong>bonusronde</strong> spelen: vier vragen waarin je steeds 9 van 9 moet halen. Lukt dat, dan wordt je score verdubbeld. Je neemt al je jokers mee en de tijd die je in de rondes over had (${G.carry||0} seconden) komt bovenop de ${PSW_R[3].t} seconden van de bonusronde. Elke joker die je overhoudt, levert aan het eind 25 punten op, en elke seconde die je dan nog over hebt levert 1 punt op.`:`In ronde ${N+1} heb je <strong>${nx.t} seconden</strong> voor vier vragen en moet je bij elke vraag minstens <strong>${nx.need} van de 9</strong> goed hebben.`}</div>
   <div class="pswact">${last?`<button class="btn" id="bonus">Speel de bonusronde</button><button class="btn ghost" id="stopk">Stop en tel mijn punten</button>`:`<button class="btn" id="go2">Start ronde ${N+1}</button>`}</div>`;
   app.querySelector("#back").onclick=G.back; if(last) pswParty(false);
   const g2=app.querySelector("#go2"); if(g2) g2.onclick=()=>{ G.r++; G.q=0; G.left=PSW_R[G.r].t; pswQuestion(G); };
@@ -9026,10 +9026,10 @@ function pswTussen(G){
 }
 function pswEnd(G,mode){
   if(mode==="won4") pswParty(true);
-  const dbl=mode==="won4", base=G.points, sc=dbl?base*2:base, jb=G.jokers*25, tot=sc+jb;
+  const dbl=mode==="won4", base=G.points, sc=dbl?base*2:base, jb=G.jokers*25, sl=Math.max(0,Math.floor(mode==="stop"?(G.carry||0):(G.left||0))), tot=sc+jb+sl;
   app.innerHTML=`<button class="back" id="back">‹ Terug</button><h2>Eindscore</h2>
   <div class="feedback good"><p><strong>${tot} punten</strong></p>
-  <p>Punten uit de rondes: ${base}${dbl?` × 2 = ${sc} (bonusronde gehaald)`:mode==="lost4"?" (bonusronde niet gehaald, dus niet verdubbeld)":""}<br>Overgebleven jokers: ${G.jokers} × 25 = ${jb}</p></div>
+  <p>Punten uit de rondes: ${base}${dbl?` × 2 = ${sc} (bonusronde gehaald)`:mode==="lost4"?" (bonusronde niet gehaald, dus niet verdubbeld)":""}<br>Overgebleven jokers: ${G.jokers} × 25 = ${jb}<br>Overgebleven seconden: ${sl} × 1 = ${sl}</p></div>
   <div class="pswact"><button class="btn" id="again">Opnieuw spelen</button><button class="btn ghost" id="end">Terug</button></div>`;
   app.querySelector("#back").onclick=G.back; app.querySelector("#again").onclick=()=>pswStart(G.back); app.querySelector("#end").onclick=G.back; window.scrollTo(0,0);
 }
