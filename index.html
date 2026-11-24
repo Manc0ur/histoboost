@@ -7161,7 +7161,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124203629"; let last=0, shown=false;
+  const BUILD="20261124204021"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9746,7 +9746,7 @@ function dertig(scope){
   }
   function beep(){ try{ const A=window.AudioContext||window.webkitAudioContext; if(!A) return; const a=new A(), o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value=880; g.gain.value=.15; o.start(); o.stop(a.currentTime+.45); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([200,100,200]); }catch(e){} }
   function play(){
-    let words=card(), acc=0; const TOT=C.sec*1000; let left=TOT, last=Date.now(), paused=false, over=false, allOk=false;
+    let words=card(), acc=0, jkUsed=false; const TOT=C.sec*1000; let left=TOT, last=Date.now(), paused=false, over=false, allOk=false;
     const t=G.t[G.cur];
     const got=()=>words.filter(w=>w.ok).length;
     function draw(){
@@ -9757,11 +9757,13 @@ function dertig(scope){
       ${over?`<div class="dtbanner" role="alert"><strong>⏰ Tijd is om!</strong>Jullie hebben ${got()} van de 5 woorden geraden${acc?` (samen ${acc+got()} deze beurt)`:""}. Je kunt hieronder nog aanvinken wat goed was.</div>`:allOk?`<div class="dtbanner ok" role="status"><strong>Alle 5 geraden!</strong>Goed gedaan: 5 punten${acc?` (samen ${acc+5} punten deze beurt)`:""}. Er is nog ${Math.ceil(left/1000)} ${Math.ceil(left/1000)===1?"seconde":"seconden"} over.</div>`:""}
       ${paused&&!over?`<p class="note">Het kaartje is verborgen tijdens de pauze.</p>`:`<div class="dtwords">${words.map((w,i)=>`<button type="button" class="dtw" data-i="${i}" aria-pressed="${w.ok}"><span class="ck" aria-hidden="true">✓</span><span class="w">${esc(w.w)}</span><span class="tg">${w.tag}</span></button>`).join("")}</div>`}
       <p class="dtrules">Niet toegestaan: een deel van het woord gebruiken, ‘klinkt als’, vertalen of uitbeelden. Je hoeft niet bovenaan te beginnen.</p>
+      ${!allOk&&!over&&got()===0&&!jkUsed?`<button class="btn ghost" id="dtjk">Andere kaart pakken (1× per beurt)</button>`:""}
       ${allOk?`<div class="row" style="gap:.6rem;flex-wrap:wrap"><button class="btn" id="dtmore">Volgende kaart: speel door</button><button class="btn ghost" id="dtnext">Beurt afronden</button></div>`:over?`<button class="btn" id="dtnext">Volgende kaart</button>`:""}`;
       app.querySelector("#back").onclick=ex;
       app.querySelectorAll(".dtw").forEach(b=>b.onclick=()=>{ const w=words[+b.dataset.i]; w.ok=!w.ok; b.setAttribute("aria-pressed",w.ok); const g=document.getElementById("dtgot"); if(g) g.textContent=got()+" van 5 geraden"+(acc?` · ${acc+got()} deze beurt`:"");
         if(!over&&!allOk&&got()===5){ allOk=true; clearInterval(window.__dtI); draw(); } else if(over){ const bn=app.querySelector(".dtbanner strong"); const tx=app.querySelector(".dtbanner"); if(tx) tx.innerHTML=`<strong>⏰ Tijd is om!</strong>Jullie hebben ${got()} van de 5 woorden geraden${acc?` (samen ${acc+got()} deze beurt)`:""}. Je kunt hieronder nog aanvinken wat goed was.`; } });
       const c=app.querySelector("#dtclock"); if(c&&!over&&!allOk) c.onclick=()=>{ paused=!paused; last=Date.now(); draw(); };
+      const jk=app.querySelector("#dtjk"); if(jk) jk.onclick=()=>{ jkUsed=true; words=card(); last=Date.now(); draw(); };
       const n=app.querySelector("#dtnext"); if(n) n.onclick=()=>finish(acc+got(),over?5-got():0);
       const mo=app.querySelector("#dtmore"); if(mo) mo.onclick=()=>{ acc+=5; words=card(); allOk=false; paused=false; last=Date.now(); draw(); startTick(); };
     }
@@ -9874,7 +9876,7 @@ function verboden(scope){
   const fmt=ms=>{ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
   function next(){
     let fresh=pool.filter(p=>!G.used.has(p.a)); if(fresh.length<1){ G.used.clear(); fresh=pool.slice(); }
-    G.word=shuffle(fresh)[0]; G.used.add(G.word.a); G.tEnd=Date.now()+C.sec*1000; G.tOut=false; G.vis=shuffle(G.word.f.slice()).slice(0,5);
+    G.word=shuffle(fresh)[0]; G.used.add(G.word.a); G.jk=false; G.tEnd=Date.now()+C.sec*1000; G.tOut=false; G.vis=shuffle(G.word.f.slice()).slice(0,5);
     const alive=G.pl.map((x,i)=>i).filter(i=>C.mode!=="lev"||G.pl[i].l>0); let c=G.cur;
     for(let k=0;k<G.pl.length;k++){ c=(c+1)%G.pl.length; if(alive.includes(c)) break; } G.cur=c;
     draw();
@@ -9896,11 +9898,13 @@ function verboden(scope){
       <p class="dtrules" style="margin:.6rem 0 0">Noem ook geen deel van het woord zelf.</p></div>
     <p class="note" style="margin:.4rem 0">Omschrijft: <strong>${esc(d.n)}</strong></p>
     <button class="btn" id="vbnext" ${over?"disabled":""}>Volgend woord</button>
+    ${!over&&!G.jk?`<button class="btn ghost" id="vbswap" style="margin-left:.4rem">Ander woord pakken (1× per beurt)</button>`:""}
     <h3 style="margin-top:1rem">Punten en levens</h3>
     <div class="vbpl">${G.pl.map((x,i)=>`<div class="vbp ${!alive(i)?"out":""} ${i===G.cur?"on":""}"><div class="nm"><b>${esc(x.n)}</b>${!alive(i)?" · af":""}</div><div class="sc"><span>${x.p}</span><small>${x.p===1?"punt":"punten"}</small>${lev?`<span class="lv">♥ ${Math.max(0,x.l)}</span>`:""}</div>
       <div class="bt"><button type="button" data-p="${i}" data-d="1" ${over&&G.fin!=="tijd"||!alive(i)?"disabled":""} aria-label="Punt erbij voor ${esc(x.n)}">+1 punt</button><button type="button" class="g" data-p="${i}" data-d="-1" ${!alive(i)||x.p<=0?"disabled":""} aria-label="Punt eraf voor ${esc(x.n)}">−1</button>${lev?`<button type="button" class="r" data-l="${i}" data-d="-1" ${!alive(i)||over?"disabled":""} aria-label="Leven eraf voor ${esc(x.n)}">−1 leven</button><button type="button" class="g" data-l="${i}" data-d="1" ${x.l<=0||over?"disabled":""} aria-label="Leven erbij voor ${esc(x.n)}">+1 ♥</button>`:""}</div></div>`).join("")}</div>`;
     app.querySelector("#back").onclick=ex;
     const nx=app.querySelector("#vbnext"); if(nx) nx.onclick=next;
+    const sw=app.querySelector("#vbswap"); if(sw) sw.onclick=()=>{ G.jk=true; let fresh=pool.filter(p=>!G.used.has(p.a)); if(fresh.length<1){ G.used.clear(); fresh=pool.slice(); } G.word=shuffle(fresh)[0]; G.used.add(G.word.a); G.vis=shuffle(G.word.f.slice()).slice(0,5); draw(); };
     const en=app.querySelector("#vbend"); if(en) en.onclick=einde;
     app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{ const x=G.pl[+b.dataset.p]; x.p=Math.max(0,x.p+ +b.dataset.d); check(); draw(); });
     app.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{ const x=G.pl[+b.dataset.l]; x.l=Math.max(0,x.l+ +b.dataset.d); check(); draw(); });
