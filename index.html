@@ -7161,7 +7161,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124203219"; let last=0, shown=false;
+  const BUILD="20261124203629"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9811,7 +9811,7 @@ if(SHOW_DERTIG){
 }
 /* ---------- Verboden woord (Spellen en puzzels): omschrijf een woord zonder de verboden woorden te gebruiken ---------- */
 /* De verboden woorden worden automatisch uit de omschrijving van het woord gehaald; docent graag controleren of ze passend zijn. */
-const SHOW_VERBODEN=false; /*live: uit, tot akkoord*/
+const SHOW_VERBODEN=true; /*live: uit, tot akkoord*/
 ICONS["m:verboden"]='<circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/>';
 const VB_STOP=new Set("waarin waarbij worden wordt werd werden zoals onder tussen vanaf tegen daardoor daarvoor hierdoor waardoor andere meer meest heeft hebben kunnen konden mochten mogen moest moesten moeten deze door voor naar over maar omdat tijdens daarna eerst eerste eerder later jaren jaar vanuit binnen buiten mensen grote groot grotere nieuwe nieuw oude oud heel veel vooral vaak soms altijd nooit steeds steeds zodat zodra terwijl hierbij daarbij ervoor erna erin eraan ervan elkaar zichzelf hun haar zijn hebben gaat gingen komen kwamen kwam maken maakte gemaakt maakten waren geweest wilde wilden willen alleen alle allen iedereen niets iets hetzelfde dezelfde enkele enige diverse verschillende bijvoorbeeld bijna ongeveer eigen echt rond ruim vaak welke waar wanneer twee drie vier vijf zeven negen twaalf dertien veertien vijftien zestien zeventien achttien negentien twintig dertig veertig vijftig zestig zeventig tachtig negentig honderd duizend houdt bestaan bestond ontstaan ontstond ontstaat gebeurt gebeurde gebeuren periode aspecten vormen vormde zeggen volgens soort manier deel delen gebied gebieden verenigde staten begon begint beginnen volgde volgen bleef blijven bleven laten liet lieten kreeg krijgen kregen gaven geven geeft nemen nam namen wilde stond staat stonden".split(" "));
 function vbAuto(it){
