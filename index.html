@@ -3916,7 +3916,7 @@ function flashDeck(scope){
     KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>D.push({id:"g:"+e.j+":"+e.t,tag:"Gebeurtenis",f:e.t,y:e.j,a:e.u||(TLX[e.j]||[])[0]||""}));
   } else {
     const H=S.hc, inSel=x=>S.dvSel.has(x.dv);
-    H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>D.push({id:"b:"+b.b,tag:"Begrip",f:b.b,a:b.d}));
+    H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>D.push({id:"b:"+b.b,tag:BT(b.b),f:b.b,a:b.d}));
     WBI.filter(p=>p.u&&p.hc[H.id]&&p.hc[H.id].some(x=>S.dvSel.has(x))).forEach(p=>D.push({id:"p:"+p.n,tag:"Persoon",f:p.n,a:p.u}));
     H.tijdlijn.filter(inSel).forEach(e=>D.push({id:"g:"+e.j+":"+e.t,tag:"Gebeurtenis",f:e.t,y:e.j,a:((H.tlx||TLX)[e.j]||[])[0]||""}));
   }
@@ -3992,7 +3992,7 @@ function hcGalgje(seen){
   const STOPW=new Set(["van","der","den","het","de","en","op","in","voor","met","von","zu","the","of","und","des"]);
   const mask=(txt,words)=>{ let o=txt; words.filter(w=>w&&w.length>=3&&!STOPW.has(w.toLowerCase())).sort((a,b)=>b.length-a.length).forEach(w=>{ o=o.replace(new RegExp("(^|[^\\p{L}])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+(w.length>=5?"\\p{L}*":"")+"(?=$|[^\\p{L}])","giu"),"$1…"); }); return o; };
   const pool=[];
-  H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>pool.push({tag:"Begrip",w:b.b,clue:mask(b.d,[b.b,...b.b.split(/\s+/)]),expl:begrSent(b,b.d)}));
+  H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>pool.push({tag:BT(b.b),w:b.b,clue:mask(b.d,[b.b,...b.b.split(/\s+/)]),expl:begrSent(b,b.d)}));
   WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(p=>pool.push({tag:"Persoon",w:p.n,clue:mask(p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""),[p.n,...p.n.split(/\s+/)]),expl:p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")}));
   H.tijdlijn.filter(inSel).forEach(e=>{ const t=onePart(e.t).replace(/[.]$/,""); pool.push({tag:"Gebeurtenis",w:t,clue:"Deze gebeurtenis vond plaats "+inY(e.j)+".",expl:EV_UITLEG[e.t]?EV_UITLEG[e.t]+" Dit gebeurde "+inY(e.j)+".":String(e.t).replace(/[.]$/,"")+" (vond plaats "+inY(e.j)+")."}); });
   const ok=pool.filter(x=>{ const n=norm(x.w).replace(/[^A-Z]/g,"").length; return n>=3&&n<=30; });
@@ -6924,7 +6924,7 @@ function kwWords(scope){
   } else {
     const H=S.hc, d=x=>S.dvSel.has(x.dv);
     sylHC(H); W.push(...(KW_EVENTS[H.id]||[]).filter(e=>S.dvSel.has(e[0])&&verplicht(e[1])).map(e=>({a:e[1],q:e[2],tag:"Gebeurtenis"})));
-    W.push(...H.begrippen.filter(d).map(b=>({a:b.b,q:b.d,tag:"Begrip"})));
+    W.push(...H.begrippen.filter(d).map(b=>({a:b.b,q:b.d,tag:BT(b.b)})));
     W.push(...kwGapDefs((H.gk||GK_STEDEN).filter(d)));
     W.push(...(H.map||MAP_HC).filter(d).map(place));
     W.push(...WBI.filter(p=>p.hc[H.id]&&p.hc[H.id].some(x=>S.dvSel.has(x))).map(person));
@@ -7090,6 +7090,7 @@ function kaMC(){ mcEx({title:"Meerkeuzevragen",qs:fillQuiz(mcGensKA(),10),back:k
 function hcMC(){ mcEx({title:"Meerkeuzevragen",qs:fillQuiz(mcGensHC(),10),back:hcMenu,again:hcMC}); }
 
 /* ---------- Memory: zoek bij elk begrip, persoon of gebeurtenis de juiste omschrijving ---------- */
+function BT(n){ return /^(het )?rampjaar$/i.test(String(n))?"Gebeurtenis":"Begrip"; }
 function memPairs(scope){
   let P=[];
   const short=s=>s&&s.length<=120;
@@ -7101,7 +7102,7 @@ function memPairs(scope){
   } else {
     const H=S.hc, d=x=>S.dvSel.has(x.dv); sylHC(H);
     P.push(...(KW_EVENTS[H.id]||[]).filter(e=>S.dvSel.has(e[0])&&verplicht(e[1])).map(e=>({a:e[1],q:e[2],tag:"Gebeurtenis"})));
-    P.push(...H.begrippen.filter(d).map(b=>({a:b.b,q:b.d,tag:"Begrip"})));
+    P.push(...H.begrippen.filter(d).map(b=>({a:b.b,q:b.d,tag:BT(b.b)})));
     P.push(...WBI.filter(p=>p.hc[H.id]&&p.hc[H.id].some(x=>S.dvSel.has(x))).map(p=>({a:p.n,q:p.k||p.h[4],tag:"Persoon"})));
   }
   const seen=new Set();
@@ -7161,7 +7162,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124204327"; let last=0, shown=false;
+  const BUILD="20261124204535"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9683,14 +9684,14 @@ function dtPool(scope){
     KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>P.push({a:one(e.t),tag:"Gebeurtenis",d:(e.t||"")+" "+(e.u||"")}));
   } else {
     const H=S.hc, inSel=x=>!S.dvSel.size||S.dvSel.has(x.dv);
-    H.begrippen.filter(inSel).forEach(b=>P.push({a:b.b,tag:"Begrip",d:b.d}));
+    H.begrippen.filter(inSel).forEach(b=>P.push({a:b.b,tag:BT(b.b),d:b.d}));
     WBI.filter(w=>w.hc&&w.hc[H.id]&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(w=>P.push({a:w.n,tag:"Persoon",d:w.u||w.k||""}));
     H.tijdlijn.filter(inSel).forEach(e=>P.push({a:one(onePart(e.t)),tag:"Gebeurtenis",d:(EV_UITLEG[e.t]||"")+" "+e.t}));
   }
   P.push(...memPairs(scope).map(m=>({a:m.a,tag:m.tag,d:m.q})));
   const seen=new Set();
   const SKIP=["nawab","vruchtwisseling"];
-  return P.filter(p=>p.a&&p.a.length>=3&&p.a.length<=60&&!SKIP.includes(p.a.toLowerCase())&&!seen.has(p.a.toLowerCase())&&seen.add(p.a.toLowerCase()));
+  return P.filter(p=>p.a&&p.a.length>=3&&p.a.length<=60&&!SKIP.includes(p.a.toLowerCase())&&!seen.has(p.a.toLowerCase().replace(/^(het|de) /,""))&&seen.add(p.a.toLowerCase().replace(/^(het|de) /,"")));
 }
 function dertig(scope){
   dtCss(); clearInterval(window.__dtI);
