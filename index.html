@@ -7161,7 +7161,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124192402"; let last=0, shown=false;
+  const BUILD="20261124193807"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9655,13 +9655,166 @@ const KAMAP={"tl":[[1],[1,2],[2],[2],[2],[3],[3],[4],[5],[6],[8],[7],[10],[10],[
   GK_KA.forEach(t=>{ const f=String(t.uit||"").split(/(?<=[.!?])\s/)[0]; t.ka=(f.match(/\b\d{1,2}\b/g)||[]).map(Number).filter(n=>n>=1&&n<=49); });
   window.KABEGKA=KAMAP.beg;
 })();
+/* ---------- 30 seconds (Spellen en puzzels): omschrijf 5 woorden in 30 seconden aan je teamgenoot ---------- */
+/* Regels en teksten door Claude geschreven naar de wens van de docent; woordenlijst komt uit de stof (zelfde bron als Memory). */
+const SHOW_DERTIG=true; /*live: uit, tot akkoord*/
+ICONS["m:dertig"]='<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.6M9.5 3h5M12 3v3"/>';
+function dtCss(){ if(document.getElementById("dtcss")) return; const s=document.createElement("style"); s.id="dtcss"; s.textContent=`
+.dtchips{display:flex;flex-wrap:wrap;gap:.45rem;margin:.4rem 0}.dtchips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:.4rem .9rem;font:inherit;font-weight:700;cursor:pointer}.dtchips button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.dtform{display:grid;gap:.7rem;margin:.8rem 0}.dtopt{border:2px solid var(--line);border-radius:12px;padding:.8rem .9rem;background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:var(--ink);width:100%}.dtopt[aria-pressed=true]{border-color:var(--focus)}.dtopt strong{display:block}.dtopt label strong{display:inline}.dtopt .sub{display:block;font-size:.88rem;color:var(--muted);margin:.1rem 0 .3rem}
+.dtnames{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.5rem;margin:.4rem 0}.dtnames input{padding:.55rem .7rem;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--surface);color:var(--ink);min-width:0}
+.dtscore{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0}.dtscore .t{flex:1 1 7rem;border:2px solid var(--line);border-radius:10px;padding:.5rem .7rem;background:var(--surface)}.dtscore .t.on{border-color:var(--focus)}.dtscore .t b{display:block;font-size:.9rem}.dtscore .t span{font-size:1.4rem;font-weight:800}.dtscore .t small{color:var(--muted);font-size:.85rem;margin-left:.3rem}
+.dttimer{display:block;width:100%;border:3px solid var(--ink);border-radius:18px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;padding:1rem;text-align:center;margin:.6rem 0}.dttimer .big{display:block;font-size:3.4rem;font-weight:900;line-height:1}.dttimer .lbl{display:block;font-size:.9rem;color:var(--muted);margin-top:.3rem}.dttimer.low{border-color:#d33;color:#d33}
+.dtbar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:.2rem 0 .6rem}.dtbar i{display:block;height:100%;background:var(--focus);transition:width .25s linear}
+.dtwords{display:grid;gap:.5rem;margin:.6rem 0}.dtw{display:flex;align-items:center;gap:.8rem;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:.75rem .9rem;font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;text-align:left;width:100%}.dtw .ck{flex:none;width:1.6rem;height:1.6rem;border:2px solid var(--line);border-radius:50%;display:grid;place-items:center;font-size:1rem;color:transparent}.dtw .tg{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.dtw[aria-pressed=true]{background:#e6f4ea;border-color:#2e9d57}.dtw[aria-pressed=true] .w{text-decoration:line-through;opacity:.65}.dtw[aria-pressed=true] .ck{background:#2e9d57;border-color:#2e9d57;color:#fff}
+.dtbanner{border-radius:14px;padding:1rem;margin:.6rem 0;background:#fff4d6;border:2px solid #e0a800;color:#4a3500}.dtbanner.ok{background:#e6f4ea;border-color:#2e9d57;color:#12401f}.dtbanner strong{font-size:1.25rem;display:block}
+.dtrules{font-size:.88rem;color:var(--muted);margin:.4rem 0}.dtrank li{margin:.3rem 0;font-size:1.05rem}
+`; document.head.appendChild(s); }
+function dtPool(scope){
+  /* alle begrippen, personen en gebeurtenissen van de gekozen stof (breder dan Memory, dat alleen woorden met een korte omschrijving en verplichte gebeurtenissen pakt) */
+  const P=[], one=t=>{ let x=String(t||"").replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").split(/\.\s/)[0].split(/;\s*/)[0].replace(/[.]$/,"").trim(); return x; };
+  if(scope==="ka"){
+    const sel=n=>S.sel.has(n); sylKA();
+    Object.keys(KA_BEG).filter(n=>sel(+n)).forEach(n=>KA_BEG[n].forEach(([a])=>{ if(kaOk({ka:KABEGKA[n+"|"+a]})) P.push({a,tag:"Begrip"}); }));
+    WBI.filter(p=>p.tv.some(sel)&&kaOk(p)).forEach(p=>P.push({a:p.n,tag:"Persoon"}));
+    KA_TL.filter(e=>sel(e.tv)&&kaOk(e)).forEach(e=>P.push({a:one(e.t),tag:"Gebeurtenis"}));
+  } else {
+    const H=S.hc, inSel=x=>!S.dvSel.size||S.dvSel.has(x.dv);
+    H.begrippen.filter(inSel).forEach(b=>P.push({a:b.b,tag:"Begrip"}));
+    WBI.filter(w=>w.hc&&w.hc[H.id]&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(w=>P.push({a:w.n,tag:"Persoon"}));
+    H.tijdlijn.filter(inSel).forEach(e=>P.push({a:one(onePart(e.t)),tag:"Gebeurtenis"}));
+  }
+  P.push(...memPairs(scope).map(m=>({a:m.a,tag:m.tag})));
+  const seen=new Set();
+  return P.filter(p=>p.a&&p.a.length>=3&&p.a.length<=60&&!seen.has(p.a.toLowerCase())&&seen.add(p.a.toLowerCase()));
+}
+function dertig(scope){
+  dtCss(); clearInterval(window.__dtI);
+  const back=scope==="ka"?kaMenu:hcMenu, ex=()=>{ clearInterval(window.__dtI); back(); };
+  const pool=dtPool(scope);
+  if(pool.length<5){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>30 seconds</h2><p class="note">Er zijn te weinig begrippen, personen en gebeurtenissen. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
+  const C=S.dtCfg||(S.dtCfg={mode:"doel",doel:15,lev:15,min:10,sec:30,n:2,names:["Team 1","Team 2","Team 3","Team 4"]});
+  const RULES=()=>`<ul class="dtrules" style="padding-left:1.1rem"><li>Je krijgt een kaartje met 5 begrippen, personen of gebeurtenissen. Omschrijf ze in ${C.sec} seconden aan je teamgenoot.</li><li>Je mag geen deel van het woord gebruiken, niet ‘klinkt als’ zeggen, niet vertalen en niets uitbeelden.</li><li>Je hoeft niet bovenaan te beginnen. Sla een woord gerust over en kom er later op terug.</li><li>Elk geraden woord is 1 punt. Vink het woord aan zodra het geraden is. Heb je alle 5 geraden en is er nog tijd over? Pak dan de volgende kaart.</li></ul>`;
+  function setup(){
+    const chips=(vals,cur,key)=>`<div class="dtchips">${vals.map(v=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${cur===v}">${v}</button>`).join("")}</div>`;
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>30 seconds</h2>
+    <p class="lead">Beschrijf in korte tijd zoveel mogelijk woorden aan je teamgenoot. Geef de laptop of telefoon door na elke beurt.</p>
+    <details style="margin:.4rem 0"><summary><strong>Spelregels</strong></summary>${RULES()}</details>
+    <h3>Hoeveel teams spelen er?</h3>${chips([1,2,3,4],C.n,"n")}
+    <div class="dtnames">${Array.from({length:C.n},(_,i)=>`<input data-name="${i}" value="${esc(C.names[i])}" maxlength="18" aria-label="Naam van team ${i+1}">`).join("")}</div>
+    <h3>Hoeveel seconden per beurt?</h3>${chips([30,40,50,60],C.sec,"sec")}
+    <h3>Welke spelvorm?</h3>
+    <div class="dtform">
+      <div class="dtopt" role="button" tabindex="0" data-mode="doel" aria-pressed="${C.mode==="doel"}"><strong>Doel</strong><span class="sub">Wie het eerst de gekozen punten haalt, wint.</span>${chips([10,15,20,25],C.doel,"doel")}</div>
+      <div class="dtopt" role="button" tabindex="0" data-mode="lev" aria-pressed="${C.mode==="lev"}"><strong>Levens</strong><span class="sub">Elk team start met levens. Voor elk woord dat niet geraden is, gaat er een leven af. Zodra een team geen levens meer heeft, is het spel voorbij en wint het team met de meeste punten.</span>${chips([10,15,20,25],C.lev,"lev")}</div>
+      <div class="dtopt" role="button" tabindex="0" data-mode="tijd" aria-pressed="${C.mode==="tijd"}"><strong>Tijd</strong><span class="sub">Je speelt een vaste tijd. Is de tijd op, dan maak je de kaart af en wint het team met de meeste punten.</span><label>Speeltijd: <strong id="dtmin">${C.min}</strong> minuten<br><input type="range" id="dtrange" min="5" max="20" step="1" value="${C.min}" style="width:100%"></label></div>
+    </div>
+    <button class="btn" id="dtgo">Start het spel</button>`;
+    app.querySelector("#back").onclick=ex;
+    app.querySelectorAll("[data-k]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const k=b.dataset.k, v=+b.dataset.v; C[k]=v; if(k==="doel") C.mode="doel"; if(k==="lev") C.mode="lev"; setup(); });
+    app.querySelectorAll("[data-mode]").forEach(b=>{ const f=()=>{ C.mode=b.dataset.mode; setup(); }; b.onclick=f; b.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); f(); } }; });
+    app.querySelectorAll("[data-name]").forEach(i=>i.oninput=()=>{ C.names[+i.dataset.name]=i.value; });
+    const r=app.querySelector("#dtrange"); r.oninput=()=>{ C.min=+r.value; app.querySelector("#dtmin").textContent=C.min; C.mode="tijd"; app.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===C.mode)); };
+    app.querySelector("#dtgo").onclick=start;
+  }
+  let G;
+  function start(){
+    const names=Array.from({length:C.n},(_,i)=>(C.names[i]||"").trim()||"Team "+(i+1));
+    G={t:names.map(n=>({n,p:0,l:C.lev})),cur:0,used:new Set(),end:C.mode==="tijd"?Date.now()+C.min*60000:0};
+    ready();
+  }
+  const fmt=ms=>{ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
+  const score=()=>`<div class="dtscore">${G.t.map((t,i)=>`<div class="t ${i===G.cur?"on":""}"><b>${esc(t.n)}</b><span>${t.p}</span><small>${C.mode==="lev"?"punten · ♥ "+Math.max(0,t.l):C.mode==="doel"?"van "+C.doel:"punten"}</small></div>`).join("")}</div>`;
+  const clockLine=()=>C.mode==="tijd"?`<p class="note" style="margin:.2rem 0">Speeltijd over: <strong id="dttot">${fmt(G.end-Date.now())}</strong></p>`:"";
+  const totTick=()=>{ const el=document.getElementById("dttot"); if(el) el.textContent=fmt(G.end-Date.now()); };
+  function ready(){
+    clearInterval(window.__dtI); const t=G.t[G.cur];
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <h2>${esc(t.n)} is aan de beurt</h2>${score()}${clockLine()}
+    <p class="lead">Geef de laptop of telefoon aan degene die gaat omschrijven. De anderen kijken niet mee. Klik op de timer om te starten: dan verschijnt het kaartje.</p>
+    <button class="dttimer" id="dtstart"><span class="big">${C.sec}</span><span class="lbl">Klik om te starten</span></button>
+    <details><summary>Spelregels</summary>${RULES()}</details>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#dtstart").onclick=play;
+    if(C.mode==="tijd") window.__dtI=setInterval(()=>{ if(!document.getElementById("dttot")) return clearInterval(window.__dtI); totTick(); },500);
+  }
+  function card(){
+    let fresh=pool.filter(p=>!G.used.has(p.a)); if(fresh.length<5){ G.used.clear(); fresh=pool.slice(); }
+    const pick=shuffle(fresh).slice(0,5); pick.forEach(p=>G.used.add(p.a)); return pick.map(p=>({w:p.a,tag:p.tag,ok:false}));
+  }
+  function beep(){ try{ const A=window.AudioContext||window.webkitAudioContext; if(!A) return; const a=new A(), o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination); o.frequency.value=880; g.gain.value=.15; o.start(); o.stop(a.currentTime+.45); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([200,100,200]); }catch(e){} }
+  function play(){
+    let words=card(), acc=0; const TOT=C.sec*1000; let left=TOT, last=Date.now(), paused=false, over=false, allOk=false;
+    const t=G.t[G.cur];
+    const got=()=>words.filter(w=>w.ok).length;
+    function draw(){
+      app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+      <div class="meta"><span>${esc(t.n)}</span><span id="dtgot">${got()} van 5 geraden${acc?` · ${acc+got()} deze beurt`:""}</span></div>${score()}${clockLine()}
+      <button class="dttimer" id="dtclock" ${over||allOk?"disabled":""}><span class="big" id="dtsec">${Math.ceil(left/1000)}</span><span class="lbl" id="dtlbl">${over?"Tijd is om":allOk?"Alles geraden":paused?"Gepauzeerd: klik om verder te gaan":"Klik om te pauzeren"}</span></button>
+      <div class="dtbar"><i id="dtbar" style="width:${left/TOT*100}%"></i></div>
+      ${over?`<div class="dtbanner" role="alert"><strong>⏰ Tijd is om!</strong>Jullie hebben ${got()} van de 5 woorden geraden${acc?` (samen ${acc+got()} deze beurt)`:""}. Je kunt hieronder nog aanvinken wat goed was.</div>`:allOk?`<div class="dtbanner ok" role="status"><strong>Alle 5 geraden!</strong>Goed gedaan: 5 punten${acc?` (samen ${acc+5} punten deze beurt)`:""}. Er is nog ${Math.ceil(left/1000)} ${Math.ceil(left/1000)===1?"seconde":"seconden"} over.</div>`:""}
+      ${paused&&!over?`<p class="note">Het kaartje is verborgen tijdens de pauze.</p>`:`<div class="dtwords">${words.map((w,i)=>`<button type="button" class="dtw" data-i="${i}" aria-pressed="${w.ok}"><span class="ck" aria-hidden="true">✓</span><span class="w">${esc(w.w)}</span><span class="tg">${w.tag}</span></button>`).join("")}</div>`}
+      <p class="dtrules">Niet toegestaan: een deel van het woord gebruiken, ‘klinkt als’, vertalen of uitbeelden. Je hoeft niet bovenaan te beginnen.</p>
+      ${allOk?`<div class="row" style="gap:.6rem;flex-wrap:wrap"><button class="btn" id="dtmore">Volgende kaart: speel door</button><button class="btn ghost" id="dtnext">Beurt afronden</button></div>`:over?`<button class="btn" id="dtnext">Volgende kaart</button>`:""}`;
+      app.querySelector("#back").onclick=ex;
+      app.querySelectorAll(".dtw").forEach(b=>b.onclick=()=>{ const w=words[+b.dataset.i]; w.ok=!w.ok; b.setAttribute("aria-pressed",w.ok); const g=document.getElementById("dtgot"); if(g) g.textContent=got()+" van 5 geraden"+(acc?` · ${acc+got()} deze beurt`:"");
+        if(!over&&!allOk&&got()===5){ allOk=true; clearInterval(window.__dtI); draw(); } else if(over){ const bn=app.querySelector(".dtbanner strong"); const tx=app.querySelector(".dtbanner"); if(tx) tx.innerHTML=`<strong>⏰ Tijd is om!</strong>Jullie hebben ${got()} van de 5 woorden geraden${acc?` (samen ${acc+got()} deze beurt)`:""}. Je kunt hieronder nog aanvinken wat goed was.`; } });
+      const c=app.querySelector("#dtclock"); if(c&&!over&&!allOk) c.onclick=()=>{ paused=!paused; last=Date.now(); draw(); };
+      const n=app.querySelector("#dtnext"); if(n) n.onclick=()=>finish(acc+got(),over?5-got():0);
+      const mo=app.querySelector("#dtmore"); if(mo) mo.onclick=()=>{ acc+=5; words=card(); allOk=false; paused=false; last=Date.now(); draw(); startTick(); };
+    }
+    function startTick(){ clearInterval(window.__dtI);
+    window.__dtI=setInterval(()=>{
+      if(!document.getElementById("dtclock")&&!document.getElementById("dtnext")) return clearInterval(window.__dtI);
+      totTick(); const now=Date.now(); if(paused||over||allOk){ last=now; return; }
+      left-=now-last; last=now;
+      const s=document.getElementById("dtsec"), b=document.getElementById("dtbar"), c=document.getElementById("dtclock");
+      if(left<=0){ left=0; over=true; clearInterval(window.__dtI); beep(); draw(); return; }
+      if(s) s.textContent=Math.ceil(left/1000); if(b) b.style.width=(left/TOT*100)+"%"; if(c) c.classList.toggle("low",left<=5000);
+    },200); }
+    draw(); startTick();
+  }
+  function finish(g,missed){
+    clearInterval(window.__dtI); const t=G.t[G.cur]; t.p+=g; t.l-=missed;
+    let why="";
+    if(C.mode==="doel"&&t.p>=C.doel) why=`${t.n} heeft ${C.doel} punten gehaald.`;
+    else if(C.mode==="lev"&&G.t.some(x=>x.l<=0)) why=`${G.t.filter(x=>x.l<=0).map(x=>x.n).join(" en ")} ${G.t.filter(x=>x.l<=0).length>1?"hebben":"heeft"} geen levens meer.`;
+    else if(C.mode==="tijd"&&Date.now()>=G.end) why="De speeltijd is om.";
+    if(why) return einde(why);
+    G.cur=(G.cur+1)%G.t.length; ready();
+  }
+  function einde(why){
+    clearInterval(window.__dtI);
+    const r=[...G.t].sort((a,b)=>b.p-a.p||b.l-a.l), top=r.filter(x=>x.p===r[0].p&&(C.mode!=="lev"||x.l===r[0].l));
+    const solo=G.t.length===1;
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>Het spel is voorbij</h2><p class="lead">${esc(why)}</p>
+    <div class="dtbanner ok" role="status"><strong>${solo?`${esc(r[0].n)}: ${r[0].p} ${r[0].p===1?"punt":"punten"}`:top.length>1?`Gelijkspel: ${top.map(x=>esc(x.n)).join(" en ")}`:`${esc(r[0].n)} wint!`}</strong>${solo?"Speel nog een keer en probeer je score te verbeteren.":""}</div>
+    <ol class="dtrank">${r.map(t=>`<li><strong>${esc(t.n)}</strong>: ${t.p} ${t.p===1?"punt":"punten"}${C.mode==="lev"?`, ${Math.max(0,t.l)} ${Math.max(0,t.l)===1?"leven":"levens"} over`:""}</li>`).join("")}</ol>
+    <div class="row" style="margin:1rem 0"><button class="btn" id="dtagain">Nieuw spel</button><button class="btn ghost" id="dtmenu">Andere oefening</button></div>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#dtmenu").onclick=ex; app.querySelector("#dtagain").onclick=setup;
+  }
+  setup();
+}
+if(SHOW_DERTIG){
+  const _dm=hcModes;
+  hcModes=function(H){ const m=_dm(H); const i=m.findIndex(x=>x[0]==="galgje"); m.splice(i<0?m.length:i+1,0,["dertig","30 seconds","Omschrijf in 30 seconden 5 woorden aan je teamgenoot en speel tegen andere teams"]); return m; };
+  const _dh=hcMenu;
+  hcMenu=function(){ _dh.apply(this,arguments); const b=app.querySelector('[data-m="dertig"]'); if(b) b.onclick=()=>dertig("hc"); };
+  const _dk=kaMenu;
+  kaMenu=function(){ _dk.apply(this,arguments);
+    const list=app.querySelector(".list > [data-m]"); if(!list||app.querySelector('[data-m="dertig"]')) return; const box=list.parentElement;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="dertig"; b.innerHTML=`<span class="txt"><strong>30 seconds</strong><span class="sub">Omschrijf in 30 seconden 5 woorden aan je teamgenoot en speel tegen andere teams</span></span>`;
+    b.onclick=()=>dertig("ka"); const ref=box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
+}
 /* Oefeningen in het menu: eerst groeptegels, na een klik de oefeningen van die groep (een oefening mag in twee groepen staan) */
 (function(){
   const G=[["Leren en bestuderen","uitleg lees ov flash",'<path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/>'],
     ["Kennis en feiten","koppelb fabel wie gk",'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'],
     ["Tijd en plaats","ka2tv tijd tijdlijn chrono tl hitster tijdmachine kaart order",'<path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.8 12 21 12 21z"/><path d="M12 7.5v3.5l2.3 1.4"/>'],
     ["Verbanden","keten koppel vb2ka",'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'],
-    ["Spellen en puzzels","galgje kruis memory hitster wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
+    ["Spellen en puzzels","galgje dertig kruis memory hitster wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","quiz klas mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
   function groepeer(key){
