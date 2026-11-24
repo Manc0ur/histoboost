@@ -7067,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124170237"; let last=0, shown=false;
+  const BUILD="20261124171047"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7380,7 +7380,7 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
   "Romeinse Rijk":["Het grote gebied rond de Middellandse Zee dat tussen 300 v.C. en ongeveer 500 n.C. vanuit één stad werd bestuurd.","In de 2e eeuw n.C. was dit gebied op zijn grootst.","Het strekte zich uit over drie werelddelen."],
   "Consul":["Een van de twee gekozen bestuurders en legeraanvoerders in Rome, in de tijd dat er geen koning en geen keizer was.","Er waren er twee tegelijk. Ze werden elk jaar opnieuw gekozen.","Bestuurder en legeraanvoerder tegelijk."],
   "Grieks-Romeinse cultuur":["Een mengeling van twee oude manieren van leven: de ene groep nam veel gewoontes, goden en bouwwerken over van de andere.","Denk aan dezelfde goden met andere namen, tempels, beelden, olijfolie en warmwaterbaden.","Een mix van twee oude volken."],
-  "Keizer":["De man die als enige alle macht had in het Romeinse Rijk, nadat de macht van de senaat was afgelopen.","Het woord komt van de naam Caesar. Augustus was de eerste.","Hij had alle macht."],
+  "Keizer":["Degene die als enige alle macht had in het Romeinse Rijk, nadat de macht van de senaat was afgelopen.","Het woord komt van de naam Caesar. Augustus was de eerste.","Hij had alle macht."],
   "Keizerrijk":["Een staat waarin één alleenheerser alle macht heeft. Rome werd dit in 27 v.C.","Het Romeinse Rijk kreeg deze staatsvorm onder Augustus.","Eén man heeft de macht."],
   "Republiek":["Een land zonder koning, dat bestuurd wordt door een of meer gekozen leiders.","Rome werd dit in 509 v.C., toen de koning werd verjaagd.","Geen koning."],
   "Senaat":["Een groep van de rijkste en belangrijkste Romeinse families, die wetten goed- of afkeurde en het land bestuurde.","Dit lichaam keurde wetten goed of af.","Rijke families."]
@@ -7432,7 +7432,7 @@ GRIEKEN.map.forEach(x=>{ if(x.plaats==="Griekenland"){ x.area="griekenland"; x.r
   "Romeinse Rijk":["Het grote gebied rond de Middellandse Zee dat tussen 300 v.C. en ongeveer 500 n.C. vanuit één stad werd bestuurd.","In de 2e eeuw n.C. had het gebied zijn grootste omvang.","Het gebied lag in Europa, Afrika en Azië."],
   "Consul":["Een van de twee gekozen bestuurders en legeraanvoerders in Rome, in de tijd dat er geen koning en geen keizer was.","Twee bestuurders tegelijk, elk jaar opnieuw gekozen.","Bestuurder en legeraanvoerder tegelijk."],
   "Grieks-Romeinse cultuur":["Een mengeling van twee oude manieren van leven, doordat de overwinnaars veel gewoontes, goden en bouwwerken van de overwonnenen overnamen.","Voorbeelden: goden met andere namen, tempels, beelden, olijfolie en warmwaterbaden.","Een mix van twee oude volken."],
-  "Keizer":["De man die als enige alle macht had in het Romeinse Rijk, nadat de macht van de senaat was afgelopen.","De titel komt van de naam Caesar. Augustus was de eerste alleenheerser van Rome.","Alle macht in één hand."],
+  "Keizer":["Degene die als enige alle macht had in het Romeinse Rijk, nadat de macht van de senaat was afgelopen.","De titel komt van de naam Caesar. Augustus was de eerste alleenheerser van Rome.","Alle macht in één hand."],
   "Keizerrijk":["Een staat waarin één alleenheerser alle macht heeft; Rome werd zo'n staat in 27 v.C.","Onder Augustus veranderde de staatsvorm van het Romeinse Rijk.","Eén man heeft de macht."],
   "Republiek":["Een land zonder koning, dat bestuurd wordt door een of meer gekozen leiders.","In 509 v.C. verjoegen de Romeinen hun koning; daarna veranderde hun staatsvorm.","Geen koning."],
   "Senaat":["Groep leiders uit de rijkste en belangrijkste Romeinse families, die wetten goed- of afkeurde en Rome bestuurde.","In Rome keurde een groep rijke leiders wetten goed of af.","Rijke families."]
