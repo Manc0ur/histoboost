@@ -7067,7 +7067,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124162042"; let last=0, shown=false;
+  const BUILD="20261124162906"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7686,7 +7686,7 @@ function obPiramide(){
     <div class="pir">${[0,1,2,3,4].map(r=>`<div class="pr" style="width:${W[r]}%;gap:.45rem">${slots.map((v,i)=>ROW[i]===r?`<button class="slot${v!=null?" full":""}${checked&&v!=null?(good(v,i)?" ok":" bad"):""}" data-s="${i}" style="flex:1;min-width:0;padding:.5rem .35rem;overflow-wrap:anywhere">${v!=null?esc(PIR8[v][0]):`Laag ${r+1}`}</button>`:"").join("")}</div>`).join("")}</div>
     <div class="pirlab"><span>▼ Laagste laag</span></div>
     <div class="pirpool">${pool.map(v=>`<button class="pircard${sel===v?" sel":""}" data-c="${v}">${esc(PIR8[v][0])}</button>`).join("")}</div>
-    <div class="row"><button class="btn" id="pchk"${pool.length?" disabled":""}>Controleer</button><button class="btn ghost" id="pshow">Toon oplossing</button><button class="btn ghost" id="pnew">Opnieuw</button></div>
+    <div class="row"><button class="btn" id="pchk"${pool.length?" disabled":""}>Controleer</button><button class="btn ghost" id="pnew">Opnieuw</button></div>
     <div id="pfb"></div>`;
     app.querySelector("#back").onclick=hcMenu;
     app.querySelectorAll(".pircard").forEach(b=>b.onclick=()=>{ const v=+b.dataset.c; sel=sel===v?null:v; draw(); });
@@ -7696,7 +7696,7 @@ function obPiramide(){
       checked=false; draw(); });
     app.querySelector("#pchk").onclick=()=>{ checked=true; draw(); const n=slots.filter((v,i)=>good(v,i)).length;
       app.querySelector("#pfb").innerHTML=n===PIR8.length?`<p class="note"><strong>Goed!</strong> Alle acht de groepen staan in de goede laag.</p>`:`<p class="note"><strong>${n} van de ${PIR8.length} groepen staan goed.</strong> Tik op een rode groep om hem terug te zetten en probeer het opnieuw.</p>`; };
-    app.querySelector("#pshow").onclick=()=>{ pool=[]; sel=null; PIR8.forEach((_,i)=>slots[i]=i); checked=true; draw(); app.querySelector("#pfb").innerHTML=`<p class="note">Dit is de goede indeling, van de hoogste naar de laagste laag. Binnen een laag maakt de volgorde niet uit.</p>`; };
+    const _ps=app.querySelector("#pshow"); if(_ps) _ps.onclick=()=>{ pool=[]; sel=null; PIR8.forEach((_,i)=>slots[i]=i); checked=true; draw(); app.querySelector("#pfb").innerHTML=`<p class="note">Dit is de goede indeling, van de hoogste naar de laagste laag. Binnen een laag maakt de volgorde niet uit.</p>`; };
     app.querySelector("#pnew").onclick=obPiramide;
     // slepen (muis en aanraking); tikken blijft werken
     app.querySelectorAll(".pircard,.slot.full").forEach(el=>{ el.style.touchAction="none";
