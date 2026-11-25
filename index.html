@@ -7163,7 +7163,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261124222612"; let last=0, shown=false;
+  const BUILD="20261125072356"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9737,7 +9737,7 @@ function dertig(scope){
     clearInterval(window.__dtI); const t=G.t[G.cur];
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
     <h2>${esc(t.n)} is aan de beurt</h2>${score()}${clockLine()}
-    <p class="lead">Geef de laptop of telefoon aan degene die gaat omschrijven. De anderen kijken niet mee. Klik op de timer om te starten: dan verschijnt het kaartje.</p>
+    <p class="lead">Geef je scherm aan degene die gaat omschrijven. De anderen kijken niet mee. Klik op de timer om te starten: dan verschijnt het kaartje.</p>
     <button class="dttimer" id="dtstart"><span class="big">${C.sec}</span><span class="lbl">Klik om te starten</span></button>
     <details><summary>Spelregels</summary>${RULES()}</details>`;
     app.querySelector("#back").onclick=ex; app.querySelector("#dtstart").onclick=play;
