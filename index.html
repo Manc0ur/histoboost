@@ -7175,7 +7175,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125181840"; let last=0, shown=false;
+  const BUILD="20261125182818"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8240,8 +8240,9 @@ function otYours(it,st){
   if(it.type==="gk"){ const P=otGkParts(it); return `<p>${P.parts.map((t,k)=>otEsc(t)+(k<P.ans.length?`<strong>${otEsc(st.a[k]||"…")}</strong>`:"")).join("")}</p>`; }
   return grAnsShow(it.q,st.a); }
 function otResult(){
-  const rows=OT.items.map((it,i)=>{ const st=OT.st[i], a=otAuto(it,st); const self=a==null;
+  const rows=OT.items.map((it,i)=>{ const st=OT.st[i], a=otAuto(it,st); const self=a==null; const leeg=self&&it.type==="tv"&&!otAnswered(it,st); if(leeg) st.sc=0; /* niets ingevuld: 0 punten, niet zelf te kiezen */
     const ctl=!self?`<p><strong>${a} van ${it.p} ${it.p===1?"punt":"punten"}</strong> (automatisch nagekeken)</p>`
+     :leeg?`<p><strong>Niet ingevuld:</strong> 0 punten</p>`
      :it.type==="tv"?`<p><strong>Geef jezelf punten:</strong> ${Array.from({length:it.p+1},(_,k)=>`<button type="button" class="chip otsc" data-i="${i}" data-s="${k}" aria-pressed="${st.sc===k}">${k}</button>`).join(" ")}</p>`
      :`<p><strong>Welke had je goed?</strong> ${st.self.map((v,k)=>`<label style="margin-right:.8rem"><input type="checkbox" data-i="${i}" data-k="${k}" ${v===true?"checked":""}> ${it.type==="begr"?k+1:"laag "+(k+1)}</label>`).join("")}</p>`;
     const scored=self&&it.type==="tv"&&st.sc!=null;
@@ -8263,7 +8264,7 @@ function otResult(){
 }
 ICONS["m:tvr"]='<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>';
 ICONS["m:otoets"]='<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h5M8 12h8"/><circle cx="16" cy="17" r="3"/><path d="M16 15.5V17l1 .8"/>';
-const SHOW_OEFENTOETS=true;
+const SHOW_OEFENTOETS=false;
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!SHOW_OEFENTOETS||!H.ob||H.id!=="gr") return m;
     const i=m.findIndex(x=>x[0]==="klas"); const at=i<0?m.length:i+1;
