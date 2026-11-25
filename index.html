@@ -622,6 +622,15 @@ body.kqon{overflow:hidden}
 .minihead .logob{padding:.08em .24em .12em;border-radius:.2em;box-shadow:.09em .09em 0 #ff5a5f}
 .minihead+main.wrap{padding-top:.6rem}
 body:has(.wrap .list>.item[data-m]) .minihead,body:has(.wrap .list>.item[data-v]) .minihead{max-width:clamp(780px,72vw,1560px)}
+/* Ruimere afstand tussen knoppen (mobiel: minder kans op een verkeerde tik) */
+.hbtabs{gap:.5rem}.hbtabs button{padding:.5rem 1rem;min-height:2.6rem}
+.chips{gap:.7rem .6rem}
+.galkeys{gap:.65rem .6rem}
+.mapbtns{gap:.7rem}
+.bkslot{margin-bottom:.5rem}
+.seg{gap:.4rem}
+.sudpool{gap:.75rem .65rem}
+.sudscore{gap:.65rem;margin-top:.6rem}.sudscore .sudsc{padding:.5rem .85rem;min-height:2.6rem}
 </style>
 </head>
 <body>
@@ -7189,7 +7198,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125220810"; let last=0, shown=false;
+  const BUILD="20261125222951"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8385,7 +8394,7 @@ function sudCss(){ if(document.getElementById("sudcss")) return; const s=documen
 .sudg .sa{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1rem;color:var(--muted);line-height:1}
 .sudg .sa small{font-size:.66rem;font-weight:800;margin-top:.1rem;color:var(--ink)}
 .sudg .sv{padding:.15rem 0}
-.sudpool{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0}
+.sudpool{display:flex;flex-wrap:wrap;gap:.75rem .65rem;margin:.6rem 0}
 .sudchip{font:inherit;font-size:.9rem;font-weight:700;padding:.45rem .7rem;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:grab;touch-action:none}
 .sudchip.sel{border-color:var(--focus,#4b7bec);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus,#4b7bec) 30%,transparent)}
 .sudg .sc.full:not(.stat){touch-action:none;cursor:grab}
@@ -8403,8 +8412,8 @@ function sudCss(){ if(document.getElementById("sudcss")) return; const s=documen
 .sudstick .sudg{margin:0;grid-template-columns:1fr 1.3rem 1fr 1.3rem 1fr}
 .sudstick .sudg .sc{min-height:2.1rem;font-size:.66rem;padding:.12rem .15rem;border-radius:7px;border-width:1.5px;font-weight:600}
 .sudstick .sudg .sa{font-size:.7rem}.sudstick .sudg .sa small{font-size:.58rem;margin-top:0}
-.sudscore{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
-.sudscore .sudsc{margin-top:0;font-size:.85rem;padding:.35rem .7rem}
+.sudscore{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:.6rem}
+.sudscore .sudsc{margin-top:0;font-size:.85rem;padding:.5rem .85rem;min-height:2.6rem}
 .sudvar{display:grid;gap:.7rem;margin:1rem 0}
 .sudvar button{text-align:left;font:inherit;padding:.9rem 1rem;border:2px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);cursor:pointer}
 .sudvar button strong{display:block;font-size:1.05rem}
