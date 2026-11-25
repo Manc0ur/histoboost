@@ -260,6 +260,13 @@ body.lzhide .lzsticky .lzscroll{display:none}
 .qtag{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:.05rem .55rem;margin-right:.4rem;vertical-align:.1em;color:var(--muted)}
 /* oefeningenmenu: twee vierkantere knoppen naast elkaar */
 .mgback{grid-column:1/-1;display:flex;align-items:center;gap:1rem;margin:.1rem 0 .1rem;flex-wrap:wrap}.mgback h3{margin:0;font-size:1.15rem}.item.mgt .sub{font-size:.82rem}
+/* Oefeningengroepen: elke groep een eigen kleur; binnen een groep een gekleurd vlak, zodat je ziet dat je in een ander deel zit */
+:root{--gl:40%;--gtx:#fff}:root[data-theme="dark"]{--gl:62%;--gtx:#0f1722}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--gl:62%;--gtx:#0f1722}}
+.item.mgt{--gc:hsl(var(--gh,220) 62% var(--gl))}.item.mgt .ico{background:color-mix(in srgb,var(--gc) 18%,var(--surface));color:var(--gc)}.item.mgt:hover:not([disabled]){border-color:var(--gc)}
+.list.mgv{--gc:hsl(var(--gh,220) 62% var(--gl));background:color-mix(in srgb,var(--gc) 10%,var(--bg));border:2px solid color-mix(in srgb,var(--gc) 50%,transparent);border-radius:16px;padding:.75rem}
+.list.mgv>.item{border-color:color-mix(in srgb,var(--gc) 35%,var(--line));border-top:4px solid var(--gc)}.list.mgv>.item:hover:not([disabled]){border-color:var(--gc)}
+.list.mgv>.item .ico{background:var(--gc);color:var(--gtx)}
+.list.mgv .mgback{background:var(--gc);color:var(--gtx);border-radius:10px;padding:.6rem .85rem}.list.mgv .mgback h3{color:inherit}.list.mgv .mgback .linkbtn{color:var(--gtx);text-decoration:underline}
 .list:has(>.item[data-m]),.list:has(>.item[data-v]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
 .list:has(>.item[data-m])>.item,.list:has(>.item[data-v])>.item{flex-direction:column;align-items:flex-start;gap:.6rem;padding:.9rem;min-height:9.5rem}
 .list:has(>.item[data-m])>.item .txt,.list:has(>.item[data-v])>.item .txt{flex:0 1 auto}
@@ -7163,7 +7170,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125072744"; let last=0, shown=false;
+  const BUILD="20261125161957"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9946,6 +9953,7 @@ if(SHOW_VERBODEN){
     ["Spellen en puzzels","galgje dertig verboden kruis memory hitster klas wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
+  const HUE={"Leren en bestuderen":215,"Kennis en feiten":32,"Tijd en plaats":150,"Verbanden":272,"Spellen en puzzels":345,"Toetsen en examen":190,"Losse oefeningen":220};
   function groepeer(key){
     if(window.__nogrp) return; const first=app.querySelector(".list > [data-m]"); if(!first) return; const list=first.parentElement; if(list.dataset.grp) return;
     const SPEC="kolonie rechten provincie reis dekolonie imperium stadstaat totdu totaal stroming soort denker piramide".split(" "), all=[...list.children].filter(x=>x.dataset&&x.dataset.m), spec=all.filter(x=>SPEC.includes(x.dataset.m)), items=all.filter(x=>!SPEC.includes(x.dataset.m)), placed=new Set(), grp=[];
@@ -9954,9 +9962,9 @@ if(SHOW_VERBODEN){
     if(spec.length) grp.push({t:"Losse oefeningen",ico:'<path d="M12 3l2.4 5.6 6.1.5-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.5z"/>',its:spec}); /* oefeningen voor één specifiek onderwerp */
     items.filter(x=>!placed.has(x)).forEach(x=>{ grp[1].its.push(x); placed.add(x); }); /* niet ingedeeld: bij Kennis en feiten, nooit kwijt */
     list.dataset.grp="1"; if(S.mgKey!==key){ S.mgKey=key; S.mg=null; } if(S.mg!=null&&!grp[S.mg]) S.mg=null;
-    const draw=()=>{ list.innerHTML="";
+    const draw=()=>{ list.innerHTML=""; list.classList.toggle("mgv",S.mg!=null); if(S.mg!=null) list.style.setProperty("--gh",HUE[grp[S.mg].t]||220); else list.style.removeProperty("--gh");
       if(S.mg==null){
-        grp.forEach((g,i)=>{ const b=document.createElement("button"); b.className="item mgt"; b.dataset.m="g"+i; b.dataset.ico="1";
+        grp.forEach((g,i)=>{ const b=document.createElement("button"); b.className="item mgt"; b.dataset.m="g"+i; b.dataset.ico="1"; b.style.setProperty("--gh",HUE[g.t]||220);
           b.innerHTML=`<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${g.ico}</svg></span><span class="txt"><strong>${g.t}</strong><span class="sub">${g.its.length} ${g.its.length===1?"oefening":"oefeningen"}: ${g.its.map(nm).join(", ")}</span></span>`;
           b.onclick=()=>{ S.mg=i; draw(); list.parentElement.scrollIntoView({behavior:"smooth",block:"start"}); }; list.appendChild(b); });
         
