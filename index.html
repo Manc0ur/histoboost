@@ -7173,7 +7173,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125162333"; let last=0, shown=false;
+  const BUILD="20261125164014"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8092,6 +8092,8 @@ const otGapRe=/\[\[([^\]|]*)\|([^\]|]*)\|?([^\]]*)\]\]/g;
 function otGkParts(it){ const parts=[], ans=[], dis=[]; let last=0, m; const re=new RegExp(otGapRe.source,"g"); const t=it.g.tekst;
   while((m=re.exec(t))){ parts.push(t.slice(last,m.index)); ans.push(m[1]); (m[3]||"").split(";").map(x=>x.trim()).filter(Boolean).forEach(x=>dis.push(x)); last=m.index+m[0].length; }
   parts.push(t.slice(last)); return {parts,ans,dis}; }
+function otHintHtml(q,st){ const n=st.hl||0, N=q.hints.length;
+  return `<div class="hints" style="margin:.8rem 0"><h3>Hints</h3>${q.hints.slice(0,n).map((h,j)=>`<p class="hintline"><strong>Hint ${j+1}:</strong> ${otEsc(h)}</p>`).join("")}${n<N?`<button type="button" class="linkbtn" id="othint">${n?`Geef een concretere hint (${n+1} van ${N})`:"💡 Geef een hint"}</button>`:`<p class="uitline">Dit was de laatste hint.</p>`}</div>`; }
 function otBody(it,i){
   const st=OT.st[i];
   if(it.type==="chrono") return `<div class="qcard" style="--c:var(--ink)"><div class="exq"><span class="exnr">${it.p}p</span><div><p>Zet de gebeurtenissen in de goede volgorde: de oudste bovenaan, de jongste onderaan. Sleep een gebeurtenis naar de goede plek.</p></div></div></div>
@@ -8112,6 +8114,7 @@ function otBody(it,i){
     P.parts.forEach((t,k)=>{ h+=otEsc(t); if(k<P.ans.length) h+=`<select class="otsel" data-k="${k}" aria-label="Gat ${k+1}"><option value="">(${k+1})</option>${st.opts.map(o=>`<option value="${otEsc(o)}" ${st.a[k]===o?"selected":""}>${otEsc(o)}</option>`).join("")}</select>`; }); return h+"</p>"; }
   const q=it.q; return `${otBronHtml(q.bron)}<div class="qcard" style="--c:var(--ink)">${q.ctx?`<div class="exctx">${otPar(q.ctx)}</div>`:""}<div class="exq"><span class="exnr">${it.p}p</span><div>${otPar(q.q)}</div></div></div>
     ${q.doe?`<details class="otdoe"><summary>Doe het zo</summary>${otPar(q.doe)}</details>`:""}
+    ${OT.hints&&q.hints?otHintHtml(q,st):""}
     ${grAnsHtml(q,st.a,false)}`;
 }
 function otBodyBind(it,i){
@@ -8122,6 +8125,7 @@ function otBodyBind(it,i){
   if(it.type==="soort"||it.type==="gk") q(".otsel").forEach(s=>s.onchange=()=>{ st.a[+s.dataset.k]=s.value; upd(); });
   if(it.type==="ff") q(".otyn button").forEach(b=>b.onclick=()=>{ st.a[+b.dataset.k]=b.dataset.v==="1"; otDraw(); });
   if(it.type==="tv") grAnsBind(v=>{ st.a=v; },upd);
+  { const hb=app.querySelector("#othint"); if(hb) hb.onclick=()=>{ st.hl=(st.hl||0)+1; const y=window.scrollY; otDraw(); window.scrollTo(0,y); }; }
 }
 function otAnswered(it,st){
   switch(it.type){ case"chrono":return st.moved; case"ff":return st.a.some(x=>x!==null); case"tv":return !grAnsEmpty(st.a); default:return st.a.some(x=>String(x).trim()); } }
@@ -8182,15 +8186,16 @@ function grToets(){
     <label class="pmode"><input type="radio" name="pmode" value="remind"><span><strong>Met timer en tijdsherinnering</strong><small>Dezelfde klok. Elke <select id="prem" class="sel"><option value="5">5</option><option value="10" selected>10</option></select> minuten krijg je een melding met hoeveel tijd je hebt gebruikt en hoeveel je nog hebt.</small></span></label>
     <label class="pmode"><input type="radio" name="pmode" value="lock"><span><strong>Strikt: maximale tijd per vraag</strong><small>Elke vraag heeft een maximumtijd (1 punt = 2,5 minuut). Is de tijd om, dan gaat het automatisch door naar de volgende vraag. Je kunt niet terug.</small></span></label>
    </fieldset>
+   <label class="pmode" style="margin-top:.8rem"><input type="checkbox" id="phints"><span><strong>Met hints</strong><small>Bij de open vragen kun je een hint vragen, van vaag naar concreet. In een echte toets zijn er geen hints.</small></span></label>
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start de toets</button></div></section>`;
   app.querySelector("#back").onclick=hcMenu;
   app.querySelector("#prem").onchange=()=>{ app.querySelector('input[name="pmode"][value="remind"]').checked=true; };
-  app.querySelector("#go").onclick=()=>{ const mode=app.querySelector('input[name="pmode"]:checked').value; otStart(20,mode,+app.querySelector("#prem").value); };
+  app.querySelector("#go").onclick=()=>{ const mode=app.querySelector('input[name="pmode"]:checked').value; otStart(20,mode,+app.querySelector("#prem").value,!!app.querySelector("#phints").checked); };
   window.scrollTo(0,0);
 }
-function otStart(len,mode,rem){
+function otStart(len,mode,rem,hints){
   const items=otGenerate(), total=items.reduce((a,x)=>a+x.p,0), now=Date.now(), timed=mode!=="none";
-  OT={items,st:items.map(otInit),i:0,mode,timed,lock:mode==="lock",rem:mode==="remind"?rem:0,nextRem:mode==="remind"?rem:0,total,start:now,end:now+total*2.5*60000,done:false,len};
+  OT={items,st:items.map(otInit),i:0,mode,timed,lock:mode==="lock",rem:mode==="remind"?rem:0,nextRem:mode==="remind"?rem:0,total,start:now,end:now+total*2.5*60000,done:false,len,hints:!!hints};
   if(OT.lock) OT.qEnd=now+Math.round(items[0].p*2.5*60)*1000;
   if(timed) OT.iv=setInterval(otTick,1000);
   otDraw();
@@ -8453,6 +8458,147 @@ GR_TV.push(
 );
 const GR_LD={tv1:"1.1",tv2:"1.2",tv3:"1.2",tv4:"1.3",tv5:"1.3",tv6:"3.1",tv7:"2.3",tv8:"3.1",tv9:"3.3",tv10:"1.2",tv11:"1.2",tv12:"1.2",tv13:"2.2",tv14:"2.3",tv15:"1.2",tv16:"1.1",tv17:"2.1",tv18:"2.3",tv19:"3.1",tv20:"3.3",tv22:"1.2",tv23:"1.2",tv24:"1.2",tv25:"1.2",tv26:"2.2",tv28:"3.3",tv29:"2.2",tv30:"3.2",tv31:"3.2",tv33:"A3",tv34:"2.2",tv35:"3.3",tv36:"A3",tv37:"A3"};
 GR_TV.forEach(q=>{ q.ld=GR_LD[q.id]; });
+/* Hints bij de Oefentoets (zelf geschreven, docent graag controleren) */
+const GR_HINTS={
+"tv1": [
+"Denk aan het woord ‘stadstaat’: hoeveel stadstaten waren er, en wie bestuurde elke stad?",
+"Onderdeel 1 gaat over politiek: wie bestuurde elke stadstaat? Onderdeel 2 gaat over cultuur: wat hadden alle Grieken met elkaar gemeen, zoals taal of geloof?"
+],
+"tv2": [
+"Lees de bron goed: wat vindt Herodotus van iemand die de hoogste macht heeft?",
+"Eén persoon heeft alle macht: is dat een democratie of een tirannie? Kies een zin uit de bron die laat zien wat er dan misgaat."
+],
+"tv3": [
+"Denk aan groepen mensen in een stadstaat die niet dezelfde rechten hadden.",
+"Wie mocht wel meebeslissen en wie niet? Denk aan vrouwen, slaven en mannen met burgerrecht."
+],
+"tv4": [
+"Wat doen wetenschappers om iets te verklaren: onderzoek en logisch nadenken, of een verhaal over goden vertellen?",
+"Wie of wat geneest Archinos volgens de bron? Is dat iets wat je kunt onderzoeken?"
+],
+"tv5": [
+"Een mythologische verklaring gaat over goden. Een wetenschappelijke verklaring gaat over onderzoek en logisch nadenken. Wie speelt er een rol in de bron?",
+"Zoek in de bron wie de genezing doet en wat Ambrosia moet terugdoen. Staat er ergens onderzoek in?"
+],
+"tv6": [
+"Een monarchie heeft één heerser, een democratie laat veel mensen meebeslissen. Welke bestuurders had de Romeinse republiek?",
+"Denk aan de consuls en aan de senaat. Bij welke vorm van bestuur past welke?"
+],
+"tv7": [
+"Wat betekent prehistorie? Denk aan wat er in die tijd nog niet was.",
+"De prehistorie is de tijd vóór het schrift. Wat brachten de Romeinen mee naar de volken die ze veroverden?"
+],
+"tv8": [
+"Zoek bij elk begrip op wat het was: wie waren de consuls en wie zaten in de senaat?",
+"De consuls waren bestuurders en legeraanvoerders. Wie hadden de macht in de senaat?"
+],
+"tv9": [
+"Denk aan wat de Romeinen van de Grieken overnamen.",
+"Denk aan drie dingen: goden, gebouwen en beelden. Wat deden de Romeinen daarmee?"
+],
+"tv10": [
+"Onderdeel a: vergelijk Athene met Nederland. Beslissen de burgers zelf, of kiezen ze mensen die voor hen beslissen?",
+"Onderdeel b: wie mocht er in Athene meebeslissen en wie niet? Dat verschil met nu laat zien waarom het geen échte democratie was."
+],
+"tv11": [
+"Denk aan dingen die wij nu hebben en die de Grieken bedachten.",
+"Denk aan een manier van besturen (democratie) en aan een manier van nadenken over de wereld (wetenschap). Leg bij allebei uit wat wij daarvan hebben overgenomen."
+],
+"tv12": [
+"Lees wat de Raad allemaal doet voordat iemand mag meebesturen. Wat wordt er gecontroleerd?",
+"Denk aan twee dingen: de controle vooraf (afkomst, belasting, leger) en hoe er besloten wordt (beschuldigen, luisteren, stemmen). Hoe beschermt elk daarvan de democratie?"
+],
+"tv13": [
+"Denk aan het leger en aan de manier waarop de Romeinen met overwonnen volken omgingen.",
+"Eén reden gaat over de kracht van het leger (beroepsleger, discipline). Eén reden gaat over wat overwonnen volken kregen als ze bondgenoot werden."
+],
+"tv14": [
+"Denk aan wat er veranderde voor Germanen die onder Romeins gezag kwamen.",
+"Denk aan soldaten, aan handel en aan dingen die ze van de Romeinen overnamen, zoals geld en schrijven."
+],
+"tv15": [
+"Wie nam de besluiten in Athene, en wie mocht meedoen?",
+"Denk aan de volksvergadering, de raad van 500 en wie er burgerrecht had."
+],
+"tv16": [
+"Bedenk bij elk soort (economisch, cultureel, politiek) iets over de Grieken. Economisch gaat over geld en werk.",
+"Economisch: waarvan leefden de Grieken? Cultureel: wat hadden ze gemeen, zoals taal? Politiek: hoeveel stadstaten waren er en wie bestuurde ze?"
+],
+"tv17": [
+"Begin bij Rome als klein dorp: welk gebied veroverde Rome eerst?",
+"Denk eerst aan Italië, daarna aan de strijd met Carthago en de Middellandse Zee."
+],
+"tv18": [
+"De Bataven woonden naast de Romeinen. Wat zagen ze bij hen dat ze zelf konden gebruiken?",
+"Denk aan geld, schrijven en geloof."
+],
+"tv19": [
+"Republiek en keizerrijk zijn twee manieren van besturen. Hoeveel mensen hadden de macht?",
+"In de republiek: denk aan rijke families in de senaat en aan de consuls. In het keizerrijk: wie had daar alle macht?"
+],
+"tv20": [
+"De Grieks-Romeinse cultuur is wat de Romeinen van de Grieken overnamen.",
+"Denk aan goden, tempels, beelden of gewoontes zoals een warmwaterbad."
+],
+"tv22": [
+"Zoek in de tabel de grootste en de kleinste groepen. Hoe verhouden die zich tot elkaar?",
+"Vergelijk het aantal mensen dat mocht stemmen met het aantal inwoners. Kijk ook naar het aantal slaven. Gebruik de getallen in je antwoord."
+],
+"tv23": [
+"Lees de tekst bij de bron: hoe werd bepaald wie jurylid werd? Wat betekent loten?",
+"Bij loten heeft iedereen evenveel kans. Waarom kon niemand daardoor rijke of machtige mensen uitkiezen of omkopen?"
+],
+"tv24": [
+"Wat deden de burgers bij schervengericht, en wat gebeurde er met de man met de meeste stemmen?",
+"Wat doe je met een man die te machtig wordt voor een democratie? Wie beslist hier?"
+],
+"tv25": [
+"Wie beslist bij schervengericht: één man of de burgers?",
+"Past het bij een democratie als de burgers zelf mogen beslissen en een te machtige man kunnen wegsturen?"
+],
+"tv26": [
+"Kijk naar de kaart: wat gebeurt er over de wegen? Denk aan mensen en aan spullen.",
+"Politiek-bestuurlijk: wie reisde over de wegen om het rijk te besturen? Economisch: wat vervoerden handelaren?"
+],
+"tv28": [
+"Wat staat er op de munt? Wie is Bacchus?",
+"Bacchus is een Grieks-Romeinse god. Wat zegt het over de bondgenoten dat zij hem op hun munt zetten?"
+],
+"tv29": [
+"Vergelijk de voorkant en de achterkant van de munt.",
+"Voorkant: welke god staat erop? Achterkant: een stier tegenover een wolf. De stier staat voor Italië en de wolf voor Rome. Wat gebeurt daar?"
+],
+"tv30": [
+"Begin bovenaan: wie had in Rome het meeste bezit en de meeste macht?",
+"Denk aan bestuurders en legeraanvoerders bovenaan en aan mensen die tot slaaf waren gemaakt onderaan. Welke groepen horen daartussen, zoals ambachtslieden, handelaren en boeren?"
+],
+"tv31": [
+"Kies één hoge en één lage sociale laag. Welke groepen mensen waren dat?",
+"Beschrijf bij allebei hoeveel macht en bezit ze hadden, en vergelijk dan de twee."
+],
+"tv33": [
+"Politiek-bestuurlijk gaat over macht en bestuur, sociaal over groepen mensen en hun rechten, economisch over geld, werk en handel, en cultureel over geloof, taal en kunst.",
+"Kijk bij elke zin naar het sleutelwoord: bestuur, groep mensen, handel of geloof."
+],
+"tv34": [
+"Wat kregen de Romeinen van hun bondgenoten? En wat kregen de bondgenoten terug?",
+"Denk aan belasting en aan eigen bestuur."
+],
+"tv35": [
+"Vergelijk de Griekse en de Romeinse cultuur: wat was hetzelfde en wat was anders?",
+"Overeenkomsten: denk aan goden, tempels en beelden. Verschillen: denk aan de taal."
+],
+"tv36": [
+"Politiek-bestuurlijk gaat over macht en bestuur, sociaal over groepen mensen en hun rechten, economisch over geld, werk en handel, en cultureel over geloof, taal en kunst.",
+"Kijk bij elke zin naar het sleutelwoord: bestuur, groep mensen, handel of geloof."
+],
+"tv37": [
+"Politiek-bestuurlijk gaat over macht en bestuur, sociaal over groepen mensen en hun rechten, economisch over geld, werk en handel, en cultureel over geloof, taal en kunst.",
+"Kijk bij elke zin naar het sleutelwoord: bestuur, groep mensen, handel of geloof."
+]
+};
+GR_TV.forEach(q=>{ q.hints=GR_HINTS[q.id]; });
+
 const GR_LDK={"1.1":10,"1.2":20,"1.3":30,"A3":35,"2.1":40,"3.1":45,"2.2":50,"2.3":60,"3.2":70,"3.3":80}; /* volgorde in de toets: eerst de Grieken, dan de Romeinen, zo chronologisch mogelijk */
 function grItKey(it){ if(it.type==="tv") return GR_LDK[it.q.ld]||50; if(it.type==="ff") return 21; if(it.type==="soort") return 35; if(it.type==="pir") return 70.1;
   if(it.type==="gk") return /^In het Romeinse Rijk waren de verschillen tussen arm en rijk/.test(it.g.tekst)?70.2:it.dv===1?25:it.dv===2?55:75; return 50; }
@@ -9956,11 +10102,11 @@ if(SHOW_VERBODEN){
     ["Spellen en puzzels","galgje dertig verboden kruis memory hitster klas wie",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
-  const HUE={"Leren en bestuderen":215,"Kennis en feiten":32,"Tijd en plaats":150,"Verbanden":272,"Spellen en puzzels":345,"Toetsen en examen":190,"Losse oefeningen":220};
+  const HUE={"Leren en bestuderen":215,"Kennis en feiten":32,"Tijd en plaats":150,"Verbanden":272,"Spellen en puzzels":345,"Toetsen en examen":190,"Toetsvragen":190,"Losse oefeningen":220};
   function groepeer(key){
     if(window.__nogrp) return; const first=app.querySelector(".list > [data-m]"); if(!first) return; const list=first.parentElement; if(list.dataset.grp) return;
     const SPEC="kolonie rechten provincie reis dekolonie imperium stadstaat totdu totaal stroming soort denker piramide".split(" "), all=[...list.children].filter(x=>x.dataset&&x.dataset.m), spec=all.filter(x=>SPEC.includes(x.dataset.m)), items=all.filter(x=>!SPEC.includes(x.dataset.m)), placed=new Set(), grp=[];
-    G.forEach(([t,ms,ico])=>{ const ids=ms.split(" "), its=items.filter(x=>ids.includes(x.dataset.m)); if(its.length){ its.forEach(x=>placed.add(x)); grp.push({t,ico,its}); } });
+    G.forEach(([t,ms,ico])=>{ const ids=ms.split(" "), its=items.filter(x=>ids.includes(x.dataset.m)); if(its.length){ its.forEach(x=>placed.add(x)); grp.push({t:(t==="Toetsen en examen"&&key.startsWith("hc:")&&S.hc&&S.hc.ob)?"Toetsvragen":t,ico,its}); } });
     
     if(spec.length) grp.push({t:"Losse oefeningen",ico:'<path d="M12 3l2.4 5.6 6.1.5-4.6 4 1.4 6-5.3-3.2-5.3 3.2 1.4-6-4.6-4 6.1-.5z"/>',its:spec}); /* oefeningen voor één specifiek onderwerp */
     items.filter(x=>!placed.has(x)).forEach(x=>{ grp[1].its.push(x); placed.add(x); }); /* niet ingedeeld: bij Kennis en feiten, nooit kwijt */
