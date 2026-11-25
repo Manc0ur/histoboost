@@ -5798,18 +5798,19 @@ function proefMenu(scope){
     <label class="pmode"><input type="radio" name="pmode" value="remind"><span><strong>Met timer en tijdsherinnering</strong><small>Dezelfde klok. Elke <select id="prem" class="sel"><option value="5">5</option><option value="10" selected>10</option></select> minuten krijg je een melding met hoeveel tijd je hebt gebruikt en hoeveel je nog hebt.</small></span></label>
     <label class="pmode"><input type="radio" name="pmode" value="lock"><span><strong>Strikt: maximale tijd per vraag</strong><small>Elke vraag heeft een maximumtijd (${isTL_?"2 punten = ruim 3,5 minuten":"1 punt = 2,5 minuut"}). Is de tijd om, dan gaat het automatisch door naar de volgende vraag. Je kunt niet terug en tijd die je overhoudt telt niet mee. Pauzeren kan alleen tussen twee vragen door.</small></span></label>
    </fieldset>
+   <label class="pmode" style="margin-top:.8rem"><input type="checkbox" id="phints"><span><strong>Met hints</strong><small>Bij elke vraag kun je een hint vragen, van vaag naar concreet. Op het echte examen zijn er geen hints.</small></span></label>
    <div class="row" style="margin-top:1.2rem"><button class="btn" id="go">Start het proefexamen</button></div>
   </section>`;
   app.querySelector("#back").onclick=back;
-  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope),peDvKey(scope,pool)); if(!list.length) return; const m=(app.querySelector('input[name="pmode"]:checked')||{}).value||"timer"; peStart(scope,list,m,+app.querySelector("#prem").value); };
+  app.querySelector("#go").onclick=()=>{ const list=peSelect(pool,+app.querySelector("#pn").value,peCls(scope),peDvKey(scope,pool)); if(!list.length) return; const m=(app.querySelector('input[name="pmode"]:checked')||{}).value||"timer"; peStart(scope,list,m,+app.querySelector("#prem").value,!!app.querySelector("#phints").checked); };
   app.querySelector("#prem").onchange=()=>{ app.querySelector('input[name="pmode"][value="remind"]').checked=true; };
   window.scrollTo(0,0);
 }
-function peStart(scope,list,mode,rem){
+function peStart(scope,list,mode,rem,hints){
   EXRUN=new Set(); list.forEach(q=>exFresh(q)); peToastOff();
   mode=mode===true?"timer":mode===false?"none":(mode||"timer");
   const timed=mode!=="none", total=list.reduce((a,q)=>a+q.cv.max,0), now=Date.now();
-  PE={scope,list,i:0,timed,mode,lock:mode==="lock",rem:mode==="remind"?(rem||10):0,nextRem:mode==="remind"?(rem||10):0,total,start:now,end:now+total*peMpp()*60000,submitted:false,paused:false,pauseMs:0,qt:{},qa:{}};
+  PE={scope,list,i:0,timed,mode,lock:mode==="lock",rem:mode==="remind"?(rem||10):0,nextRem:mode==="remind"?(rem||10):0,total,start:now,end:now+total*peMpp()*60000,submitted:false,paused:false,pauseMs:0,qt:{},qa:{},hints:!!hints};
   if(PE.lock) peQStart();
   EXBACK=()=>proefMenu(scope);
   if(timed) PE.iv=setInterval(peTick,1000);
@@ -5880,12 +5881,14 @@ function peDraw(){
     <div class="opts">${q.mc.map(o=>`<button type="button" class="opt exmco ${st.ans===o.l?"sel":""}" data-l="${o.l}" aria-pressed="${st.ans===o.l}"><span class="n">${o.l}</span>${esc(o.t)}</button>`).join("")}</div>`
    :`<label for="ans" style="display:block;margin-top:1rem;font-weight:700">Jouw antwoord</label>
     <textarea id="ans" class="ans" rows="7" placeholder="Schrijf hier je antwoord, zoals je het op het examen zou doen.">${esc(st.ans||"")}</textarea>`}
+  ${PE.hints&&q.hints&&q.hints.length?`<div id="hintbox" style="margin-top:.9rem"></div>`:""}
   ${PE.lock?`<div class="row" style="margin-top:1.4rem"><button class="btn" id="lnext">${i+1<list.length?"Klaar met deze vraag":"Klaar en inleveren"}</button></div><p class="peloknote">Je kunt na deze vraag niet meer terug. Is de tijd om, dan gaat het vanzelf door.</p>`:`<div class="row" style="margin-top:1.4rem">
     <button class="btn ghost" id="prev" ${i===0?"disabled":""}>Vorige vraag</button>
     ${i+1<list.length?`<button class="btn" id="next">Volgende vraag</button>`:""}
     <button class="btn ${i+1<list.length?"ghost":""}" id="submit">Inleveren</button>
   </div>`}`;
   peBind();
+  { const hb=app.querySelector("#hintbox"); if(hb) exHintBox(q,hb); }
   const ans=app.querySelector("#ans");
   if(ans) ans.oninput=()=>{ st.ans=ans.value; exSave(q,st); const b=app.querySelector(`.pnav [data-j="${i}"]`); if(b) b.classList.toggle("ans",!!ans.value.trim()); };
   app.querySelectorAll(".exmco").forEach(b=>b.onclick=()=>{ st.ans=st.ans===b.dataset.l?"":b.dataset.l; exSave(q,st); const y=window.scrollY; peDraw(); window.scrollTo(0,y); });
@@ -7170,7 +7173,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125161957"; let last=0, shown=false;
+  const BUILD="20261125162333"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
