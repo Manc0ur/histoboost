@@ -7198,7 +7198,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125222951"; let last=0, shown=false;
+  const BUILD="20261125223213"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8481,7 +8481,7 @@ function sudRun(D,backFn){
   const play=n=>{
     const V=SUD_V[n], ids=n===6?D.t6:D.terms.map((_,i)=>i), NE=V.edges.length;
     const st={slots:Array(n).fill(null),pool:shuffle(ids.slice()),sel:null,txt:Array(NE).fill(""),sc:Array(NE).fill(null)};
-    const intro=()=>{
+    let view=""; const intro=()=>{ const keepY=window.scrollY, was=view!=="intro"; view="intro";
       app.innerHTML=`<button class="back" id="back">‹ Terug naar de start</button>
       <div class="meta"><span>Sudoku</span><span>${n} vakjes</span></div>
       <h2>Zet de begrippen in het schema</h2>
@@ -8516,8 +8516,8 @@ function sudRun(D,backFn){
             else { const v=st.slots[src.c]; if(i!=null){ if(i!==src.c){ st.slots[src.c]=st.slots[i]; st.slots[i]=v; } } else { st.slots[src.c]=null; st.pool.push(v); } }
             st.sel=null; intro(); };
           document.addEventListener("pointermove",mv); document.addEventListener("pointerup",up); document.addEventListener("pointercancel",up); }); });
-      window.scrollTo(0,0); };
-    const sheet=()=>{
+      if(was) window.scrollTo(0,0); else window.scrollTo(0,keepY); };
+    const sheet=()=>{ view="sheet";
       app.innerHTML=`<button class="back" id="back">‹ Terug naar het schema</button>
       <div class="meta"><span>Sudoku</span><span>Invulblad</span></div>
       <h2>Invulblad</h2>
@@ -8529,7 +8529,7 @@ function sudRun(D,backFn){
       app.querySelector("#back").onclick=intro; sudDefBind(st);
       app.querySelectorAll("textarea").forEach(t=>t.oninput=()=>{ st.txt[+t.dataset.e]=t.value; });
       app.querySelector("#schk").onclick=check; window.scrollTo(0,0); };
-    const check=()=>{
+    const check=()=>{ view="check";
       const rows=V.edges.map(([a,b],k)=>{ const A=st.slots[a], B=st.slots[b], L=link(A,B), mine=st.txt[k].trim();
         const ex=L?`<div class="sudmodel"><strong>Voorbeeld van een goed verband:</strong> ${esc(L[2])}</div>`:
           `<div class="sudmodel geen"><strong>Dit verband staat niet in mijn lijst met voorbeelden.</strong> Dat betekent niet altijd dat het fout is. Kun je het goed uitleggen, dan mag je jezelf het punt geven. Twijfel je, vraag het dan je docent.${(()=>{ const o=D.links.filter(l=>l[0]===A||l[1]===A||l[0]===B||l[1]===B).slice(0,2); return o.length?`<br>Bekende verbanden bij deze begrippen: ${o.map(l=>`${esc(D.terms[l[0]])} en ${esc(D.terms[l[1]])}`).join("; ")}.`:""; })()}</div>`;
@@ -8592,7 +8592,9 @@ function vbpuzStart(prev){
   const words=shuffle(D.groups.flatMap((g,gi)=>g.w.map(w=>({w,g:gi}))));
   const st={sel:new Set(),done:[],fouten:0,msg:"",won:false,open:false,defOpen:false,dopen:new Set()};
   const rest=()=>words.filter(x=>!st.done.includes(x.g));
+  let first=true;
   const draw=()=>{
+    const keepY=window.scrollY, was=first; first=false;
     const left=rest();
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <div class="meta"><span>3 x 4 puzzel</span><span>${st.done.length} van 3 groepen · ${st.fouten} ${st.fouten===1?"misser":"missers"}</span></div>
@@ -8619,7 +8621,7 @@ function vbpuzStart(prev){
       draw(); };
     if(q("#giveup")) q("#giveup").onclick=()=>{ st.done=[0,1,2]; st.sel.clear(); draw(); };
     if(q("#again")) q("#again").onclick=()=>vbpuzStart(key);
-    if(q("#done")) q("#done").onclick=kaBackMenu; window.scrollTo(0,0); };
+    if(q("#done")) q("#done").onclick=kaBackMenu; if(was||st.won) window.scrollTo(0,0); else window.scrollTo(0,keepY); };
   draw(); }
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!SHOW_VBPUZ||H.ob||!vbpSets(H,true).length) return m;
