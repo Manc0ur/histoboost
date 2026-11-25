@@ -7175,7 +7175,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125181520"; let last=0, shown=false;
+  const BUILD="20261125181840"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8263,7 +8263,7 @@ function otResult(){
 }
 ICONS["m:tvr"]='<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>';
 ICONS["m:otoets"]='<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h5M8 12h8"/><circle cx="16" cy="17" r="3"/><path d="M16 15.5V17l1 .8"/>';
-const SHOW_OEFENTOETS=false;
+const SHOW_OEFENTOETS=true;
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!SHOW_OEFENTOETS||!H.ob||H.id!=="gr") return m;
     const i=m.findIndex(x=>x[0]==="klas"); const at=i<0?m.length:i+1;
