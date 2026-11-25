@@ -3056,7 +3056,7 @@ function qGat(t,c){
   if(ds.length<3) return null;
   return {id:"gk"+t.titel+gi,ask:QTAG("Gatenkaas")+"Welk woord hoort op de plek van de puntjes?",q:s.replace("§§§","……"),k:g.a,c:c(t),right:"a",
     opts:shuffle([{id:"a",label:g.a},...ds.map((d,j)=>({id:"d"+j,label:d}))]),hint:g.h,
-    uitleg:`Het goede woord is <strong>${esc(g.a)}</strong>.`,extra:t.uit||""};
+    uitleg:`Het goede woord is <strong>${esc(g.a)}</strong>. De zin wordt: “${esc(sents[si].replace("§§§","\u0001")).replace("\u0001","<strong>"+esc(g.a)+"</strong>")}”`,extra:t.uit?"Over de hele tekst: "+t.uit:""};
 }
 function fillQuiz(gens,n){
   // gens: lijst functies die een vraag (of null) maken; om de beurt, tot n vragen
@@ -7175,7 +7175,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125194524"; let last=0, shown=false;
+  const BUILD="20261125195759"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -7763,12 +7763,12 @@ const DOEL_LINKS=[
  [/redenen noemen waarom de Romeinen/,["keten","mc"]],
  [/gevolgen .*Germanen/,["keten","mc"]],
  [/macht hadden in de Romeinse Republiek/,["fabel","mc","gk"]],
- [/vijf sociale lagen/,["gk","mc"]],
+ [/vijf sociale lagen/,["piramide"]],
  [/Grieks-Romeinse cultuur/,["fabel","mc"]]];
-const DOEL_MODE={tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Quiz",()=>hcMix()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
+const DOEL_MODE={piramide:["Sociale piramide",()=>obPiramide()],tijd:["Chronologie",()=>hcTijd()],tijdlijn:["Tijdlijn",()=>hcTijdlijn()],hitster:["Hitster",()=>hcHitster()],koppelb:["Begrippen koppelen",()=>hcKoppelB()],memory:["Memory",()=>hcMemory()],galgje:["Galgje",()=>hcGalgje()],soort:["Soorten geschiedenis",()=>obSoort()],mc:["Quiz",()=>hcMix()],fabel:["Feit of fictie",()=>hcFabel()],gk:["Gatenkaas",()=>hcGatenkaas()],keten:["Oorzaak en gevolg",()=>ocMenu("hc")],tijdmachine:["Tijdmachine",()=>hcTijdmachine()]};
 function obDoelLinks(root){ if(!S.hc||!S.hc.ob) return;
-  root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return; const sm=li.parentElement.previousElementSibling; if(!sm||!/^Algemene/.test(sm.textContent)) return;
-    const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit) return;
+  root.querySelectorAll(".obdoelen > ul > li").forEach(li=>{ if(li.querySelector(":scope>.dolinks")) return; const sm=li.parentElement.previousElementSibling; if(!sm) return; const alg=/^Algemene/.test(sm.textContent);
+    const txt=li.firstChild&&li.firstChild.textContent||""; const hit=DOEL_LINKS.find(x=>x[0].test(txt)); if(!hit||(!alg&&hit[1][0]!=="piramide")) return;
     const d=document.createElement("div"); d.className="dolinks";
     d.innerHTML="<span>Oefen:</span>"+hit[1].map(m=>`<button class="dolink" data-dm="${m}">${DOEL_MODE[m][0]}</button>`).join("");
     li.insertBefore(d,li.querySelector(":scope>ul")); });
