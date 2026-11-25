@@ -78,6 +78,8 @@ button{font:inherit;color:inherit}
 .chips{display:flex;flex-wrap:wrap;gap:.45rem}
 .chip{border:2px solid var(--c);background:transparent;border-radius:8px;padding:.4rem .7rem;cursor:pointer;font-weight:700;color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--c);color:#fff}
+.otsc{--c:var(--focus);min-width:3rem;font-size:1.05rem}.otsc[aria-pressed="true"]{background:var(--focus);color:var(--bg);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 40%,transparent)}.otsc[aria-pressed="true"]::before{content:"✓ "}
+.otres.scored{border-left:6px solid var(--focus)}.otres .otsctag{display:inline-block;margin-left:.4rem;font-size:.85rem;font-weight:700;padding:.15rem .55rem;border-radius:999px;border:2px solid var(--line);color:var(--muted)}.otres.scored .otsctag{background:var(--focus);border-color:var(--focus);color:var(--bg)}
 .linkbtn{background:none;border:0;color:var(--focus);text-decoration:underline;cursor:pointer;padding:.4rem 0}
 
 .btn{background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:.75rem 1.3rem;font-weight:700;cursor:pointer}
@@ -7173,7 +7175,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125164014"; let last=0, shown=false;
+  const BUILD="20261125171642"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8235,9 +8237,10 @@ function otYours(it,st){
 function otResult(){
   const rows=OT.items.map((it,i)=>{ const st=OT.st[i], a=otAuto(it,st); const self=a==null;
     const ctl=!self?`<p><strong>${a} van ${it.p} ${it.p===1?"punt":"punten"}</strong> (automatisch nagekeken)</p>`
-     :it.type==="tv"?`<p><strong>Geef jezelf punten:</strong> ${Array.from({length:it.p+1},(_,k)=>`<button type="button" class="chip" data-i="${i}" data-s="${k}" aria-pressed="${st.sc===k}">${k}</button>`).join(" ")}</p>`
+     :it.type==="tv"?`<p><strong>Geef jezelf punten:</strong> ${Array.from({length:it.p+1},(_,k)=>`<button type="button" class="chip otsc" data-i="${i}" data-s="${k}" aria-pressed="${st.sc===k}">${k}</button>`).join(" ")}</p>`
      :`<p><strong>Welke had je goed?</strong> ${st.self.map((v,k)=>`<label style="margin-right:.8rem"><input type="checkbox" data-i="${i}" data-k="${k}" ${v===true?"checked":""}> ${it.type==="begr"?k+1:"laag "+(k+1)}</label>`).join("")}</p>`;
-    return `<section class="otbox otres"><h3>Vraag ${i+1} · ${it.p}p <span class="tag">${OT_TAG[it.lv]}</span></h3>
+    const scored=self&&it.type==="tv"&&st.sc!=null;
+    return `<section class="otbox otres${scored?" scored":""}" data-sec="${i}"><h3>Vraag ${i+1} · ${it.p}p <span class="tag">${OT_TAG[it.lv]}</span>${self&&it.type==="tv"?`<span class="otsctag">${scored?`✓ ${st.sc} van ${it.p} ${it.p===1?"punt":"punten"}`:"Nog niet beoordeeld"}</span>`:""}</h3>
      ${it.type==="tv"?otBronHtml(it.q.bron)+`<div class="exctx">${it.q.ctx?otPar(it.q.ctx):""}${otPar(it.q.q)}</div>`:""}
      <p><strong>Jouw antwoord</strong></p>${otYours(it,st)}<p><strong>Antwoordmodel</strong></p>${otModel(it)}${ctl}</section>`; }).join("");
   app.innerHTML=`<h2>${OT.auto&&!OT.lock?"De tijd is om":"Ingeleverd"}</h2>
@@ -8248,7 +8251,7 @@ function otResult(){
   const upd=()=>{ let tl=0,hv=0,mt=0,mh=0,left=0;
     OT.items.forEach((it,i)=>{ const p=otPts(OT.items[i],OT.st[i]); const inTL=it.lv!=="h", inH=it.lv!=="tl"; if(inTL) mt+=it.p; if(inH) mh+=it.p; if(p==null){ left++; return; } if(inTL) tl+=p; if(inH) hv+=p; });
     app.querySelector("#otscore").innerHTML=`<strong>TL:</strong> ${tl} van ${mt} punten · cijfer <strong>${otCijfer(tl,mt)}</strong> &nbsp;|&nbsp; <strong>Havo:</strong> ${hv} van ${mh} punten · cijfer <strong>${otCijfer(hv,mh)}</strong>${left?`<br><small>Nog ${left} ${left===1?"vraag":"vragen"} zonder punten (telt nu als 0).</small>`:""}<br><small>Cijfer = 1 + 9 × behaalde punten ÷ maximum.</small>`; };
-  app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ OT.st[+b.dataset.i].sc=+b.dataset.s; const i=b.dataset.i; app.querySelectorAll(`[data-i="${i}"][data-s]`).forEach(x=>x.setAttribute("aria-pressed",String(x===b))); upd(); });
+  app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ OT.st[+b.dataset.i].sc=+b.dataset.s; const i=b.dataset.i; { const sec=app.querySelector(`[data-sec="${i}"]`), P=OT.items[+i].p; if(sec){ sec.classList.add("scored"); const t=sec.querySelector(".otsctag"); if(t) t.textContent=`✓ ${b.dataset.s} van ${P} ${P===1?"punt":"punten"}`; } } app.querySelectorAll(`[data-i="${i}"][data-s]`).forEach(x=>x.setAttribute("aria-pressed",String(x===b))); upd(); });
   app.querySelectorAll('input[type=checkbox][data-i]').forEach(c=>c.onchange=()=>{ const st=OT.st[+c.dataset.i]; st.self.forEach((v,k)=>{ if(v===null) st.self[k]=false; }); st.self[+c.dataset.k]=c.checked; upd(); });
   app.querySelector("#nieuw").onclick=grToets; app.querySelector("#back").onclick=()=>{ OT=null; hcMenu(); };
   upd(); window.scrollTo(0,0);
