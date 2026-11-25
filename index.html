@@ -7163,7 +7163,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125072356"; let last=0, shown=false;
+  const BUILD="20261125072542"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9706,7 +9706,7 @@ function dertig(scope){
     const chips=(vals,cur,key)=>`<div class="dtchips">${vals.map(v=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${cur===v}">${v}</button>`).join("")}</div>`;
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>30 seconds</h2>
-    <p class="lead">Beschrijf in korte tijd zoveel mogelijk woorden aan je teamgenoot. Geef de laptop of telefoon door na elke beurt.</p>
+    <p class="lead">Beschrijf in korte tijd zoveel mogelijk woorden aan je teamgenoot. Geef je scherm door na elke beurt.</p>
     <details style="margin:.4rem 0"><summary><strong>Spelregels</strong></summary>${RULES()}</details>
     <h3>Hoeveel teams spelen er?</h3>${chips([1,2,3,4],C.n,"n")}
         <h3>Hoeveel seconden per beurt?</h3>${chips([30,40,50,60],C.sec,"sec")}
