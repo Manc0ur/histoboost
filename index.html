@@ -269,6 +269,7 @@ body.lzhide .lzsticky .lzscroll{display:none}
 .list.mgv>.item{border-color:color-mix(in srgb,var(--gc) 35%,var(--line));border-top:4px solid var(--gc)}.list.mgv>.item:hover:not([disabled]){border-color:var(--gc)}
 .list.mgv>.item .ico{background:var(--gc);color:var(--gtx)}
 .list.mgv .mgback{background:var(--gc);color:var(--gtx);border-radius:10px;padding:.6rem .85rem}.list.mgv .mgback h3{color:inherit}.list.mgv .mgback .linkbtn{color:var(--gtx);text-decoration:underline}
+.list.mgv .mgback .linkbtn{background:var(--gtx);color:var(--gc);text-decoration:none;font-weight:800;border-radius:999px;padding:.5rem 1.05rem;min-height:2.5rem;border:2px solid var(--gtx);box-shadow:0 2px 0 rgba(0,0,0,.25);cursor:pointer}.list.mgv .mgback .linkbtn:hover{filter:brightness(1.15);transform:translateY(-1px)}.list.mgv .mgback .linkbtn:focus-visible{outline:3px solid var(--gtx);outline-offset:3px}
 .list:has(>.item[data-m]),.list:has(>.item[data-v]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
 .list:has(>.item[data-m])>.item,.list:has(>.item[data-v])>.item{flex-direction:column;align-items:flex-start;gap:.6rem;padding:.9rem;min-height:9.5rem}
 .list:has(>.item[data-m])>.item .txt,.list:has(>.item[data-v])>.item .txt{flex:0 1 auto}
@@ -7229,7 +7230,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126105911"; let last=0, shown=false;
+  const BUILD="20261126110205"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
