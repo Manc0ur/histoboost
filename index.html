@@ -7236,7 +7236,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126194532"; let last=0, shown=false;
+  const BUILD="20261126201809"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10683,7 +10683,7 @@ if(SHOW_PICTIONARY){
     b.onclick=()=>pictionary("ka"); const ref=box.querySelector('[data-m="verboden"]')||box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
 }
 /* Galgje ook bij de tijdvakken (test-only: SHOW_KAGALGJE); de woorden komen uit de gekozen tijdvakken */
-const SHOW_KAGALGJE=false;
+const SHOW_KAGALGJE=true; /*live: aan sinds 2026-11-26*/
 if(SHOW_KAGALGJE){
   const _gk=kaMenu;
   kaMenu=function(){ _gk.apply(this,arguments);
@@ -10730,7 +10730,7 @@ if(SHOW_KAGALGJE){
 })();
 /* ---------- Oefenslot (test-only): een oefening gaat op slot na een aantal hele rondes, tot je 2 andere oefeningen hebt afgemaakt ---------- */
 /* Aantal rondes per oefening staat in LOCK_N (0 = onbeperkt). Een ronde telt mee als je het eindscherm van de oefening bereikt. Onthouden per browser. */
-const SHOW_LOCK=false;
+const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
 (function(){
   if(!SHOW_LOCK) return;
   const N={}; const set=(n,ids)=>ids.split(" ").forEach(i=>N[i]=n);
