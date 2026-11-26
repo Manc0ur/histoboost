@@ -7231,7 +7231,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126130907"; let last=0, shown=false;
+  const BUILD="20261126131203"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10592,20 +10592,20 @@ function pictionary(scope){
   }
   /* scherm 3: tekenen met timer */
   function teken(){
-    const w=G.word, scr=C.scr==="scherm"; let hidden=false, out=false; const tEnd=Date.now()+C.sec*1000;
+    const w=G.word, scr=C.scr==="scherm"; let hidden=true, out=false; const tEnd=Date.now()+C.sec*1000;
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
-    <div class="pcbar"><span class="t" id="pct" role="timer" aria-label="Tijd voor deze beurt">${fmt(C.sec*1000)}</span><span class="w" id="pcw">${esc(w.a)}</span><button type="button" class="btn ghost" id="pctog" style="padding:.3rem .7rem">Verberg woord</button></div>
+    <div class="pcbar"><span class="t" id="pct" role="timer" aria-label="Tijd voor deze beurt">${fmt(C.sec*1000)}</span><span class="w hid" id="pcw">• • • • •</span><button type="button" class="btn ghost" id="pctog" style="padding:.3rem .7rem">Toon woord</button></div>
     ${scr?`<div class="pcwrap"><canvas id="pcc" aria-label="Tekenvlak"></canvas></div>
     <div class="pctools" role="group" aria-label="Tekengereedschap">
       ${[["#111111","Zwart"],["#d62828","Rood"],["#1d4ed8","Blauw"],["#15803d","Groen"],["#f59e0b","Oranje"]].map(([c,n],i)=>`<button type="button" class="sw" data-c="${c}" style="background:${c}" aria-label="${n}" aria-pressed="${i===0}"></button>`).join("")}
       <button type="button" data-e="1" aria-pressed="false">Gum</button>
       <button type="button" data-th="3" aria-pressed="true">Dun</button><button type="button" data-th="8" aria-pressed="false">Dik</button>
       <button type="button" id="pcundo">Ongedaan maken</button><button type="button" id="pcclr">Wis alles</button>
-    </div>`:`<div class="pcbig"><div class="ct">Teken op papier of op het bord</div><div class="wd">${esc(w.a)}</div></div>`}
+    </div>`:`<div class="pcbig"><div class="ct">Teken op papier of op het bord</div><div class="wd" id="pcbw">• • • • •</div></div>`}
     <div class="pcpick"><button class="btn" id="pcyes">Goed geraden</button><button class="btn ghost" id="pcno">Niet geraden</button></div>`;
     app.querySelector("#back").onclick=ex;
     const t=app.querySelector("#pct"), ww=app.querySelector("#pcw"), tg=app.querySelector("#pctog");
-    tg.onclick=()=>{ hidden=!hidden; ww.textContent=hidden?"• • • • •":w.a; ww.classList.toggle("hid",hidden); tg.textContent=hidden?"Toon woord":"Verberg woord"; };
+    tg.onclick=()=>{ hidden=!hidden; const bw=app.querySelector("#pcbw"); if(bw) bw.textContent=hidden?"• • • • •":w.a; ww.textContent=hidden?"• • • • •":w.a; ww.classList.toggle("hid",hidden); tg.textContent=hidden?"Toon woord":"Verberg woord"; };
     window.__dtI=setInterval(()=>{ const l=tEnd-Date.now(); if(!document.getElementById("pct")) return clearInterval(window.__dtI); if(l<=0){ if(!out){ out=true; t.textContent="Tijd is om"; t.classList.add("out"); } } else t.textContent=fmt(l); },250);
     app.querySelector("#pcyes").onclick=()=>{ clearInterval(window.__dtI); goed(); };
     app.querySelector("#pcno").onclick=()=>{ clearInterval(window.__dtI); uitslag(false); };
