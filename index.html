@@ -3261,8 +3261,8 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
       <button class="item" data-m="hitster" ${KA_TL.some(e=>S.sel.has(e.tv)&&kaOk(e))?"":"disabled"}><span class="txt"><strong>Vroeger-Later</strong><span class="sub">Leg steeds een nieuwe gebeurtenis op de goede plek in je tijdlijn. Haal er tien op rij!</span></span></button>
       <button class="item" data-m="tijdmachine" ${tmItems(MAP_KA).some(x=>S.sel.has(x.tv)&&kaOk(x))?"":"disabled"}><span class="txt"><strong>Tijdmachine</strong><span class="sub">${TMSUB}</span></span></button>
       <button class="item" data-m="keten" ${KA_KETENS.some(k=>S.sel.has(k.tv)&&kaOk(k))?"":"disabled"}><span class="txt"><strong>Oorzaak en gevolg</strong><span class="sub">Zet de drie stappen in de goede volgorde: elke stap is een gevolg van de stap ervoor</span></span></button>
-      ${SHOW_SUDOKU&&Object.values(SUDOKU).some(D=>D.tv&&S.sel.has(D.tv))?`<button class="item" data-m="sudoku"><span class="txt"><strong>Sudoku</strong><span class="sub">Zet begrippen in een schema en leg bij elke pijl uit welk verband er is</span></span></button>`:""}
-      ${SHOW_VBPUZ&&Object.values(VBP).some(D=>D.tv&&S.sel.has(D.tv))?`<button class="item" data-m="vbpuz"><span class="txt"><strong>3 x 4 puzzel</strong><span class="sub">Verdeel 12 begrippen in drie groepen van vier die bij elkaar horen</span></span></button>`:""}
+      ${SHOW_SUDOKU&&Object.values(SUDOKU).some(D=>D.tv&&S.sel.has(D.tv))?`<button class="item" data-m="sudoku"><span class="txt"><strong>Sudoku (test)</strong><span class="sub">Zet begrippen in een schema en leg bij elke pijl uit welk verband er is</span></span></button>`:""}
+      ${SHOW_VBPUZ&&Object.values(VBP).some(D=>D.tv&&S.sel.has(D.tv))?`<button class="item" data-m="vbpuz"><span class="txt"><strong>3 x 4 puzzel (test)</strong><span class="sub">Verdeel 12 begrippen in drie groepen van vier die bij elkaar horen</span></span></button>`:""}
       <button class="item" data-m="gk"><span class="txt"><strong>Gatenkaas</strong><span class="sub">Sleep begrippen, personen, jaartallen en tijdvakken naar de juiste plek in een tekst</span></span></button>
       <button class="item" data-m="quiz" ${count?"":"disabled"}><span class="txt"><strong>Quiz</strong><span class="sub">Allerlei oefeningen door elkaar: tijdvakken, kenmerkende aspecten, jaartallen, plaatsen, oorzaak en gevolg en gatenkaas</span></span></button>
       <button class="item" data-m="klas" ${count?"":"disabled"}><span class="txt"><strong>Klas Quiz</strong><span class="sub">Voor op het digibord: vragen met vier gekleurde antwoorden (I, II, III, IV). Leerlingen steken een kaartje of hun vingers op</span></span></button>
@@ -7198,7 +7198,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261125235805"; let last=0, shown=false;
+  const BUILD="20261126065446"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8555,7 +8555,7 @@ function sudRun(D,backFn){
   start(); }
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!SHOW_SUDOKU||H.ob||!sudSets(H,true).length) return m;
-    const i=m.findIndex(x=>x[0]==="keten"); m.splice(i<0?m.length:i+1,0,["sudoku","Sudoku","Zet begrippen in een schema en leg bij elke pijl uit welk verband er is"]); return m; }; }
+    const i=m.findIndex(x=>x[0]==="keten"); m.splice(i<0?m.length:i+1,0,["sudoku","Sudoku (test)","Zet begrippen in een schema en leg bij elke pijl uit welk verband er is"]); return m; }; }
 { const _w=hcWhy;
   hcWhy=function(H,m){ if(m==="sudoku"){ if(sudSets(H).length) return ""; const k=sudSets(H,true)[0], D=k&&SUDOKU[k]; return D?(D.tv?`Kies tijdvak ${D.tv} voor deze oefening.`:`Kies ${H.niveau==="tl"?"onderdeel":"deelvraag"} ${D.dv.join(" en ")} voor deze oefening.`):""; } return _w(H,m); }; }
 
@@ -8625,7 +8625,7 @@ function vbpuzStart(prev){
   draw(); }
 { const _m=hcModes;
   hcModes=function(H){ const m=_m(H); if(!SHOW_VBPUZ||!vbpSets(H,true).length) return m;
-    const i=m.findIndex(x=>x[0]==="keten"); m.splice(i<0?m.length:i+1,0,["vbpuz","3 x 4 puzzel","Verdeel 12 begrippen in drie groepen van vier die bij elkaar horen"]); return m; }; }
+    const i=m.findIndex(x=>x[0]==="keten"); m.splice(i<0?m.length:i+1,0,["vbpuz","3 x 4 puzzel (test)","Verdeel 12 begrippen in drie groepen van vier die bij elkaar horen"]); return m; }; }
 { const _w=hcWhy;
   hcWhy=function(H,m){ if(m==="vbpuz"){ if(vbpSets(H).length) return ""; const k=vbpSets(H,true)[0], D=k&&VBP[k]; return D?(D.tv?`Kies tijdvak ${D.tv} voor deze oefening.`:`Kies ${H.niveau==="tl"?"onderdeel":"deelvraag"} ${D.dv.join(" en ")} voor deze oefening.`):""; } return _w(H,m); }; }
 
