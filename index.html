@@ -4028,7 +4028,10 @@ function hcGalgje(seen,scope){
   const STOPW=new Set(["van","der","den","het","de","en","op","in","voor","met","von","zu","the","of","und","des"]);
   const mask=(txt,words)=>{ let o=txt; words.filter(w=>w&&w.length>=3&&!STOPW.has(w.toLowerCase())).sort((a,b)=>b.length-a.length).forEach(w=>{ o=o.replace(new RegExp("(^|[^\\p{L}])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+(w.length>=5?"\\p{L}*":"")+"(?=$|[^\\p{L}])","giu"),"$1…"); }); return o; };
   const pool=[];
-  if(KA){ dtPool("ka").filter(p=>p.a&&p.d).forEach(p=>pool.push({tag:p.tag,w:p.a,clue:mask(String(p.d).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""),[p.a,...p.a.split(/\s+/)]),expl:(p.tag==="Gebeurtenis"&&String(p.d).startsWith(p.a)?String(p.d).slice(p.a.length).trim():String(p.d)).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")||p.a})); }
+  if(KA){ const evOf=n=>KA_TL.find(e=>String(e.t).split(/\.\s/)[0].split(/;\s*/)[0].replace(/[.]$/,"").trim()===n);
+    dtPool("ka").filter(p=>p.a&&p.d).forEach(p=>{ const ev=p.tag==="Gebeurtenis"?evOf(p.a):null;
+      if(ev&&ev.j!=null){ pool.push({tag:"Gebeurtenis",w:p.a,clue:"Deze gebeurtenis vond plaats "+inY(ev.j)+"."+(ev.h?" "+ev.h:""),expl:((ev.u||"")+" Dit gebeurde "+inY(ev.j)+".").trim()}); return; }
+      pool.push({tag:p.tag,w:p.a,clue:mask(String(p.d).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""),[p.a,...p.a.split(/\s+/)]),expl:(p.tag==="Gebeurtenis"&&String(p.d).startsWith(p.a)?String(p.d).slice(p.a.length).trim():String(p.d)).replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")||p.a}); }); }
   else {
   H.begrippen.filter(b=>inSel(b)&&b.d).forEach(b=>pool.push({tag:BT(b.b),w:b.b,clue:mask(b.d,[b.b,...b.b.split(/\s+/)]),expl:begrSent(b,b.d)}));
   WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.hc[H.id].some(n=>!S.dvSel.size||S.dvSel.has(n))).forEach(p=>pool.push({tag:"Persoon",w:p.n,clue:mask(p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""),[p.n,...p.n.split(/\s+/)]),expl:p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"")}));
@@ -7236,7 +7239,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126201809"; let last=0, shown=false;
+  const BUILD="20261126205332"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
