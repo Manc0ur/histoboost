@@ -5988,13 +5988,13 @@ function exSubMenu(list,title,back,again){
   const nOut=sel.filter(q=>exOutside(q).length).length;
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>Examenvragen</h2><p class="lead">${esc(title)}</p>
-    ${SHOW_EXJUMP?exJumpHtml(list):""}
     <div class="row" style="margin:1rem 0">
       <label>Soort vraag <select id="vt" class="sel"><option value="">Alle</option>${vts.map(v=>`<option ${EXSUBVT===v?"selected":""}>${esc(v)}</option>`).join("")}</select></label>
     </div>
     <p style="color:var(--muted)">${sel.length} ${sel.length===1?"vraag":"vragen"} · je hebt er ${done} nagekeken.</p>
     ${nOut?`<div class="exwarn" role="note"><strong>Let op bij chronologievragen</strong><p>${nOut===1?"Bij 1 chronologievraag staan":"Bij "+nOut+" chronologievragen staan"} ook gebeurtenissen uit andere tijdvakken dan je hebt gekozen. Dat is normaal bij dit soort examenvraag. Je ziet daar een waarschuwing bij. Wil je ze overslaan, kies dan bij “Soort vraag” een ander soort.</p></div>`:""}
-    <div class="row" style="margin-top:1rem"><button class="btn" id="go" ${sel.length?"":"disabled"}>Start</button></div>`;
+    <div class="row" style="margin-top:1rem"><button class="btn" id="go" ${sel.length?"":"disabled"}>Start</button></div>
+    ${SHOW_EXJUMP?exJumpHtml(list):""}`;
   app.querySelector("#back").onclick=back;
   app.querySelector("#vt").onchange=e=>{ EXSUBVT=e.target.value; again(); };
   if(SHOW_EXJUMP) exJumpBind(list,again,again);
@@ -6101,13 +6101,13 @@ function exJumpHtml(mine){
   const tvs=EXJ.y?exs.filter(e=>e.y===EXJ.y).map(e=>e.t).sort():[];
   const qs=(EXJ.y&&EXJ.t)?mine.filter(q=>{ const p=parse(q.ex); return p.y===EXJ.y&&p.t===EXJ.t; }).sort((a,b)=>a.nr-b.nr||String(a.deel||"").localeCompare(String(b.deel||""))):[];
   const opt=(v,l,sel)=>`<option value="${v}" ${sel?"selected":""}>${esc(l)}</option>`;
-  return `<section class="section" id="exjump"><h2>Ga direct naar een vraag</h2>
-    <div class="row">
+  return `<section class="section" id="exjump" style="margin-top:2rem"><h2>Ga direct naar een vraag</h2>
+    <div class="row" style="gap:1rem 1.5rem">
       <label>Jaar <select id="exj-y" class="sel">${opt("","Kies jaar",!EXJ.y)}${years.map(y=>opt(y,y,EXJ.y===y)).join("")}</select></label>
       <label>Tijdvak <select id="exj-t" class="sel" ${EXJ.y?"":"disabled"}>${opt("","Kies tijdvak",!EXJ.t)}${tvs.map(t=>opt(t,"Tijdvak "+t,EXJ.t===t)).join("")}</select></label>
       <label>Vraagnummer <select id="exj-n" class="sel" ${qs.length?"":"disabled"}>${opt("","Kies vraag",EXJ.n==="")}${qs.map((q,i)=>opt(i,"Vraag "+exNr(q)+" · "+q.p+(q.p===1?" punt":" punten"),EXJ.n===String(i))).join("")}</select></label>
     </div>
-    <div class="row" style="margin-top:.6rem"><button class="btn" id="exj-go" ${EXJ.n!==""&&qs[+EXJ.n]?"":"disabled"}>Open vraag</button></div>
+    <div class="row" style="margin-top:1.3rem"><button class="btn" id="exj-go" ${EXJ.n!==""&&qs[+EXJ.n]?"":"disabled"}>Open vraag</button></div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Het tijdvak is het tijdvak van de afname van het examen (1, 2 of 3), niet een tijdvak uit de geschiedenis.</p></section>`;
 }
 function exJumpBind(mine,rr,back){ rr=rr||exMenu; back=back||exMenu;
@@ -6130,7 +6130,6 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <h1 style="font-size:2.2rem">Examenvragen</h1>
   <p class="lead">Echte vragen uit de centrale examens ${isTL?"gl/tl":exNiv()} van 2022 tot en met 2026, met bronnen en correctievoorschrift. Schrijf je antwoord op, kijk het na met het correctievoorschrift en geef jezelf punten.</p>
   <p style="color:var(--muted);font-size:.93rem">Je hebt ${done} van de ${mine.length} vragen nagekeken.</p>
-  ${SHOW_EXJUMP?exJumpHtml(mine):""}
   <section class="section"><h2>${isTL?"Onderwerp":"Historische context"}</h2>
     <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${k===""?!EXF.hc.size:EXF.hc.has(k)}" data-hc="${k}">${esc(v)}</button>`).join("")}</div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Je kunt er meer dan één kiezen. Niets gekozen betekent alle vragen.</p></section>
@@ -6161,7 +6160,8 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
     <div class="row" style="margin-top:.8rem"><button class="btn ghost" id="pex" ${pePool("ex").length?"":"disabled"}>Maak een proefexamen met deze selectie</button></div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Een proefexamen met een timer: vragen uit je selectie, op volgorde van tijd, zoals op het examen. Je kijkt pas na het inleveren na.${peCls("ex")?" Kies je historische contexten én tijdvakken of perioden, dan bestaat het proefexamen voor ongeveer twee derde uit vragen over je contexten en voor een derde uit vragen over je tijdvakken of perioden, zoals op het echte examen.":""}</p>
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
-  </section>`;
+  </section>
+  ${SHOW_EXJUMP?exJumpHtml(mine):""}`;
   app.querySelector("#back").onclick=home;
   if(SHOW_EXJUMP) exJumpBind(mine);
   app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{const k=b.dataset.hc; if(!k){EXF.hc.clear();EXF.dv.clear();} else if(EXF.hc.has(k)){EXF.hc.delete(k);EXF.dv.delete(k);} else EXF.hc.add(k); exMenu();});
@@ -7229,7 +7229,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126101354"; let last=0, shown=false;
+  const BUILD="20261126105911"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
