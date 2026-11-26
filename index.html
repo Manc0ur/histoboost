@@ -5988,6 +5988,7 @@ function exSubMenu(list,title,back,again){
   const nOut=sel.filter(q=>exOutside(q).length).length;
   app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <h2>Examenvragen</h2><p class="lead">${esc(title)}</p>
+    ${SHOW_EXJUMP?exJumpHtml(list):""}
     <div class="row" style="margin:1rem 0">
       <label>Soort vraag <select id="vt" class="sel"><option value="">Alle</option>${vts.map(v=>`<option ${EXSUBVT===v?"selected":""}>${esc(v)}</option>`).join("")}</select></label>
     </div>
@@ -5996,6 +5997,7 @@ function exSubMenu(list,title,back,again){
     <div class="row" style="margin-top:1rem"><button class="btn" id="go" ${sel.length?"":"disabled"}>Start</button></div>`;
   app.querySelector("#back").onclick=back;
   app.querySelector("#vt").onchange=e=>{ EXSUBVT=e.target.value; again(); };
+  if(SHOW_EXJUMP) exJumpBind(list,again,again);
   app.querySelector("#go").onclick=()=>{ EXRUN=new Set(); EXBACK=again; exRun(shuffle(sel),0); };
 }
 function kaExam(){ SYL=null; EXSCOPE=new Set(S.sel); const l=kaExamList(); if(!l.length) return; exSubMenu(l,`Echte vragen uit de centrale examens ${exNiv()} over de gekozen tijdvakken.`,kaMenu,kaExam); }
@@ -6088,6 +6090,33 @@ const exRestOk=q=>(!EXF.ka.size||(q.ka||[]).some(n=>EXF.ka.has(n)))&&(!EXF.vt||e
 function exFiltered(){
   return exExpand(exData().qs.filter(q=>exOfNiv(q)&&exHcOk(q)&&exTvOk(q)&&exRestOk(q)),exSatEX);
 }
+
+let EXJ={y:"",t:"",n:""};
+function exJumpHtml(mine){
+  const parse=id=>{ const [y,t]=id.replace(/^[ht]/,"").split("-"); return {y,t}; };
+  const exs=[...new Set(mine.map(q=>q.ex))].map(id=>({id,...parse(id)}));
+  const years=[...new Set(exs.map(e=>e.y))].sort((a,b)=>b-a);
+  if(EXJ.y&&!years.includes(EXJ.y)) EXJ={y:"",t:"",n:""};
+  if(EXJ.y&&EXJ.t&&!exs.some(e=>e.y===EXJ.y&&e.t===EXJ.t)) EXJ={y:EXJ.y,t:"",n:""};
+  const tvs=EXJ.y?exs.filter(e=>e.y===EXJ.y).map(e=>e.t).sort():[];
+  const qs=(EXJ.y&&EXJ.t)?mine.filter(q=>{ const p=parse(q.ex); return p.y===EXJ.y&&p.t===EXJ.t; }).sort((a,b)=>a.nr-b.nr||String(a.deel||"").localeCompare(String(b.deel||""))):[];
+  const opt=(v,l,sel)=>`<option value="${v}" ${sel?"selected":""}>${esc(l)}</option>`;
+  return `<section class="section" id="exjump"><h2>Ga direct naar een vraag</h2>
+    <div class="row">
+      <label>Jaar <select id="exj-y" class="sel">${opt("","Kies jaar",!EXJ.y)}${years.map(y=>opt(y,y,EXJ.y===y)).join("")}</select></label>
+      <label>Tijdvak <select id="exj-t" class="sel" ${EXJ.y?"":"disabled"}>${opt("","Kies tijdvak",!EXJ.t)}${tvs.map(t=>opt(t,"Tijdvak "+t,EXJ.t===t)).join("")}</select></label>
+      <label>Vraagnummer <select id="exj-n" class="sel" ${qs.length?"":"disabled"}>${opt("","Kies vraag",EXJ.n==="")}${qs.map((q,i)=>opt(i,"Vraag "+exNr(q)+" · "+q.p+(q.p===1?" punt":" punten"),EXJ.n===String(i))).join("")}</select></label>
+    </div>
+    <div class="row" style="margin-top:.6rem"><button class="btn" id="exj-go" ${EXJ.n!==""&&qs[+EXJ.n]?"":"disabled"}>Open vraag</button></div>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Het tijdvak is het tijdvak van de afname van het examen (1, 2 of 3), niet een tijdvak uit de geschiedenis.</p></section>`;
+}
+function exJumpBind(mine,rr,back){ rr=rr||exMenu; back=back||exMenu;
+  const y=app.querySelector("#exj-y"); if(!y) return;
+  y.onchange=e=>{ EXJ={y:e.target.value,t:"",n:""}; const ts=[...new Set(mine.map(q=>q.ex).filter(id=>id.replace(/^[ht]/,"").split("-")[0]===EXJ.y).map(id=>id.split("-")[1]))]; if(ts.length===1) EXJ.t=ts[0]; rr(); app.querySelector("#exjump")?.scrollIntoView({block:"nearest"}); };
+  app.querySelector("#exj-t").onchange=e=>{ EXJ.t=e.target.value; EXJ.n=""; rr(); };
+  app.querySelector("#exj-n").onchange=e=>{ EXJ.n=e.target.value; rr(); };
+  app.querySelector("#exj-go").onclick=()=>{ const qs=mine.filter(q=>{ const [yy,tt]=q.ex.replace(/^[ht]/,"").split("-"); return yy===EXJ.y&&tt===EXJ.t; }).sort((a,b)=>a.nr-b.nr||String(a.deel||"").localeCompare(String(b.deel||""))); const i=+EXJ.n; if(!qs[i]) return; EXRUN=new Set(); EXBACK=back; exRun(qs,i); };
+}
 function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   const D=exData(), list=exFiltered(), mine=D.qs.filter(exOfNiv);
   if([...EXF.hc].some(h=>!(h in exNames()))) { EXF.hc.clear(); EXF.dv.clear(); return exMenu(); }
@@ -6101,6 +6130,7 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
   <h1 style="font-size:2.2rem">Examenvragen</h1>
   <p class="lead">Echte vragen uit de centrale examens ${isTL?"gl/tl":exNiv()} van 2022 tot en met 2026, met bronnen en correctievoorschrift. Schrijf je antwoord op, kijk het na met het correctievoorschrift en geef jezelf punten.</p>
   <p style="color:var(--muted);font-size:.93rem">Je hebt ${done} van de ${mine.length} vragen nagekeken.</p>
+  ${SHOW_EXJUMP?exJumpHtml(mine):""}
   <section class="section"><h2>${isTL?"Onderwerp":"Historische context"}</h2>
     <div class="chips">${[["","Alle vragen"],...Object.entries(exNames())].map(([k,v])=>`<button class="chip" style="--c:var(--t5)" aria-pressed="${k===""?!EXF.hc.size:EXF.hc.has(k)}" data-hc="${k}">${esc(v)}</button>`).join("")}</div>
     <p style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Je kunt er meer dan één kiezen. Niets gekozen betekent alle vragen.</p></section>
@@ -6133,6 +6163,7 @@ function exMenu(){ SYL=null; EXSCOPE=EXF.tv.size?new Set(EXF.tv):null;
     <p style="color:var(--muted);font-size:.85rem;margin-top:1.2rem">De indeling naar ${isTL?"onderwerp":"historische context"} is automatisch gemaakt en kan af en toe niet kloppen. Vragen en bronnen: centrale examens ${isTL?"gl/tl geschiedenis en staatsinrichting":exNiv()+" geschiedenis"}, College voor Toetsen en Examens.</p>
   </section>`;
   app.querySelector("#back").onclick=home;
+  if(SHOW_EXJUMP) exJumpBind(mine);
   app.querySelectorAll("[data-hc]").forEach(b=>b.onclick=()=>{const k=b.dataset.hc; if(!k){EXF.hc.clear();EXF.dv.clear();} else if(EXF.hc.has(k)){EXF.hc.delete(k);EXF.dv.delete(k);} else EXF.hc.add(k); exMenu();});
   app.querySelectorAll("[data-edv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.edv,h=b.dataset.edvh; if(!EXF.dv.has(h)) EXF.dv.set(h,new Set()); const t=EXF.dv.get(h); t.has(n)?t.delete(n):t.add(n); exMenu();});
   app.querySelectorAll("[data-etv]").forEach(b=>b.onclick=()=>{const n=+b.dataset.etv;EXF.tv.has(n)?EXF.tv.delete(n):EXF.tv.add(n);exMenu();});
@@ -7198,7 +7229,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126081124"; let last=0, shown=false;
+  const BUILD="20261126101354"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8381,6 +8412,7 @@ const SUDOKU={"steden-1":{"var":null,"niveau":"vwo","hc":"steden","tv":null,"dv"
 /* ---------- Sudoku (Verbanden, bovenbouw) ---------- */
 /* Begrippen en verbanden zijn door Claude samengesteld uit de stof in de site. Docent graag controleren. */
 const SHOW_SUDOKU=true; /*live: aan*/
+const SHOW_EXJUMP=true; /*test-only: dropdowns jaar / tijdvak / vraagnummer bij Examenvragen*/
 /* pijlen, genummerd zoals in de bijlage. Groot: 3x3 vakjes, 12 pijlen. Klein: 2x3 vakjes, 7 pijlen. */
 const SUD_V={
   9:{rows:3,edges:[[0,1],[1,2],[0,3],[1,4],[2,5],[3,4],[4,5],[3,6],[4,7],[5,8],[6,7],[7,8]],hn:[[1,2],[6,7],[11,12]],vn:[[3,4,5],[8,9,10]]},
