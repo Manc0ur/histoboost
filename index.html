@@ -7231,7 +7231,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126123332"; let last=0, shown=false;
+  const BUILD="20261126130907"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10506,13 +10506,184 @@ if(SHOW_VERBODEN){
     const b=document.createElement("button"); b.className="item"; b.dataset.m="verboden"; b.innerHTML=`<span class="txt"><strong>Verboden woord</strong><span class="sub">Omschrijf het woord zonder de verboden woorden te zeggen. Speel met meer spelers of teams</span></span>`;
     b.onclick=()=>verboden("ka"); const ref=box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
 }
+/* ---------- Pictionary (Spellen en puzzels): teken het begrip, de persoon of de gebeurtenis, de anderen raden ---------- */
+/* Test-only: SHOW_PICTIONARY. De woorden komen uit dezelfde lijst als Verboden woord en 30 seconds. */
+const SHOW_PICTIONARY=false;
+ICONS["m:pictionary"]='<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/>';
+function pictCss(){ if(document.getElementById("pictcss")) return; const s=document.createElement("style"); s.id="pictcss"; s.textContent=`
+.pcwrap{border:2px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;touch-action:none}
+.pcwrap canvas{display:block;width:100%;height:min(46vh,520px);touch-action:none;cursor:crosshair;background:#fff}
+.pctools{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.5rem 0}
+.pctools button{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:.4rem .7rem;font:inherit;font-weight:700;cursor:pointer;min-height:2.4rem}
+.pctools button[aria-pressed=true]{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 40%,transparent)}
+.pctools .sw{width:2.4rem;padding:0;border-radius:50%;border:3px solid var(--line)}
+.pctools .sw[aria-pressed=true]{border-color:var(--ink)}
+.pcbar{display:flex;gap:.6rem;align-items:center;justify-content:space-between;flex-wrap:wrap;border:2px solid var(--ink);border-radius:12px;background:var(--surface);padding:.45rem .8rem;margin:.4rem 0}
+.pcbar .t{font-size:1.8rem;font-weight:900;line-height:1}.pcbar .t.out{color:#d33}
+.pcbar .w{font-weight:800}.pcbar .w.hid{letter-spacing:.2em;color:var(--muted)}
+.pcbig{border:3px solid var(--ink);border-radius:18px;background:var(--surface);padding:1.2rem 1rem;text-align:center;margin:.8rem 0}
+.pcbig .wd{font-size:2rem;font-weight:900;line-height:1.15;margin:.3rem 0}.pcbig .ct{color:var(--muted);font-weight:700}
+.pcpick{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0}.pcpick button{flex:1 1 7rem}
+`; document.head.appendChild(s); }
+function pictionary(scope){
+  dtCss(); pictCss(); clearInterval(window.__dtI);
+  const back=scope==="ka"?kaMenu:hcMenu, ex=()=>{ clearInterval(window.__dtI); back(); };
+  const pool=dtPool(scope).filter(p=>String(p.a).length<=60);
+  if(pool.length<5){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Pictionary</h2><p class="note">Er zijn te weinig begrippen, personen en gebeurtenissen. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
+  const C=S.pcCfg||(S.pcCfg={who:"solo",ns:4,nt:2,rounds:2,sec:60,scr:"scherm"});
+  const RULES=`<ul class="dtrules" style="padding-left:1.1rem"><li>De tekenaar krijgt een begrip, een persoon of een gebeurtenis. Alleen de tekenaar mag het woord zien. De categorie mag je zeggen.</li><li>De tekenaar tekent het woord. Praten, gebaren en het schrijven van letters of cijfers mag niet.</li><li>De anderen raden binnen de tijd. Wie het goed raadt, krijgt een punt, en de tekenaar ook. In de vorm met teams krijgt het team één punt.</li></ul>`;
+  const chips=(vals,cur,key)=>`<div class="dtchips">${vals.map(v=>`<button type="button" data-k="${key}" data-v="${v}" aria-pressed="${cur===v}">${v}</button>`).join("")}</div>`;
+  function setup(){
+    const solo=C.who==="solo";
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>Pictionary</h2>
+    <p class="lead">Teken het woord, zodat de anderen het raden. Speel met meer personen of teams.</p>
+    <details style="margin:.4rem 0"><summary><strong>Spelregels</strong></summary>${RULES}</details>
+    <h3>Hoe speel je?</h3>
+    <div class="dtchips"><button type="button" data-who="solo" aria-pressed="${solo}">Ieder voor zich</button><button type="button" data-who="teams" aria-pressed="${!solo}">Teams</button></div>
+    <h3>${solo?"Hoeveel spelers?":"Hoeveel teams?"}</h3>${solo?chips([2,3,4,5,6,7,8],C.ns,"ns"):chips([2,3,4],C.nt,"nt")}
+    <h3>Hoeveel rondes?</h3>${chips([1,2,3,4,5],C.rounds,"rounds")}<p class="note" style="margin:.2rem 0">Elke ${solo?"speler":"team"} tekent in elke ronde één keer.</p>
+    <h3>Seconden per beurt</h3>${chips([45,60,90,120],C.sec,"sec")}
+    <h3>Waar teken je?</h3>
+    <div class="dtform">
+      <div class="dtopt" role="button" tabindex="0" data-scr="scherm" aria-pressed="${C.scr==="scherm"}"><strong>Op het scherm</strong><span class="sub">Je tekent met je vinger, pen of muis in de site. Handig op een tablet of digibord.</span></div>
+      <div class="dtopt" role="button" tabindex="0" data-scr="papier" aria-pressed="${C.scr==="papier"}"><strong>Op papier of op het bord</strong><span class="sub">De site toont alleen het woord en de tijd. Je tekent op papier of op het whiteboard.</span></div>
+    </div>
+    <button class="btn" id="pcgo">Start het spel</button>`;
+    app.querySelector("#back").onclick=ex;
+    app.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{ C.who=b.dataset.who; setup(); });
+    app.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{ C[b.dataset.k]=+b.dataset.v; setup(); });
+    app.querySelectorAll("[data-scr]").forEach(b=>{ const f=()=>{ C.scr=b.dataset.scr; setup(); }; b.onclick=f; b.onkeydown=e=>{ if(e.target===b&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); f(); } }; });
+    app.querySelector("#pcgo").onclick=start;
+  }
+  let G;
+  function start(){
+    const solo=C.who==="solo", n=solo?C.ns:C.nt;
+    G={pl:Array.from({length:n},(_,i)=>({n:(solo?"Speler ":"Team ")+(i+1),p:0})),used:new Set(),turn:0,total:n*C.rounds,word:null,swap:false};
+    beurt();
+  }
+  const fmt=ms=>{ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); };
+  const pick=()=>{ let fresh=pool.filter(p=>!G.used.has(p.a)); if(fresh.length<1){ G.used.clear(); fresh=pool.slice(); } const w=shuffle(fresh)[0]; G.used.add(w.a); return w; };
+  const scoreHtml=()=>`<div class="dtscore">${G.pl.map((x,i)=>`<div class="t ${i===G.cur?"on":""}"><b>${esc(x.n)}</b><span>${x.p}</span><small>${x.p===1?"punt":"punten"}</small></div>`).join("")}</div>`;
+  /* scherm 1: wie is aan de beurt, nog geen woord zichtbaar */
+  function beurt(){
+    clearInterval(window.__dtI);
+    if(G.turn>=G.total) return einde();
+    G.cur=G.turn%G.pl.length; G.word=pick(); G.swap=false; G.strokes=[];
+    const d=G.pl[G.cur], solo=C.who==="solo";
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <p class="note" style="margin:.2rem 0">Beurt ${G.turn+1} van ${G.total} · ronde ${Math.floor(G.turn/G.pl.length)+1} van ${C.rounds}</p>
+    ${scoreHtml()}
+    <div class="pcbig"><div class="ct">Aan de beurt</div><div class="wd">${esc(d.n)}</div>
+      <p class="note" style="margin:.2rem 0">${solo?"Alleen de tekenaar kijkt naar het scherm.":"Kies een tekenaar uit het team. Alleen de tekenaar kijkt naar het scherm."}</p></div>
+    <button class="btn" id="pcshow">Toon het woord (alleen de tekenaar)</button>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#pcshow").onclick=toon;
+  }
+  /* scherm 2: de tekenaar ziet het woord */
+  function toon(){
+    const w=G.word;
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <div class="pcbig"><div class="ct">Je moet tekenen (categorie: ${esc(String(w.tag||"").toLowerCase())})</div><div class="wd">${esc(w.a)}</div>
+      <p class="note" style="margin:.2rem 0">Niet praten, geen letters of cijfers. Je hebt ${C.sec} seconden.</p></div>
+    <button class="btn" id="pcgo2">Start het tekenen</button>
+    ${!G.swap?`<button class="btn ghost" id="pcswap" style="margin-left:.4rem">Ander woord pakken (1× per beurt)</button>`:""}`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#pcgo2").onclick=teken;
+    const sw=app.querySelector("#pcswap"); if(sw) sw.onclick=()=>{ G.swap=true; G.word=pick(); toon(); };
+  }
+  /* scherm 3: tekenen met timer */
+  function teken(){
+    const w=G.word, scr=C.scr==="scherm"; let hidden=false, out=false; const tEnd=Date.now()+C.sec*1000;
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <div class="pcbar"><span class="t" id="pct" role="timer" aria-label="Tijd voor deze beurt">${fmt(C.sec*1000)}</span><span class="w" id="pcw">${esc(w.a)}</span><button type="button" class="btn ghost" id="pctog" style="padding:.3rem .7rem">Verberg woord</button></div>
+    ${scr?`<div class="pcwrap"><canvas id="pcc" aria-label="Tekenvlak"></canvas></div>
+    <div class="pctools" role="group" aria-label="Tekengereedschap">
+      ${[["#111111","Zwart"],["#d62828","Rood"],["#1d4ed8","Blauw"],["#15803d","Groen"],["#f59e0b","Oranje"]].map(([c,n],i)=>`<button type="button" class="sw" data-c="${c}" style="background:${c}" aria-label="${n}" aria-pressed="${i===0}"></button>`).join("")}
+      <button type="button" data-e="1" aria-pressed="false">Gum</button>
+      <button type="button" data-th="3" aria-pressed="true">Dun</button><button type="button" data-th="8" aria-pressed="false">Dik</button>
+      <button type="button" id="pcundo">Ongedaan maken</button><button type="button" id="pcclr">Wis alles</button>
+    </div>`:`<div class="pcbig"><div class="ct">Teken op papier of op het bord</div><div class="wd">${esc(w.a)}</div></div>`}
+    <div class="pcpick"><button class="btn" id="pcyes">Goed geraden</button><button class="btn ghost" id="pcno">Niet geraden</button></div>`;
+    app.querySelector("#back").onclick=ex;
+    const t=app.querySelector("#pct"), ww=app.querySelector("#pcw"), tg=app.querySelector("#pctog");
+    tg.onclick=()=>{ hidden=!hidden; ww.textContent=hidden?"• • • • •":w.a; ww.classList.toggle("hid",hidden); tg.textContent=hidden?"Toon woord":"Verberg woord"; };
+    window.__dtI=setInterval(()=>{ const l=tEnd-Date.now(); if(!document.getElementById("pct")) return clearInterval(window.__dtI); if(l<=0){ if(!out){ out=true; t.textContent="Tijd is om"; t.classList.add("out"); } } else t.textContent=fmt(l); },250);
+    app.querySelector("#pcyes").onclick=()=>{ clearInterval(window.__dtI); goed(); };
+    app.querySelector("#pcno").onclick=()=>{ clearInterval(window.__dtI); uitslag(false); };
+    if(scr) canvas();
+  }
+  function canvas(){
+    const cv=app.querySelector("#pcc"), ctx=cv.getContext("2d"); let col="#111111", th=3, eraser=false, cur=null;
+    const S_=G.strokes;
+    const size=()=>{ const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1; cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr); redraw(); };
+    const pt=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]; };
+    function line(s){ const W=cv.width,H=cv.height,dpr=window.devicePixelRatio||1; ctx.strokeStyle=s.e?"#fff":s.c; ctx.fillStyle=ctx.strokeStyle; ctx.lineWidth=(s.e?s.t*3:s.t)*dpr; ctx.lineCap="round"; ctx.lineJoin="round";
+      if(s.p.length===1){ ctx.beginPath(); ctx.arc(s.p[0][0]*W,s.p[0][1]*H,ctx.lineWidth/2,0,7); ctx.fill(); return; }
+      ctx.beginPath(); s.p.forEach(([x,y],i)=>i?ctx.lineTo(x*W,y*H):ctx.moveTo(x*W,y*H)); ctx.stroke(); }
+    function redraw(){ ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height); S_.forEach(line); if(cur) line(cur); }
+    cv.addEventListener("pointerdown",e=>{ e.preventDefault(); try{cv.setPointerCapture(e.pointerId);}catch(_){} cur={c:col,t:th,e:eraser,p:[pt(e)]}; redraw(); });
+    cv.addEventListener("pointermove",e=>{ if(!cur) return; e.preventDefault(); const p=pt(e), l=cur.p[cur.p.length-1]; if(Math.abs(p[0]-l[0])+Math.abs(p[1]-l[1])<0.002) return; cur.p.push(p); redraw(); });
+    const up=()=>{ if(cur){ S_.push(cur); cur=null; redraw(); } };
+    cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up); cv.addEventListener("pointerleave",up);
+    app.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{ col=b.dataset.c; eraser=false; app.querySelectorAll("[data-c]").forEach(x=>x.setAttribute("aria-pressed",x===b)); app.querySelector("[data-e]").setAttribute("aria-pressed","false"); });
+    app.querySelector("[data-e]").onclick=e=>{ eraser=!eraser; e.currentTarget.setAttribute("aria-pressed",eraser); };
+    app.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{ th=+b.dataset.th; app.querySelectorAll("[data-th]").forEach(x=>x.setAttribute("aria-pressed",x===b)); });
+    app.querySelector("#pcundo").onclick=()=>{ S_.pop(); redraw(); };
+    app.querySelector("#pcclr").onclick=()=>{ S_.length=0; redraw(); };
+    size(); window.addEventListener("resize",size,{once:false});
+  }
+  /* wie raadde het? */
+  function goed(){
+    const solo=C.who==="solo";
+    if(!solo){ G.pl[G.cur].p++; return uitslag(true,G.cur); }
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <h2>Wie raadde het?</h2><p class="note">De raadster en de tekenaar krijgen allebei een punt.</p>
+    <div class="pcpick">${G.pl.map((x,i)=>i===G.cur?"":`<button class="btn" data-g="${i}">${esc(x.n)}</button>`).join("")}</div>
+    <button class="btn ghost" id="pcnone">Toch niet geraden</button>`;
+    app.querySelector("#back").onclick=ex;
+    app.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{ const g=+b.dataset.g; G.pl[g].p++; G.pl[G.cur].p++; uitslag(true,g); });
+    app.querySelector("#pcnone").onclick=()=>uitslag(false);
+  }
+  function uitslag(ok,g){
+    clearInterval(window.__dtI); const w=G.word, d=G.pl[G.cur];
+    const uit=String(w.d||"").replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,"").trim();
+    G.turn++; const last=G.turn>=G.total;
+    app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
+    <div class="dtbanner ${ok?"ok":""}" role="status"><strong>${ok?(C.who==="solo"?`${esc(G.pl[g].n)} raadde het! Beide spelers krijgen een punt.`:`${esc(d.n)} kreeg een punt.`):"Niet geraden."}</strong></div>
+    <div class="pcbig"><div class="ct">Het woord was</div><div class="wd">${esc(w.a)}</div>${uit?`<p class="note" style="margin:.4rem 0">${esc(uit)}</p>`:""}</div>
+    ${scoreHtml()}
+    <button class="btn" id="pcnext">${last?"Bekijk de uitslag":"Volgende beurt"}</button>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#pcnext").onclick=beurt;
+  }
+  function einde(){
+    clearInterval(window.__dtI);
+    const r=[...G.pl].sort((a,b)=>b.p-a.p), top=r.filter(x=>x.p===r[0].p);
+    app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
+    <h2>Het spel is voorbij</h2>
+    <div class="dtbanner ok" role="status"><strong>${top.length===1?`${esc(top[0].n)} wint!`:`Gelijkspel: ${top.map(x=>esc(x.n)).join(" en ")}`}</strong></div>
+    <ol class="dtrank">${r.map(t=>`<li><strong>${esc(t.n)}</strong>: ${t.p} ${t.p===1?"punt":"punten"}</li>`).join("")}</ol>
+    <div class="row" style="margin:1rem 0"><button class="btn" id="pcagain">Nieuw spel</button><button class="btn ghost" id="pcmenu">Andere oefening</button></div>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#pcmenu").onclick=ex; app.querySelector("#pcagain").onclick=setup;
+  }
+  setup();
+}
+if(SHOW_PICTIONARY){
+  const _pm=hcModes;
+  hcModes=function(H){ const m=_pm(H); if(H.ob) return m; const i=m.findIndex(x=>x[0]==="verboden"); m.splice(i<0?m.length:i+1,0,["pictionary","Pictionary","Teken het woord en laat de anderen raden. Speel met meer spelers of teams"]); return m; };
+  const _ph=hcMenu;
+  hcMenu=function(){ _ph.apply(this,arguments); const b=app.querySelector('[data-m="pictionary"]'); if(b) b.onclick=()=>pictionary("hc"); };
+  const _pk=kaMenu;
+  kaMenu=function(){ _pk.apply(this,arguments);
+    const list=app.querySelector(".list > [data-m]"); if(!list||app.querySelector('[data-m="pictionary"]')) return; const box=list.parentElement;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="pictionary"; b.innerHTML=`<span class="txt"><strong>Pictionary</strong><span class="sub">Teken het woord en laat de anderen raden. Speel met meer spelers of teams</span></span>`;
+    b.onclick=()=>pictionary("ka"); const ref=box.querySelector('[data-m="verboden"]')||box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
+}
 /* Oefeningen in het menu: eerst groeptegels, na een klik de oefeningen van die groep (een oefening mag in twee groepen staan) */
 (function(){
   const G=[["Leren en bestuderen","uitleg lees ov flash",'<path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z"/><path d="M12 6v13.5"/>'],
     ["Kennis en feiten","quiz koppelb fabel wie gk kruis",'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'],
     ["Tijd en plaats","ka2tv tijd tijdlijn chrono tl hitster tijdmachine kaart order",'<path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.8 12 21 12 21z"/><path d="M12 7.5v3.5l2.3 1.4"/>'],
     ["Verbanden","keten sudoku vbpuz koppel vb2ka",'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'],
-    ["Spellen en puzzels","memory kruis galgje dertig verboden hitster wie klas",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
+    ["Spellen en puzzels","memory kruis galgje dertig verboden pictionary hitster wie klas",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
   const HUE={"Leren en bestuderen":215,"Kennis en feiten":32,"Tijd en plaats":150,"Verbanden":272,"Spellen en puzzels":345,"Toetsen en examen":190,"Toetsvragen":190,"Losse oefeningen":220};
