@@ -7239,7 +7239,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126205332"; let last=0, shown=false;
+  const BUILD="20261126210053"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10743,6 +10743,10 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
   /* Aantal andere oefeningen dat je moet afmaken om de oefening weer te openen (standaard 2); per oefening aan te passen: LOCK_U.id=aantal */
   /* Deze oefeningen tellen niet mee voor het ontgrendelen van andere oefeningen */
   const NOUNLOCK=new Set("dertig verboden pictionary".split(" "));
+  /* Oefeningen waarbij een ronde uit meerdere onderdelen bestaat (bijvoorbeeld 2 woorden Galgje of 3 ketens): aantal onderdelen per ronde */
+  const PERROUND={galgje:2,keten:3};
+  /* Sorteeroefeningen: een ronde telt pas mee als de volgorde goed is ("Helemaal goed!"), niet bij Opnieuw schudden */
+  const ORDERX=new Set(["keten","chrono","tijd"]);
   const U={}; window.LOCK_N=N; window.LOCK_U=U;
   const KEY="hb_oefenslot", NEED=2, wantU=id=>U[id]>0?U[id]:NEED, END="#again,#nieuw,#dtagain,#vbagain,#pcagain,#kqnew,#new", ENDX={galgje:"#next",sudoku:"#sshow"}, ENDALL=END+",#next,#sshow,#kwnew,#pnew", SPECIAL={kruis:["#kwfb",/Helemaal goed/],piramide:["#pfb",/Goed! Alle acht/]}, BLOCKB={sudoku:"#snew",kruis:"#kwnew",piramide:"#pnew"}; let mem={c:{},l:{}}, cur=null, armed=false, shown=false; const counted=new WeakSet();
   const load=()=>{ try{ const v=JSON.parse(localStorage.getItem(KEY)); if(v&&v.c&&v.l) return v; }catch(e){} return mem; };
@@ -10769,16 +10773,17 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
   function pass(){ if(busy) return; busy=true; obs.disconnect();
     try{
       let ag=app.querySelector(ENDX[cur]||END);
-      if(SPECIAL[cur]){ const kf=app.querySelector(SPECIAL[cur][0]); ag=(kf&&SPECIAL[cur][1].test(kf.textContent))?kf:null; } /* kruiswoordpuzzel en sociale piramide: tellen mee zodra alles goed is */
+      if(ORDERX.has(cur)){ const fb=app.querySelector(".feedback.good"); ag=(fb&&app.querySelector(".order")&&/Helemaal goed/.test(fb.textContent))?fb:null; }
+      else if(SPECIAL[cur]){ const kf=app.querySelector(SPECIAL[cur][0]); ag=(kf&&SPECIAL[cur][1].test(kf.textContent))?kf:null; } /* kruiswoordpuzzel en sociale piramide: tellen mee zodra alles goed is */
       if(ag&&cur&&armed&&!counted.has(ag)){ counted.add(ag); armed=false;
         if(shown){ /* oplossing getoond: geen ronde */ }
-        else if(cur==="galgje"){ const v0=load(); v0.gw=(v0.gw||0)+1; save(v0); if(v0.gw%2===0) complete(cur); } else complete(cur); }
+        else if(PERROUND[cur]>1){ const v0=load(); v0.pr=v0.pr||{}; v0.pr[cur]=(v0.pr[cur]||0)+1; save(v0); if(v0.pr[cur]%PERROUND[cur]===0) complete(cur); } else complete(cur); }
       const v=unlockCheck();
       tiles().forEach(x=>{ const id=x.dataset.m, L=v.l[id], tx=x.querySelector(".txt")||x; let b=x.querySelector(".lockb");
         if(L){ const n=need(id), txt=`🔒 Op slot. Maak eerst nog ${Math.max(1,n-L.d.length)} andere ${n-L.d.length>1?"oefeningen":"oefening"} helemaal af (${L.d.length} van ${n}).`;
           x.classList.add("lockd"); x.setAttribute("aria-disabled","true"); if(!b){ b=document.createElement("span"); b.className="lockb"; tx.appendChild(b); } if(b.textContent!==txt) b.textContent=txt; }
         else if(x.classList.contains("lockd")){ x.classList.remove("lockd"); x.removeAttribute("aria-disabled"); if(b) b.remove(); } });
-      const bt=ag&&cur?(app.querySelector(BLOCKB[cur]||ENDX[cur]||END)):null; if(bt&&cur&&v.l[cur]&&!bt.dataset.locked){ const ag2=bt; ag2.dataset.locked="1"; const n=need(cur); ag2.disabled=true; ag2.textContent="🔒 Op slot";
+      const sel=ORDERX.has(cur)?"#next,#again":(BLOCKB[cur]||ENDX[cur]||END), bts=ag&&cur?[...app.querySelectorAll(sel)]:[], bt=bts[0]||null; if(bt&&cur&&v.l[cur]&&!bt.dataset.locked){ const ag2=bt; const n=need(cur); bts.forEach(x=>{ x.dataset.locked="1"; x.disabled=true; x.textContent="🔒 Op slot"; });
         const p=document.createElement("p"); p.className="lockn"; p.textContent=`Deze oefening staat nu op slot. Maak eerst ${n} andere ${n>1?"oefeningen":"oefening"} helemaal af. Kies hiervoor een andere oefening in het menu.`; ag2.parentElement.insertBefore(p,ag2); }
     }finally{ busy=false; obs.observe(app,{childList:true,subtree:true}); } }
   const obs=new MutationObserver(()=>{ if(pend) return; pend=true; requestAnimationFrame(()=>{ pend=false; pass(); }); });
