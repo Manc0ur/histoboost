@@ -269,7 +269,8 @@ body.lzhide .lzsticky .lzscroll{display:none}
 .list.mgv>.item{border-color:color-mix(in srgb,var(--gc) 35%,var(--line));border-top:4px solid var(--gc)}.list.mgv>.item:hover:not([disabled]){border-color:var(--gc)}
 .list.mgv>.item .ico{background:var(--gc);color:var(--gtx)}
 .list.mgv .mgback{background:var(--gc);color:var(--gtx);border-radius:10px;padding:.6rem .85rem}.list.mgv .mgback h3{color:inherit}.list.mgv .mgback .linkbtn{color:var(--gtx);text-decoration:underline}
-.list.mgv .mgback .linkbtn{background:var(--gtx);color:var(--gc);text-decoration:none;font-weight:800;border-radius:999px;padding:.5rem 1.05rem;min-height:2.5rem;border:2px solid var(--gtx);box-shadow:0 2px 0 rgba(0,0,0,.25);cursor:pointer}.list.mgv .mgback .linkbtn:hover{filter:brightness(1.15);transform:translateY(-1px)}.list.mgv .mgback .linkbtn:focus-visible{outline:3px solid var(--gtx);outline-offset:3px}
+.list.mgv .mgback .linkbtn{background:var(--gtx);color:var(--gc);text-decoration:none;font-weight:800;border-radius:999px;padding:.5rem 1.05rem;min-height:2.5rem;border:2px solid var(--gtx);box-shadow:0 2px 0 rgba(0,0,0,.25);cursor:pointer}.list.mgv .mgback .linkbtn:hover{filter:brightness(1.15);transform:translateY(-1px)}.allex{grid-column:1/-1;margin-top:.4rem}.allex>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:.6rem;padding:.8rem 1rem;border:2px solid var(--line);border-radius:12px;font-weight:800;background:var(--surface)}.allex>summary::-webkit-details-marker{display:none}.allex>summary::before{content:'▸';transition:transform .15s}.allex[open]>summary::before{transform:rotate(90deg)}.allex>summary:hover{border-color:currentColor}.allex .allexn{font-weight:500;color:var(--muted)}.allex{min-width:0}.allex>.allexl{margin-top:.7rem;min-width:0}.allex>.allexl>.item{min-width:0;max-width:100%;box-sizing:border-box;width:100%}
+.list.mgv .mgback .linkbtn:focus-visible{outline:3px solid var(--gtx);outline-offset:3px}
 .list:has(>.item[data-m]),.list:has(>.item[data-v]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
 .list:has(>.item[data-m])>.item,.list:has(>.item[data-v])>.item{flex-direction:column;align-items:flex-start;gap:.6rem;padding:.9rem;min-height:9.5rem}
 .list:has(>.item[data-m])>.item .txt,.list:has(>.item[data-v])>.item .txt{flex:0 1 auto}
@@ -3250,7 +3251,7 @@ function kaMenu(){ CTX="ka"; sylKA(); tvSelSet(S.sel);
         <div class="kachips">${ks.map(k=>`<button class="chip kachip" style="--c:${col(t.n)}" aria-pressed="${!off.has(k.n)}" data-ka="${k.n}" title="${esc(k.t)}"><b>${k.n}</b>${esc(KAMAP.short[k.n-1])}</button>`).join("")}</div>`; }).join("")}</div></details>`; })()}
   </section>
   <section class="section">
-    <h2>Kies een oefening</h2>
+    <h2>Soorten oefeningen</h2>
     <div class="list">
       ${S.sel.size>1?`<button class="item" data-m="ka2tv" ${count?"":"disabled"}><span class="txt"><strong>In welk tijdvak?</strong><span class="sub">Je ziet een kenmerkend aspect en kiest het tijdvak</span></span></button>`:""}
       <button class="item" data-m="vb2ka" ${count?"":"disabled"}><span class="txt"><strong>Herken het kenmerkend aspect</strong><span class="sub">Je ziet een historisch voorbeeld of een bron uit het examen en kiest het kenmerkend aspect dat erbij past</span></span></button>
@@ -3470,7 +3471,7 @@ function hcMenu(){ CTX="hc"; LEESOV=false; LEESVID=false;
       <span class="tag ${S.dvSel.has(d.nr)?"on":""}">${S.dvSel.has(d.nr)?"✓ gekozen":"niet gekozen"}</span></button></button>`)).join("")}</div>${H.dv.length>4?"</details>":""}
   </section>`}
   <section class="section">
-    <h2>Kies een oefening</h2>
+    <h2>Soorten oefeningen</h2>
     <div class="list">
       ${hcModes(H).map(([m,t,s])=>{ const why=S.dvSel.size?hcWhy(H,m):""; return `<button class="item" data-m="${m}" ${S.dvSel.size&&!why?"":"disabled"}><span class="txt"><strong>${t}</strong><span class="sub">${why||s}</span></span></button>`; }).join("")}
     </div>
@@ -7230,7 +7231,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126110205"; let last=0, shown=false;
+  const BUILD="20261126114024"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10528,7 +10529,10 @@ if(SHOW_VERBODEN){
         grp.forEach((g,i)=>{ const b=document.createElement("button"); b.className="item mgt"; b.dataset.m="g"+i; b.dataset.ico="1"; b.style.setProperty("--gh",HUE[g.t]||220);
           b.innerHTML=`<span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24">${g.ico}</svg></span><span class="txt"><strong>${g.t}</strong><span class="sub">${g.its.length} ${g.its.length===1?"oefening":"oefeningen"}: ${g.its.map(nm).join(", ")}</span></span>`;
           b.onclick=()=>{ S.mg=i; draw(); list.parentElement.scrollIntoView({behavior:"smooth",block:"start"}); }; list.appendChild(b); });
-        
+        const dt=document.createElement("details"); dt.className="allex"; dt.open=!!S.mgAll;
+        dt.innerHTML=`<summary>Alle oefeningen <span class="allexn">(${all.length})</span></summary><div class="list allexl"></div>`;
+        const inn=dt.querySelector(".allexl"); all.forEach(x=>inn.appendChild(x));
+        dt.addEventListener("toggle",()=>{ S.mgAll=dt.open; }); list.appendChild(dt);
       } else {
         const g=grp[S.mg], bar=document.createElement("div"); bar.className="mgback";
         bar.innerHTML=`<button type="button" class="linkbtn">‹ Alle soorten oefeningen</button><h3>${g.t}</h3>`; bar.querySelector("button").onclick=()=>{ S.mg=null; draw(); };
