@@ -92,6 +92,7 @@ button{font:inherit;color:inherit}
 .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.93rem}
 .qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.3rem;border-top:6px solid var(--c,var(--ink))}
 .qcard .ask{color:var(--ink);font-size:1.25rem;font-weight:700;line-height:1.35;margin:0 0 .6rem}
+.qcard .qctx{margin:0 0 .5rem;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
 .qcard .ask .qtag{font-size:1em;font-weight:700;padding:.05rem .65rem;color:var(--ink);vertical-align:.05em}
 .qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--or)}
 .qcard .q[data-k]{color:var(--or)}
@@ -2934,7 +2935,7 @@ function mcEx({title,qs,back,again,tvGrid,key,ids,resultExtra,optGrid}){
     app.innerHTML = `<button class="back" id="back">‹ Stoppen</button>
       <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${qs.length}</span></div>
       <div class="progress"><i style="width:${i/qs.length*100}%"></i></div>
-      <div class="qcard" ${q.c?`style="--c:${col(q.c)}"`:""}><p class="ask">${q.ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="q${q.or?" qor":""}"${q.k!==undefined?` data-k="${esc(q.k)}"`:""}>${esc(q.q)}</p>`}
+      <div class="qcard" ${q.c?`style="--c:${col(q.c)}"`:""}>${q.ctx?`<p class="qctx">${q.ctx}</p>`:""}<p class="ask">${q.ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="q${q.or?" qor":""}"${q.k!==undefined?` data-k="${esc(q.k)}"`:""}>${esc(q.q)}</p>`}
       <div class="opts ${tvGrid?"tv":""} ${optGrid?(optGrid===3?"g3":"g2"):""}">${q.opts.map(o=>`<button class="opt ${o.c?"tvopt":""}" ${o.c?`style="--c:${col(o.c)}"`:""} data-a="${o.id}">${o.html||esc(o.label)}</button>`).join("")}</div></div>
       <div id="fb"></div>`;
     app.querySelector("#back").onclick=back;
@@ -5671,6 +5672,11 @@ function ocMenu(scope){
   app.querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>({volgorde:()=>scope==="ka"?kaKeten(0):hcKeten(0),oorz:()=>ocQuiz(scope,"oorz"),schakel:()=>ocQuiz(scope,"schakel")})[b.dataset.oc]());
   window.scrollTo(0,0);
 }
+/* korte context bovenaan de vraag: uit welk tijdvak (tijdvakken) of welke deelvraag (verdiepingen) komt de keten? */
+function ocCtx(k){
+  if(k.tv!==undefined){ const t=TV.find(x=>x.n===k.tv); return t?`Tijdvak ${t.n}: ${esc(t.naam)} (${esc(t.jaren)})`:""; }
+  const H=S.hc, d=H&&H.dv&&H.dv[k.dv-1]; return d?`${esc(H.titel)}, deelvraag ${k.dv} (${esc(d.periode)})`:"";
+}
 /* oorzaak (dir -1) of gevolg (dir +1) van een stap; afleiders: geen stappen aan dezelfde kant, verder weg in dezelfde keten */
 function qOorz(k,all,c,dir){
   const i=dir<0?1+Math.floor(Math.random()*(k.stappen.length-1)):Math.floor(Math.random()*(k.stappen.length-1)), cor=k.stappen[i+dir];
@@ -5678,7 +5684,7 @@ function qOorz(k,all,c,dir){
   const others=simSteps(k,i,cor,all,9).filter(x=>!bad.has(x)).slice(0,3);
   if(others.length<3) return null;
   const shown=k.stappen[i];
-  return {id:"oc"+(dir<0?"o":"g")+k.titel+i,ask:QTAG(dir<0?"Oorzaak":"Gevolg")+(dir<0?"Wat was de directe oorzaak hiervan?":"Wat was het directe gevolg hiervan?"),q:shown,c:c(k),right:"a",
+  return {ctx:ocCtx(k),id:"oc"+(dir<0?"o":"g")+k.titel+i,ask:QTAG(dir<0?"Oorzaak":"Gevolg")+(dir<0?"Wat was de directe oorzaak hiervan?":"Wat was het directe gevolg hiervan?"),q:shown,c:c(k),right:"a",
     opts:shuffle([{id:"a",label:cor},...others.map((x,j)=>({id:"d"+j,label:x}))]),hint:k.hint||"",
     uitleg:`Uit de keten ‘${esc(k.titel)}’: ${dir<0?"de oorzaak was":"het gevolg was"} <strong>${esc(cor)}</strong>. ${dir<0?"Een oorzaak komt altijd vóór het gevolg.":"Een gevolg komt altijd ná de oorzaak."}`,extra:k.uit||""};
 }
@@ -5689,7 +5695,7 @@ function qBeide(k,all,c){
   if(others.length<2) return null;
   const lab=(o,g)=>({label:`Oorzaak: ${o}. Gevolg: ${g}`,html:`<span class="ocl">Oorzaak</span>${esc(o)}<span class="ocl" style="margin-top:.3rem">Gevolg</span>${esc(g)}`});
   const opts=[{id:"a",...lab(A,C)},{id:"b",...lab(C,A)},{id:"c",...lab(A,others[0])},{id:"d",...lab(others[1],C)}];
-  return {id:"ocb"+k.titel,ask:QTAG("Oorzaak én gevolg")+"Wat zijn de oorzaak en het gevolg van deze gebeurtenis?",q:B,c:c(k),right:"a",
+  return {ctx:ocCtx(k),id:"ocb"+k.titel,ask:QTAG("Oorzaak én gevolg")+"Wat zijn de oorzaak en het gevolg van deze gebeurtenis?",q:B,c:c(k),right:"a",
     opts:shuffle(opts),hint:k.hint||"Wat gebeurde er eerst, en wat kwam er daarna uit voort?",
     uitleg:`Uit de keten ‘${esc(k.titel)}’: eerst <strong>${esc(A)}</strong> (oorzaak), dan <strong>${esc(B)}</strong>, en daarna <strong>${esc(C)}</strong> (gevolg).`,extra:k.uit||""};
 }
@@ -5698,7 +5704,7 @@ function qSchakel(k,all,c){
   const st=k.stappen.length>3?Math.floor(Math.random()*(k.stappen.length-2)):0;
   const [A,B,C]=k.stappen.slice(st,st+3), others=simSteps(k,st,B,all,9).filter(x=>x!==C&&!k.stappen.includes(x)).slice(0,3);
   if(others.length<3) return null;
-  return {id:"ocs"+k.titel+st,ask:QTAG("Ontbrekende schakel")+"Welke stap ontbreekt in deze keten?",q:`${A} → ? → ${C}`,
+  return {ctx:ocCtx(k),id:"ocs"+k.titel+st,ask:QTAG("Ontbrekende schakel")+"Welke stap ontbreekt in deze keten?",q:`${A} → ? → ${C}`,
     qhtml:`<ol class="oc3"><li><span class="ocl">Eerst</span>${esc(A)}</li><li class="gap">Welke stap ontbreekt hier?</li><li><span class="ocl">Daarna</span>${esc(C)}</li></ol>`,c:c(k),right:"a",
     opts:shuffle([{id:"a",label:B},...others.map((x,j)=>({id:"d"+j,label:x}))]),hint:(k.stappen.length>3?"":k.hint)||"Wat is het gevolg van de eerste stap én de oorzaak van de laatste?",
     uitleg:`De ontbrekende stap is <strong>${esc(B)}</strong>. Het is het gevolg van ‘${esc(A)}’ en de oorzaak van ‘${esc(C)}’.`,extra:k.uit||""};
@@ -7257,7 +7263,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127132330"; let last=0, shown=false;
+  const BUILD="20261127142509"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
