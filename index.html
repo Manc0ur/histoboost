@@ -7286,7 +7286,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127171435"; let last=0, shown=false;
+  const BUILD="20261127171632"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10837,11 +10837,15 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
   const tiles=()=>[...app.querySelectorAll("[data-m]")].filter(x=>isTile(x.dataset.m));
   const need=id=>{ const ids=new Set(tiles().map(x=>x.dataset.m).filter(m=>!NOUNLOCK.has(m))); if(!ids.size) return wantU(id); ids.delete(id); return Math.min(wantU(id),ids.size); };
   const nm=id=>{ const t=tiles().find(x=>x.dataset.m===id); return t?((t.querySelector("strong")||{}).textContent||id):id; };
-  function complete(id){ const v=load(); v.c[id]=(v.c[id]||0)+1;
+  /* Het slotje werkt alleen op maandag t/m vrijdag van 9:30 tot 16:00 (tijd in Nederland); buiten die tijden is alles vrij en telt niets mee */
+  const active=()=>{ try{ const p={}; new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Amsterdam",weekday:"short",hour:"numeric",minute:"numeric",hourCycle:"h23"}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+      const m=(+p.hour)*60+(+p.minute); return ["Mon","Tue","Wed","Thu","Fri"].includes(p.weekday)&&m>=570&&m<960; }catch(e){ const d=new Date(), m=d.getHours()*60+d.getMinutes(); return d.getDay()>=1&&d.getDay()<=5&&m>=570&&m<960; } };
+  window.LOCK_ACTIVE=active;
+  function complete(id){ if(!active()) return; const v=load(); v.c[id]=(v.c[id]||0)+1;
     if(!NOUNLOCK.has(id)) Object.keys(v.l).forEach(L=>{ if(L!==id&&!v.l[L].d.includes(id)) v.l[L].d.push(id); });
     if(N[id]>0&&v.c[id]>=N[id]&&!v.l[id]) v.l[id]={d:[]};
     save(v); }
-  function unlockCheck(){ const v=load(); let ch=false; Object.keys(v.l).forEach(L=>{ if(v.l[L].d.length>=need(L)){ delete v.l[L]; v.c[L]=0; ch=true; } }); if(ch) save(v); return v; }
+  function unlockCheck(){ if(!active()) return {c:{},l:{}}; const v=load(); let ch=false; Object.keys(v.l).forEach(L=>{ if(v.l[L].d.length>=need(L)){ delete v.l[L]; v.c[L]=0; ch=true; } }); if(ch) save(v); return v; }
   function toast(msg){ let t=document.getElementById("locktoast"); if(!t){ t=document.createElement("div"); t.id="locktoast"; t.setAttribute("role","status"); document.body.appendChild(t); } t.textContent=msg; t.classList.add("on"); clearTimeout(t.__t); t.__t=setTimeout(()=>t.classList.remove("on"),6000); }
   const css=document.createElement("style"); css.textContent=`.item.lockd{opacity:.6}.item.lockd .lockb{display:block;font-weight:800;font-size:.85rem;margin-top:.2rem}.lockn{border:2px solid var(--line);border-radius:10px;padding:.6rem .8rem;margin:.6rem 0;font-weight:700}#locktoast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%);max-width:min(32rem,92vw);background:var(--ink);color:var(--bg);padding:.8rem 1rem;border-radius:12px;font-weight:700;z-index:99;display:none;box-shadow:0 6px 24px rgba(0,0,0,.35)}#locktoast.on{display:block}`; document.head.appendChild(css);
   app.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-m]"); if(!t||!app.contains(t)) return; const id=t.dataset.m; if(/^g\d+$/.test(id)) return;
@@ -10858,7 +10862,7 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
       if(ORDERX.has(cur)){ const fb=app.querySelector(".feedback.good"); ag=(fb&&app.querySelector(".order")&&/Helemaal goed/.test(fb.textContent))?fb:null; }
       else if(SPECIAL[cur]){ const kf=app.querySelector(SPECIAL[cur][0]); ag=(kf&&SPECIAL[cur][1].test(kf.textContent))?kf:null; } /* kruiswoordpuzzel en sociale piramide: tellen mee zodra alles goed is */
       if(ag&&cur&&armed&&!counted.has(ag)){ counted.add(ag); armed=false;
-        if(shown){ /* oplossing getoond: geen ronde */ }
+        if(shown||!active()){ /* oplossing getoond of buiten lestijd: geen ronde */ }
         else if(PERROUND[cur]>1){ const v0=load(); v0.pr=v0.pr||{}; v0.pr[cur]=(v0.pr[cur]||0)+1; save(v0); if(v0.pr[cur]%PERROUND[cur]===0) complete(cur); } else complete(cur); }
       const v=unlockCheck();
       tiles().forEach(x=>{ const id=x.dataset.m, L=v.l[id], tx=x.querySelector(".txt")||x; let b=x.querySelector(".lockb");
@@ -10870,6 +10874,7 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
     }finally{ busy=false; obs.observe(app,{childList:true,subtree:true}); } }
   const obs=new MutationObserver(()=>{ if(pend) return; pend=true; requestAnimationFrame(()=>{ pend=false; pass(); }); });
   obs.observe(app,{childList:true,subtree:true});
+  let was=active(); setInterval(()=>{ const a=active(); if(a!==was){ was=a; pass(); } },30000);
   /* Galgje had een eigen pauze van 10 minuten; die wordt vervangen door dit slot */
   window.__lockGalgje=true;
 })();
