@@ -3218,7 +3218,18 @@ function mixSim(correct,q,own,other,n){
 }
 /* handmatig gekozen afleiders (onderbouw), per goed antwoord */
 const KT_AFL={"De nieuwe Atheense burgers mogen meebeslissen in het bestuur van Athene":["De Griekse stadstaten voeren oorlog om landbouwgrond","De Grieken gaan veel handeldrijven met andere gebieden","Rijke Romeinse leiders vormen de senaat"]};
+/* Ontbrekende schakel: twee van de drie afleiders komen uit andere ketens over hetzelfde onderwerp (zelfde tijdvak/deelvraag), zodat je niet op onderwerp kunt raden. Door Claude gekozen: docent graag controleren */
 function simSteps(k,stepIdx,correct,allKetens,n){
+  const base=simSteps0(k,stepIdx,correct,allKetens,n);
+  if(S.hc&&S.hc.ob) return base;
+  const W=t=>(t.toLowerCase().match(/[a-zà-ÿ]{6,}/g)||[]).map(w=>w.slice(0,6)), mine=new Set(W(k.titel+" "+k.stappen.join(" ")));
+  const ctxOf=o=>k.dv!=null?((S.hc&&S.hc.dv&&(S.hc.dv[o.dv-1]||{}).src)===(S.hc&&S.hc.dv&&(S.hc.dv[k.dv-1]||{}).src)):(o.tv===k.tv);
+  const nb=new Set(W(k.stappen.filter((_,i)=>i!==stepIdx).join(" "))), rel=[]; allKetens.filter(o=>o!==k&&ctxOf(o)&&W(o.titel+" "+o.stappen.join(" ")).some(w=>mine.has(w))).forEach(o=>o.stappen.forEach(x=>{ if(!k.stappen.includes(x)&&x!==correct&&!rel.includes(x)&&!W(x).some(w=>nb.has(w))) rel.push(x); }));
+  if(rel.length<2) return base;
+  const pick=pickSim({s:correct,near:1},rel.map(x=>({s:x,near:.6})),2,{text:x=>x.s,ctx:()=>k.stappen[stepIdx],near:x=>x.near}).map(x=>x.s);
+  return pick.concat(base.filter(x=>!pick.includes(x)));
+}
+function simSteps0(k,stepIdx,correct,allKetens,n){
   // stappen uit dezelfde keten (behalve vraag en goed antwoord) en uit vergelijkbare ketens
   const q=k.stappen[stepIdx], pool=[];
   /* Onderbouw Grieken en Romeinen: afleiders eerst uit dezelfde deelvraag (dus over dezelfde mensen), zodat je niet kunt raden op onderwerp */
@@ -7275,7 +7286,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127170508"; let last=0, shown=false;
+  const BUILD="20261127171435"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
