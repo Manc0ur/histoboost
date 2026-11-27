@@ -92,7 +92,8 @@ button{font:inherit;color:inherit}
 .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.93rem}
 .qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.4rem 1.3rem;border-top:6px solid var(--c,var(--ink))}
 .qcard .ask{color:var(--ink);font-size:1.25rem;font-weight:700;line-height:1.35;margin:0 0 .6rem}
-.qcard .qctx{margin:0 0 .5rem;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
+.bkctx{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-top:.15rem}
+.qctx{margin:0 0 .5rem;font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.01em}
 .qcard .ask .qtag{font-size:1em;font-weight:700;padding:.05rem .65rem;color:var(--ink);vertical-align:.05em}
 .qcard .q{font-size:1.25rem;font-weight:700;margin:0;color:var(--or)}
 .qcard .q[data-k]{color:var(--or)}
@@ -3115,9 +3116,9 @@ function kaMixGens(){
         opts:shuffle([k,...kaDistract(k,[k.n,...(ook?ook.ka:[])])]).map(x=>({id:String(x.n),label:x.t})),hint:KAX[k.n][2],uitleg:kaFeedback(k),extra:KAX[k.n][0]}; },
     ()=>{ const e=tl[Math.floor(Math.random()*tl.length)]; return e?qJaar(e,KA_TL,x=>x.tv,"",x=>[x.u,x.h]):null; },
     ()=>qChrono(tl,x=>x.tv,"Chronologie"),
-    ()=>{ const m=mp[Math.floor(Math.random()*mp.length)]; return m?qWaar(m,MAP_KA,x=>x.tv):null; },
-    ()=>{ const k=kt[Math.floor(Math.random()*kt.length)]; return k?qKeten(k,KA_KETENS,x=>x.tv):null; },
-    ()=>{ const t=gk[Math.floor(Math.random()*gk.length)]; return t?qGat(t,x=>x.tv[0]):null; },
+    ()=>{ const m=mp[Math.floor(Math.random()*mp.length)]; return m?cq(qWaar(m,MAP_KA,x=>x.tv),m):null; },
+    ()=>{ const k=kt[Math.floor(Math.random()*kt.length)]; return k?cq(qKeten(k,KA_KETENS,x=>x.tv),k):null; },
+    ()=>{ const t=gk[Math.floor(Math.random()*gk.length)]; return t?cq(qGat(t,x=>x.tv[0]),t):null; },
     ...(typeof mcGensKA==="function"?mcGensKA():[])
   ];
   return gens;
@@ -3130,19 +3131,19 @@ function hcMixGens(){
   const allKa=[...new Set(H.dv.flatMap(x=>x.ka))];
   const gens=[
     ()=>{ const b=B[Math.floor(Math.random()*B.length)]; if(!b) return null; const others=simBegrippen(b,H.begrippen,3);
-      return {id:"bg"+b.b,ask:QTAG("Begrip")+"Wat betekent dit begrip?",q:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
+      return {ctx:ctxFor(b),id:"bg"+b.b,ask:QTAG("Begrip")+"Wat betekent dit begrip?",q:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
         hint:BX[b.b]?.[1]||`Dit begrip hoort bij deelvraag ${b.dv}.`,uitleg:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`,extra:BX[b.b]?.[0]||""}; },
     ()=>{ const b=B[Math.floor(Math.random()*B.length)]; if(!b) return null; const others=simBegrippen(b,H.begrippen,3); if(others.length<3) return null;
-      return {id:"bd"+b.b,ask:QTAG("Begrip")+"Welk begrip hoort bij deze omschrijving?",q:b.d,k:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.b})),
+      return {ctx:ctxFor(b),id:"bd"+b.b,ask:QTAG("Begrip")+"Welk begrip hoort bij deze omschrijving?",q:b.d,k:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.b})),
         hint:BX[b.b]?.[1]||"",uitleg:`Dit is <strong>${esc(b.b)}</strong>.`,extra:BX[b.b]?.[0]||""}; },
     ()=>{ const KPn=KP.filter(y=>!Array.isArray(y.ka)&&!y.ex), x=KPn[Math.floor(Math.random()*KPn.length)]; if(!x) return null; const k=kaOf(x.ka);
       return {id:"kp"+x.g,ask:QTAG("Kenmerkend aspect")+"Bij welk kenmerkend aspect past deze gebeurtenis?",q:x.g,c:cc(x),right:String(k.n),
         opts:shuffle([k,...kaDistract(k,[k.n],allKa)]).map(o=>({id:String(o.n),label:o.t})),hint:x.hint||"",uitleg:`Dit past bij kenmerkend aspect ${k.n}: ${esc(k.t)}.`,extra:KOP_UIT[x.g]||x.uit||""}; },
     ()=>{ const e=TL[Math.floor(Math.random()*TL.length)]; return e?qJaar(e,H.tijdlijn,cc,"",X):null; },
     ()=>qChrono(TL,cc,"Chronologie",X),
-    ()=>{ const m=MP[Math.floor(Math.random()*MP.length)]; return m?qWaar(m,(H.map||MAP_HC),cc):null; },
-    ()=>{ const k=KT[Math.floor(Math.random()*KT.length)]; return k?qKeten(k,H.ketens,cc):null; },
-    ()=>{ const t=GK[Math.floor(Math.random()*GK.length)]; return t?qGat(t,cc):null; },
+    ()=>{ const m=MP[Math.floor(Math.random()*MP.length)]; return m?cq(qWaar(m,(H.map||MAP_HC),cc),m):null; },
+    ()=>{ const k=KT[Math.floor(Math.random()*KT.length)]; return k?cq(qKeten(k,H.ketens,cc),k):null; },
+    ()=>{ const t=GK[Math.floor(Math.random()*GK.length)]; return t?cq(qGat(t,cc),t):null; },
     ...(typeof mcGensHC==="function"?mcGensHC():[])
   ];
   return gens;
@@ -3795,7 +3796,7 @@ function hcKoppelB(prev){
     <p class="lead">Sleep bij elk begrip de juiste omschrijving. Je kunt ook op een omschrijving tikken en daarna op een begrip. Let op: er zijn meer omschrijvingen dan begrippen.</p>
     <div class="bk">
       <div class="bkl">${round.map((b,i)=>{ const ci=place[i], cls=checked?(isRight(i)?"correct":"wrong"):(ci===null?"empty":"");
-        return `<div class="bkrow"><div class="bkterm">${esc(b.b)}</div>
+        return `<div class="bkrow"><div class="bkterm">${esc(b.b)}${ctxFor(b,false,true)?`<span class="bkctx">${ctxFor(b,false,true)}</span>`:""}</div>
           <div class="bkslot ${cls}" data-slot="${i}" role="button" tabindex="0" aria-label="Omschrijving bij ${esc(b.b)}${ci!==null?": "+esc(chips[ci].t):", leeg"}">${ci!==null?(checked?`<span class="bkchip" style="cursor:default;border-color:transparent;background:transparent">${esc(chips[ci].t)}</span>`:chipHtml(ci)):"Sleep hier de omschrijving heen"}</div></div>`; }).join("")}</div>
       ${checked?"":`<div class="bkbank" data-bank="1"><h3>Omschrijvingen</h3>${bank.map(chipHtml).join("")||`<span class="gph">Alle omschrijvingen zijn gebruikt.</span>`}</div>`}
     </div>
@@ -4142,17 +4143,17 @@ function hcFabel(){
   const pers=WBI.filter(w=>w.hc&&w.hc[H.id]&&w.u&&w.u.startsWith(w.n)).map(w=>XRE.test(w.u)?{...w,u:w.u.replace(XRE,""),x:1}:w);
   const keten=(H.ketens||[]).filter(k=>ktVerloop(k)&&(!selDv.length||!k.dv||selDv.includes(k.dv)));
   const gens=[];
-  const mk=(id,stmt,truth,uitTrue,uitFalse,tag)=>({id,ask:QTAG(tag||"Feit of fictie")+"Klopt deze uitspraak?",q:stmt,right:truth?"goed":"fout",
+  const mk=(id,stmt,truth,uitTrue,uitFalse,tag,cx)=>({ctx:ctxFor(cx),id,ask:QTAG(tag||"Feit of fictie")+"Klopt deze uitspraak?",q:stmt,right:truth?"goed":"fout",
     opts:[{id:"goed",label:"Goed"},{id:"fout",label:"Fout"}],uitleg:truth?uitTrue:uitFalse,review:`${esc(stmt)} — ${truth?"goed":"fout"}`});
   // 1. jaartal bij gebeurtenis
   const yrs=[...new Set(H.tijdlijn.map(e=>e.j))];
   evs.forEach(e0=>{ const e=Object.assign({},e0,{t:onePart(e0.t)}); const t=Math.random()<.5;
-    if(t) gens.push(()=>mk("y"+e.j+e.t,`${inY(e.j,1)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis"));
-    else { const o=yrs.filter(y=>Math.round(y)!==Math.round(e.j)).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`${inY(w,1)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde <strong>${inY(e.j,0,1)}</strong>, niet ${inY(w)}.`,"Gebeurtenis"); }); } });
+    if(t) gens.push(()=>mk("y"+e.j+e.t,`${inY(e.j,1)}: ${e.t}.`,true,`Dat klopt: ${esc(e.t)} (<strong>${fmtY(e.j)}</strong>).`,"","Gebeurtenis",e0));
+    else { const o=yrs.filter(y=>Math.round(y)!==Math.round(e.j)).sort((a,b)=>Math.abs(a-e.j)-Math.abs(b-e.j)).slice(0,5); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("y"+w+e.t,`${inY(w,1)}: ${e.t}.`,false,"",`Dat klopt niet: ${esc(e.t)} gebeurde <strong>${inY(e.j,0,1)}</strong>, niet ${inY(w)}.`,"Gebeurtenis",e0); }); } });
   // 2. betekenis van een begrip (lopende zin)
   begs.forEach(b=>{ const t=Math.random()<.5;
-    if(t) gens.push(()=>mk("b"+b.b,begrSent(b,b.d),true,`Dat klopt. ${begrSentH(b,b.d)}`,"","Begrip"));
-    else { const pool=H.begrippen.filter(x=>x.d!==b.d&&begrCat(x)===begrCat(b)&&(begrForm(b)==="c"||begrKey(x)===begrKey(b))); const o=simBegrippen(b,pool,2); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("b"+b.b+w.b,begrSent(b,w.d),false,"",`Dat klopt niet. ${begrSentH(b,b.d)}<br>De omschrijving in de uitspraak hoort bij <strong>${esc(w.b)}</strong>.`,"Begrip"); }); } });
+    if(t) gens.push(()=>mk("b"+b.b,begrSent(b,b.d),true,`Dat klopt. ${begrSentH(b,b.d)}`,"","Begrip",b));
+    else { const pool=H.begrippen.filter(x=>x.d!==b.d&&begrCat(x)===begrCat(b)&&(begrForm(b)==="c"||begrKey(x)===begrKey(b))); const o=simBegrippen(b,pool,2); if(o.length) gens.push(()=>{ const w=pickN(o,1)[0]; return mk("b"+b.b+w.b,begrSent(b,w.d),false,"",`Dat klopt niet. ${begrSentH(b,b.d)}<br>De omschrijving in de uitspraak hoort bij <strong>${esc(w.b)}</strong>.`,"Begrip",b); }); } });
   // 3. uitspraak over een persoon
   pers.forEach(p=>{ const t=Math.random()<.5, rest=p.u.slice(p.n.length);
     if(t) gens.push(()=>mk("p"+p.n,p.u,true,`Dat klopt: ${esc(p.u)}${p.x?XN:""}`,"","Persoon"));
@@ -4171,7 +4172,7 @@ function hcBegrip(){
   const qs=pickRound(hk("begrip"),pool,b=>b.b).map(b=>{
     const like=((H===STEDEN||H===BRITS||H.parts)?(LK[b.b]||[]).map(n=>H.begrippen.find(x=>x.b===n)).filter(Boolean):[]).slice(0,2);
     const others=[...like,...simBegrippen(b,H.begrippen.filter(x=>!like.includes(x)),3-like.length)];
-    return {id:b.b,extra:BX[b.b]?.[0],hint:BX[b.b]?.[1],ask:"Wat betekent dit begrip?",q:b.b,c:H.dv[b.dv-1].c,right:b.b,
+    return {ctx:ctxFor(b),id:b.b,extra:BX[b.b]?.[0],hint:BX[b.b]?.[1],ask:"Wat betekent dit begrip?",q:b.b,c:H.dv[b.dv-1].c,right:b.b,
       opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
       uitleg:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`,review:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`};
   });
@@ -5512,7 +5513,7 @@ function gatenkaas({key,texts,back,title,prev}){
     const bank=words.map((w,i)=>i).filter(i=>gapOf(i)<0);
     app.innerHTML = `<button class="back" id="back">‹ Terug naar oefeningen</button>
     <div class="meta"><span>${esc(title)}</span><span>${gaps.length} gaten</span></div>
-    <h2>${esc(T.titel)}</h2>
+    ${ctxFor(T)?`<p class="qctx">${ctxFor(T)}</p>`:""}<h2>${esc(T.titel)}</h2>
     <p class="lead">Sleep de woorden naar de juiste gaten. Je kunt ook op een woord tikken en daarna op een gat. Let op: er zijn meer woorden dan gaten.</p>
     <p class="gktext">${parts.map(p=>typeof p==="string"?esc(p):gapNo.has(p.g)?gapHtml(gapNo.get(p.g)):esc(P.gaps[p.g].a)).join("")}</p>
     ${checked?`<div class="feedback ${all?"good":"badf"}" role="status">
@@ -5672,11 +5673,22 @@ function ocMenu(scope){
   app.querySelectorAll("[data-oc]").forEach(b=>b.onclick=()=>({volgorde:()=>scope==="ka"?kaKeten(0):hcKeten(0),oorz:()=>ocQuiz(scope,"oorz"),schakel:()=>ocQuiz(scope,"schakel")})[b.dataset.oc]());
   window.scrollTo(0,0);
 }
-/* korte context bovenaan de vraag: uit welk tijdvak (tijdvakken) of welke deelvraag (verdiepingen) komt de keten? */
-function ocCtx(k){
-  if(k.tv!==undefined){ const t=TV.find(x=>x.n===k.tv); return t?`Tijdvak ${t.n}: ${esc(t.naam)} (${esc(t.jaren)})`:""; }
-  const H=S.hc, d=H&&H.dv&&H.dv[k.dv-1]; return d?`${esc(H.titel)}, deelvraag ${k.dv} (${esc(d.periode)})`:"";
+/* Korte context bovenaan een vraag: uit welk tijdvak (tijdvakken) of welke deelvraag (verdiepingen) komt dit onderdeel?
+   Alleen getoond als er meerdere tijdvakken/deelvragen aan staan (force=true: altijd). short=true: korte vorm voor in een lijstje. */
+function ctxTv(n,short){ const t=TV.find(y=>y.n===n); return t?(short?`Tijdvak ${t.n}`:`Tijdvak ${t.n}: ${esc(t.naam)} (${esc(t.jaren)})`):""; }
+function ctxDv(nr,short){
+  const H=S.hc; if(!H||!H.dv) return ""; const d=H.dv.find(x=>x.nr===nr)||H.dv[nr-1]; if(!d) return "";
+  let name=H.titel, n=d.nr; if(d.src){ try{ const h=partOf(d.src); if(h&&h.titel) name=h.titel; }catch(e){} n=d.srcNr||d.nr; }
+  return short?`${esc(name)}, deelvraag ${n}`:`${esc(name)}, deelvraag ${n}${d.periode?` (${esc(d.periode)})`:""}`;
 }
+function ctxFor(x,force,short){
+  if(!x) return "";
+  const multi=force||(typeof CTX!=="undefined"&&CTX==="ka"?(S.sel&&S.sel.size>1):(S.dvSel&&S.dvSel.size>1)); if(!multi) return "";
+  if(x.dv!==undefined) return ctxDv(x.dv,short);
+  const tv=Array.isArray(x.tv)?(x.tv.find(n=>S.sel&&S.sel.has(n))||x.tv[0]):x.tv; return tv?ctxTv(tv,short):"";
+}
+const ocCtx=k=>ctxFor(k,true);
+const cq=(q,x)=>{ if(q) q.ctx=ctxFor(x); return q; };
 /* oorzaak (dir -1) of gevolg (dir +1) van een stap; afleiders: geen stappen aan dezelfde kant, verder weg in dezelfde keten */
 function qOorz(k,all,c,dir){
   const i=dir<0?1+Math.floor(Math.random()*(k.stappen.length-1)):Math.floor(Math.random()*(k.stappen.length-1)), cor=k.stappen[i+dir];
@@ -7169,8 +7181,8 @@ function mcGensKA(){
   return [
     ()=>{ const p=rnd(P); return p?mcWie(p,WBI,p.tv.find(sel)):null; },
     ()=>{ const e=rnd(tl); return e?mcWat(e,KA_TL,e.tv,x=>[x.u,x.h]):null; },
-    ()=>{ const k=rnd(kt); return k?mcOorzaak(k,KA_KETENS,k.tv):null; },
-    ()=>{ const k=rnd(kt); return k?qKeten(k,KA_KETENS,x=>x.tv):null; },
+    ()=>{ const k=rnd(kt); return k?cq(mcOorzaak(k,KA_KETENS,k.tv),k):null; },
+    ()=>{ const k=rnd(kt); return k?cq(qKeten(k,KA_KETENS,x=>x.tv),k):null; },
     ()=>{ const w=rnd(defs); return w?mcDef(w,defs.length>=4?defs:kwGapDefs(GK_KA),null):null; }
   ];
 }
@@ -7181,9 +7193,9 @@ function mcGensHC(){
   return [
     ()=>{ const p=rnd(P); if(!p) return null; const dv=p.hc[H.id].find(x=>S.dvSel.has(x)); return mcWie(p,candP.slice(0,Math.max(12,candP.filter(q=>q.hc[H.id]).length)),H.dv[dv-1].c); },
     ()=>{ const e=rnd(TL); return e?mcWat(e,H.tijdlijn,cc(e),X):null; },
-    ()=>{ const k=rnd(KT); return k?mcOorzaak(k,H.ketens,cc(k)):null; },
-    ()=>{ const k=rnd(KT); return k?qKeten(k,H.ketens,cc):null; },
-    ()=>{ const b=rnd(B); return b?mcDef({a:b.b,q:b.d,src:b.dv},H.begrippen.map(x=>({a:x.b,q:x.d,src:x.dv})),cc(b)):null; }
+    ()=>{ const k=rnd(KT); return k?cq(mcOorzaak(k,H.ketens,cc(k)),k):null; },
+    ()=>{ const k=rnd(KT); return k?cq(qKeten(k,H.ketens,cc),k):null; },
+    ()=>{ const b=rnd(B); return b?cq(mcDef({a:b.b,q:b.d,src:b.dv},H.begrippen.map(x=>({a:x.b,q:x.d,src:x.dv})),cc(b)),b):null; }
   ];
 }
 function kaMC(){ mcEx({title:"Meerkeuzevragen",qs:fillQuiz(mcGensKA(),10),back:kaMenu,again:kaMC}); }
@@ -7263,7 +7275,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127142509"; let last=0, shown=false;
+  const BUILD="20261127145636"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
