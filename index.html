@@ -7239,7 +7239,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127093826"; let last=0, shown=false;
+  const BUILD="20261127093959"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10515,8 +10515,8 @@ if(SHOW_VERBODEN){
     b.onclick=()=>verboden("ka"); const ref=box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
 }
 /* ---------- Pictionary (Spellen en puzzels): teken het begrip, de persoon of de gebeurtenis, de anderen raden ---------- */
-/* Test-only: SHOW_PICTIONARY. De woorden komen uit dezelfde lijst als Verboden woord en 30 seconds. */
-const SHOW_PICTIONARY=false;
+/* SHOW_PICTIONARY. De woorden komen uit dezelfde lijst als Verboden woord en 30 seconds. */
+const SHOW_PICTIONARY=true; /*live: aan sinds 2026-11-27*/
 ICONS["m:pictionary"]='<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16l-1 4z"/><path d="M14 7l3 3"/>';
 function pictCss(){ if(document.getElementById("pictcss")) return; const s=document.createElement("style"); s.id="pictcss"; s.textContent=`
 .pcwrap{border:2px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;touch-action:none}
