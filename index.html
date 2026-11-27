@@ -7257,7 +7257,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127130840"; let last=0, shown=false;
+  const BUILD="20261127131149"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10654,7 +10654,13 @@ function pictionary(scope){
     cv.addEventListener("pointerdown",e=>{ e.preventDefault(); try{cv.setPointerCapture(e.pointerId);}catch(_){} cur={c:col,t:th,e:eraser,p:[pt(e)]}; lockScroll(true); redraw(); });
     cv.addEventListener("pointermove",e=>{ if(!cur) return; e.preventDefault(); const p=pt(e), l=cur.p[cur.p.length-1]; if(Math.abs(p[0]-l[0])+Math.abs(p[1]-l[1])<0.002) return; cur.p.push(p); redraw(); });
     /* tekenen: pagina niet laten scrollen of verversen terwijl je op het vlak tekent (Android/Samsung) */
-    const lockScroll=on=>{ document.documentElement.style.overscrollBehavior=on?"none":""; document.body.style.overscrollBehavior=on?"none":""; };
+    let lockY=null; const keepY=()=>{ if(lockY!==null&&Math.abs(window.scrollY-lockY)>0) window.scrollTo(0,lockY); };
+    const lockScroll=on=>{ const h=document.documentElement,b=document.body;
+      if(on){ if(lockY!==null) return; lockY=window.scrollY; h.style.overscrollBehavior=b.style.overscrollBehavior="none"; h.style.overflow=b.style.overflow="hidden"; window.addEventListener("scroll",keepY,true); }
+      else { h.style.overscrollBehavior=b.style.overscrollBehavior=""; h.style.overflow=b.style.overflow=""; window.removeEventListener("scroll",keepY,true); if(lockY!==null){ const y=lockY; lockY=null; window.scrollTo(0,y); } } };
+    /* altijd actief zolang het tekenvlak bestaat: aanrakingen op het vlak mogen de pagina nooit scrollen */
+    const blk=e=>{ if(!document.body.contains(cv)){ ["touchstart","touchmove"].forEach(t=>document.removeEventListener(t,blk,{capture:true})); return; } if(e.target===cv||(e.target.closest&&e.target.closest(".pcwrap"))){ if(e.cancelable) e.preventDefault(); } };
+    ["touchstart","touchmove"].forEach(t=>document.addEventListener(t,blk,{passive:false,capture:true}));
     ["touchstart","touchmove"].forEach(t=>cv.addEventListener(t,e=>{ if(e.cancelable) e.preventDefault(); },{passive:false}));
     cv.addEventListener("contextmenu",e=>e.preventDefault());
     const up=()=>{ lockScroll(false); if(cur){ S_.push(cur); cur=null; redraw(); } };
