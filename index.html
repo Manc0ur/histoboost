@@ -98,7 +98,7 @@ button{font:inherit;color:inherit}
 .qcard .q.qor{color:var(--or)}
 .opts{display:grid;gap:.5rem;margin-top:1rem}
 .opts.tv{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-.opts.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.opts.g2 .opt{overflow-wrap:anywhere;hyphens:auto}
+.opts.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.opts.g3 .opt{overflow-wrap:normal;hyphens:none;text-align:center;padding-left:.3rem;padding-right:.3rem;font-size:.95rem}.opts.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.opts.g2 .opt{overflow-wrap:anywhere;hyphens:auto}
 .opt{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:.75rem .9rem;cursor:pointer}
 .opt:hover:not([disabled]){border-color:var(--ink)}
 .opt .n{font-weight:800;font-family:"Bricolage Grotesque",sans-serif;margin-right:.35rem}
@@ -2935,7 +2935,7 @@ function mcEx({title,qs,back,again,tvGrid,key,ids,resultExtra,optGrid}){
       <div class="meta"><span>${esc(title)}</span><span>Vraag ${i+1} van ${qs.length}</span></div>
       <div class="progress"><i style="width:${i/qs.length*100}%"></i></div>
       <div class="qcard" ${q.c?`style="--c:${col(q.c)}"`:""}><p class="ask">${q.ask}</p>${q.qhtml?`<div class="kbron">${q.qhtml}</div>`:`<p class="q${q.or?" qor":""}"${q.k!==undefined?` data-k="${esc(q.k)}"`:""}>${esc(q.q)}</p>`}
-      <div class="opts ${tvGrid?"tv":""} ${optGrid?"g2":""}">${q.opts.map(o=>`<button class="opt ${o.c?"tvopt":""}" ${o.c?`style="--c:${col(o.c)}"`:""} data-a="${o.id}">${o.html||esc(o.label)}</button>`).join("")}</div></div>
+      <div class="opts ${tvGrid?"tv":""} ${optGrid?(optGrid===3?"g3":"g2"):""}">${q.opts.map(o=>`<button class="opt ${o.c?"tvopt":""}" ${o.c?`style="--c:${col(o.c)}"`:""} data-a="${o.id}">${o.html||esc(o.label)}</button>`).join("")}</div></div>
       <div id="fb"></div>`;
     app.querySelector("#back").onclick=back;
     app.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>answer(b.dataset.a));
@@ -4162,7 +4162,7 @@ function hcFabel(){
     const g=gens.splice(Math.floor(Math.random()*gens.length),1)[0], q=g(); if(!q||seen.has(q.id)) continue; seen.add(q.id); qs.push(q);
   }
   if(qs.length<3){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=hcMenu; return; }
-  mcEx({title:"Feit of fictie",qs,back:hcMenu,again:hcFabel});
+  mcEx({title:"Feit of fictie",qs,back:hcMenu,again:hcFabel,optGrid:true});
 }
 function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
@@ -7257,7 +7257,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127105247"; let last=0, shown=false;
+  const BUILD="20261127105558"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8412,7 +8412,7 @@ function grImperium(back){
   Object.keys(per).forEach(a=>pickN(IMP_LANDEN.filter(l=>l.a===a),per[a]).forEach(l=>pick.push(l)));
   const qs=shuffle(pick).map(l=>({id:"imp:"+l.n,ask:"Imperium Romanum",qhtml:`${impSvg(l)}<p class="q" style="margin-top:.8rem">Hoorde <strong>${otEsc(l.n)}</strong> (het blauwe land) helemaal, deels of niet bij het Romeinse Rijk, toen dat het grootst was (117 n.C.)?</p>`,
     opts:IMP_OPT,right:l.a,review:`${otEsc(l.n)}: ${({geheel:"helemaal",deels:"deels",geen:"niet"})[l.a]} Romeins. ${otEsc(l.u)}`,uitleg:otEsc(l.u)+(l.a==="deels"?" Op de kaart is het Romeinse deel oranje gemaakt; de gestippelde lijn is de grens van het rijk.":""),after:()=>{ const sv=document.querySelector(".impmap"); if(sv) sv.classList.add("toon"); },hint:"Denk aan de grenzen van het rijk: de Rijn en de Donau in het noorden en de woestijn in het zuiden."}));
-  mcEx({title:"Imperium Romanum",qs,back,again:()=>grImperium(back),resultExtra:()=>{ provCss();
+  mcEx({title:"Imperium Romanum",qs,back,again:()=>grImperium(back),optGrid:3,resultExtra:()=>{ provCss();
     if(IMP_EINDKAART){
       const full=new Set(["Austria","Serbia","Kosovo","Tunisia","Israel","Palestine","Jordan"]);
       IMP_LANDEN.filter(l=>l.a==="geheel").forEach(l=>l.g.forEach(k=>full.add(k)));
@@ -9183,7 +9183,7 @@ function tlRechtenGo(back){
       uitleg:RECHT_KAMER[r]==="tk"?`<strong>Alleen de Tweede Kamer.</strong> De rechten van initiatief en amendement heeft alleen de Tweede Kamer. De Eerste Kamer kan een wetsvoorstel alleen aannemen of verwerpen.`:`<strong>De Tweede én de Eerste Kamer.</strong> De rechten van budget, enquête en interpellatie hebben beide Kamers.`,
       review:`${otEsc(RECHT_NAAM[r])}: <strong>${RECHT_KAMER[r]==="tk"?"alleen de Tweede Kamer":"de Tweede én de Eerste Kamer"}</strong>`});
   });
-  otStyle(); mcEx({title:"Welk recht?",qs,back,again:()=>tlRechtenGo(back)});
+  otStyle(); mcEx({title:"Welk recht?",qs,back,again:()=>tlRechtenGo(back),optGrid:true});
 }
 ICONS["m:rechten"]='<path d="M12 3v18M5 21h14"/><path d="M4 7h16"/><path d="M6 7l-3 7a3 3 0 006 0L6 7zM18 7l-3 7a3 3 0 006 0l-3-7z"/>';
 if(SHOW_RECHTEN){ const _hr=hcMenu;
@@ -9234,7 +9234,7 @@ function grTotaal(back){
   const qs=pick.map(n=>{ const [t,r,u]=TOT[n], naam=TOT_OPTS.find(o=>o[0]===r)[1];
     return {id:"tot:"+n,c:9,ask:"Welk land of welke landen?",qhtml:`<p class="q">${otEsc(t)}</p><p style="margin:.5rem 0 0;color:var(--muted)">Hoort dit kenmerk bij Duitsland, Italië, de Sovjet-Unie of bij alle drie?</p>`,
       opts:TOT_OPTS.map(o=>({id:o[0],label:o[1]})),right:r,uitleg:`<strong>${r==="a"?"Alle drie":otEsc(naam)}.</strong> ${otEsc(u)}`,review:`${otEsc(t)}: <strong>${otEsc(naam)}</strong>`}; });
-  otStyle(); mcEx({title:"Totalitaire Staten",qs,back,again:()=>grTotaal(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>Wat hoort waarbij?</h3><ul><li><strong>Bij alle drie:</strong> kenmerken van een totalitaire staat in het algemeen, zoals een eenpartijstaat, propaganda, censuur, indoctrinatie, geheime politie en persoonsverheerlijking.</li><li><strong>Duitsland:</strong> nationaalsocialisme met rassenleer, Führerprinzip, SS en Gestapo.</li><li><strong>Italië:</strong> fascisme onder Mussolini, de Duce.</li><li><strong>Sovjet-Unie:</strong> communisme met planeconomie, vijfjarenplannen en collectivisatie.</li></ul></div>`});
+  otStyle(); mcEx({title:"Totalitaire Staten",qs,back,again:()=>grTotaal(back),optGrid:true,resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>Wat hoort waarbij?</h3><ul><li><strong>Bij alle drie:</strong> kenmerken van een totalitaire staat in het algemeen, zoals een eenpartijstaat, propaganda, censuur, indoctrinatie, geheime politie en persoonsverheerlijking.</li><li><strong>Duitsland:</strong> nationaalsocialisme met rassenleer, Führerprinzip, SS en Gestapo.</li><li><strong>Italië:</strong> fascisme onder Mussolini, de Duce.</li><li><strong>Sovjet-Unie:</strong> communisme met planeconomie, vijfjarenplannen en collectivisatie.</li></ul></div>`});
 }
 ICONS["m:totaal"]='<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>';
 if(SHOW_TOTAAL){
@@ -9309,7 +9309,7 @@ function grTotDu(back){
     return {id:"tdu:"+TDS.indexOf(x),c:9,ask:"Welk begrip hoort bij deze situatie?",q:sit,or:true,opts,right:R,
       uitleg:`<strong>${R.length>1?"Beide goed: "+otEsc(names[0])+" en "+otEsc(names[1].toLowerCase()):otEsc(names[0])}.</strong> ${otEsc(u)}`,
       review:`${otEsc(sit)} <strong>${names.map(otEsc).join(" / ")}</strong>`}; }),...bq]);
-  otStyle(); mcEx({title:"Totalitair Duitsland",qs,back,again:()=>grTotDu(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De begrippen in het kort</h3><ul>${Object.keys(TD_B).map(k=>`<li><strong>${otEsc(TD_B[k][0])}:</strong> ${otEsc(TD_B[k][1])}</li>`).join("")}</ul></div>`});
+  otStyle(); mcEx({title:"Totalitair Duitsland",qs,back,again:()=>grTotDu(back),optGrid:true,resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De begrippen in het kort</h3><ul>${Object.keys(TD_B).map(k=>`<li><strong>${otEsc(TD_B[k][0])}:</strong> ${otEsc(TD_B[k][1])}</li>`).join("")}</ul></div>`});
 }
 ICONS["m:totdu"]='<path d="M8.5 3H15.5L14 10L21 8.5V15.5L14 14L15.5 21H8.5L10 14L3 15.5V8.5L10 10Z"/>';
 if(SHOW_TOTDU){
@@ -9457,7 +9457,7 @@ function grDenker(back){
       uitleg:rs.length>1?otEsc(u):`<strong>${otEsc(nm)}.</strong> ${otEsc(u.replace(/^[^.]*\.\s*/,""))}`,
       review:`${otEsc(sit)} ${quote?"(bronfragment) ":""}<strong>${otEsc(nm)}</strong>`}; });
   if(!document.getElementById("dkcss")){ const st=document.createElement("style"); st.id="dkcss"; st.textContent=".denkq{margin:.5rem 0;padding:.7rem 1rem;border-left:4px solid var(--focus,#4b7bec);background:color-mix(in srgb,var(--focus,#4b7bec) 8%,var(--surface));border-radius:0 8px 8px 0;font-style:italic;line-height:1.5}.opt.sel{outline:3px solid var(--focus,#4b7bec);outline-offset:1px;background:color-mix(in srgb,var(--focus,#4b7bec) 14%,var(--surface))}"; document.head.appendChild(st); }
-  otStyle(); mcEx({title:"Welke denker?",qs,back,again:()=>grDenker(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De zeven denkers in het kort</h3><ul>${Object.keys(DENK_K).map(k=>`<li><strong>${otEsc(DENK_N[k])}</strong> ${starHtml()}: ${otEsc(DENK_K[k])}</li>`).join("")}</ul></div>`});
+  otStyle(); mcEx({title:"Welke denker?",qs,back,again:()=>grDenker(back),optGrid:true,resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De zeven denkers in het kort</h3><ul>${Object.keys(DENK_K).map(k=>`<li><strong>${otEsc(DENK_N[k])}</strong> ${starHtml()}: ${otEsc(DENK_K[k])}</li>`).join("")}</ul></div>`});
 }
 if(SHOW_DENKER){
   const _hdk=hcMenu;
@@ -9856,7 +9856,7 @@ function kolMoeder(back){ /* variant 1: Welk moederland? */
   const qs=kolPick(KOL.t).map(t=>{ const dist=pickN(KOL_EIG.filter(e=>e!==t.eig),3);
     return {id:"kol:"+t.id,ask:"Welk moederland?",qhtml:`${kolSvg(t)}<p class="q" style="margin-top:.8rem">Welk land had het oplichtende gebied rond 1900 als kolonie?</p>`,
       opts:shuffle([t.eig,...dist]).map((e,i)=>({id:e,label:"ABCD"[i]+". "+e})),right:t.eig,uitleg:kolUit(t),review:kolRev(t),hint:`Dit gebied ligt in ${otEsc(t.wd)}. Het heet nu: ${otEsc(t.nu)}.`}; });
-  mcEx({title:"Welk moederland?",qs,back,again:()=>kolMoeder(back),resultExtra:()=>{ kolCss(); return kolOverzicht(); }}); }
+  mcEx({title:"Welk moederland?",qs,back,again:()=>kolMoeder(back),optGrid:true,resultExtra:()=>{ kolCss(); return kolOverzicht(); }}); }
 function kolKlik(back){ /* variant 2: Klik de kolonie */
   otStyle(); kolCss();
   const qs=kolPick(KOL.t.filter(t=>Math.max(t.w,t.h)>=10)).map(t=>({t,html:`<p class="q" style="margin-bottom:.6rem">Klik op de kaart op <strong>${otEsc(t.naam)}</strong>${t.naam===t.nu?"":` (nu: ${otEsc(t.nu)})`}, rond 1900 een kolonie van <strong>${otEsc(t.eig)}</strong>.</p>${kolClickSvg(t)}`,
@@ -9949,7 +9949,7 @@ function grStroming(back){
       opts:shuffle([x[0],...dist]).map((k,i)=>({id:k,label:"ABCD"[i]+". "+STR_DEF[k][0]})),right:x[0],
       uitleg:`Dit is <strong>${d[0]}</strong>. ${otEsc(d[1])}`,review:`‘${otEsc(x[1])}’: ${d[0]}. ${otEsc(d[1])}`,
       hint:"Let op het belangrijkste doel in de uitspraak: gaat het om vrijheid, om gelijkheid voor arbeiders, om het eigen volk, om geloof of om gelijke rechten voor vrouwen?"}; });
-  mcEx({title:"Welke stroming?",qs,back,again:()=>grStroming(back),resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De vijf stromingen in het kort</h3><ul>${keys.map(k=>`<li><strong>${STR_DEF[k][0]}:</strong> ${otEsc(STR_DEF[k][1])}</li>`).join("")}</ul></div>`}); }
+  mcEx({title:"Welke stroming?",qs,back,again:()=>grStroming(back),optGrid:true,resultExtra:()=>`<div class="review" style="margin-top:1rem"><h3>De vijf stromingen in het kort</h3><ul>${keys.map(k=>`<li><strong>${STR_DEF[k][0]}:</strong> ${otEsc(STR_DEF[k][1])}</li>`).join("")}</ul></div>`}); }
 ICONS["m:stroming"]='<path d="M12 3v18"/><path d="M9 21h6"/><path d="M12 5h6.5l2 2.2-2 2.3H12z"/><path d="M12 11.5H5.5l-2 2.2 2 2.3H12z"/>';
 kaAddTile({m:"stroming",tv:8,ka:36,tvNaam:"Tijd van burgers en stoommachines",title:"Welke stroming?",sub:"Een uitspraak of gebeurtenis hoort bij liberalisme, socialisme, nationalisme, confessionalisme of feminisme. Kies de goede stroming. (KA 36: politiek-maatschappelijke stromingen)",go:grStroming});
 
@@ -10092,7 +10092,7 @@ function grStadstaat(back,skipIntro){
       uitleg:ja?`<strong>Ja.</strong> In ${otEsc(n)} lagen Griekse stadstaten of koloniën, zoals ${otEsc(u)} Je ziet ze op de kaart.`:`<strong>Nee.</strong> In ${otEsc(n)} lag geen Griekse stadstaat. ${vol?"":"De Grieken stichtten hun koloniën alleen op bepaalde plekken aan de kust van de Middellandse Zee en de Zwarte Zee. "}${otEsc(u)}`,
       review:ja?`${otEsc(n)}: ja. ${otEsc(u)}`:`${otEsc(n)}: nee. ${otEsc(u)}`,
       after:()=>{ const sv=document.querySelector(".stdmap"); if(sv) sv.classList.add("toon"); }}; });
-  mcEx({title:"Zat er een Griekse stadstaat?",qs,back,again:()=>grStadstaat(back,true),resultExtra:()=>{ stadCss(); const all=[].concat(...Object.values(STAD_XY)), groen=[].concat(...STAD_JA.map(x=>x[1]));
+  mcEx({title:"Zat er een Griekse stadstaat?",qs,back,again:()=>grStadstaat(back,true),optGrid:true,resultExtra:()=>{ stadCss(); const all=[].concat(...Object.values(STAD_XY)), groen=[].concat(...STAD_JA.map(x=>x[1]));
     return `<figure style="margin:1rem 0">${stadSvg([],all,groen,"alle","Kaart met de landen waar Griekse stadstaten lagen")}<figcaption style="color:var(--muted);font-size:.9rem;margin-top:.4rem">Groene landen: hier lagen Griekse stadstaten of koloniën (8e-6e eeuw v.C.). De rode stippen zijn enkele Griekse steden. Het zijn er veel meer dan hier staan.</figcaption></figure>`; }}); }
 ICONS["m:stadstaat"]='<path d="M3 9l9-5 9 5"/><path d="M5 9v9M9.5 9v9M14.5 9v9M19 9v9"/><path d="M3 20h18"/>';
 kaAddTile({m:"stadstaat",tv:2,ka:4,tvNaam:"Tijd van Grieken en Romeinen",title:"Zat er een Griekse stadstaat?",sub:"Een modern land licht op de kaart op. Was er een Griekse stadstaat? Ja of nee. (KA 4: denken over burgerschap en politiek)",go:grStadstaat});
