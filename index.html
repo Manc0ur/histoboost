@@ -7239,7 +7239,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261126210053"; let last=0, shown=false;
+  const BUILD="20261127093356"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10669,20 +10669,20 @@ function pictionary(scope){
     <h2>Het spel is voorbij</h2>
     <div class="dtbanner ok" role="status"><strong>${top.length===1?`${esc(top[0].n)} wint!`:`Gelijkspel: ${top.map(x=>esc(x.n)).join(" en ")}`}</strong></div>
     <ol class="dtrank">${r.map(t=>`<li><strong>${esc(t.n)}</strong>: ${t.p} ${t.p===1?"punt":"punten"}</li>`).join("")}</ol>
-    <div class="row" style="margin:1rem 0"><button class="btn" id="pcagain">Nieuw spel</button><button class="btn ghost" id="pcmenu">Andere oefening</button></div>`;
-    app.querySelector("#back").onclick=ex; app.querySelector("#pcmenu").onclick=ex; app.querySelector("#pcagain").onclick=setup;
+    <div class="row" style="margin:1rem 0"><button class="btn" id="${r[0].p>0?"pcagain":"pcagain0"}">Nieuw spel</button><button class="btn ghost" id="pcmenu">Andere oefening</button></div>`;
+    app.querySelector("#back").onclick=ex; app.querySelector("#pcmenu").onclick=ex; const pa=app.querySelector("#pcagain,#pcagain0"); if(pa) pa.onclick=setup;
   }
   setup();
 }
 if(SHOW_PICTIONARY){
   const _pm=hcModes;
-  hcModes=function(H){ const m=_pm(H); if(H.ob) return m; const i=m.findIndex(x=>x[0]==="verboden"); m.splice(i<0?m.length:i+1,0,["pictionary","Pictionary","Teken het woord en laat de anderen raden. Speel met meer spelers of teams"]); return m; };
+  hcModes=function(H){ const m=_pm(H); if(H.ob) return m; const i=m.findIndex(x=>x[0]==="verboden"); m.splice(i<0?m.length:i+1,0,["pictionary","Mode van de week (door Nina-Lente)","Pictionary: teken het woord en laat de anderen raden. Speel met meer spelers of teams"]); return m; };
   const _ph=hcMenu;
   hcMenu=function(){ _ph.apply(this,arguments); const b=app.querySelector('[data-m="pictionary"]'); if(b) b.onclick=()=>pictionary("hc"); };
   const _pk=kaMenu;
   kaMenu=function(){ _pk.apply(this,arguments);
     const list=app.querySelector(".list > [data-m]"); if(!list||app.querySelector('[data-m="pictionary"]')) return; const box=list.parentElement;
-    const b=document.createElement("button"); b.className="item"; b.dataset.m="pictionary"; b.innerHTML=`<span class="txt"><strong>Pictionary</strong><span class="sub">Teken het woord en laat de anderen raden. Speel met meer spelers of teams</span></span>`;
+    const b=document.createElement("button"); b.className="item"; b.dataset.m="pictionary"; b.innerHTML=`<span class="txt"><strong>Mode van de week (door Nina-Lente)</strong><span class="sub">Pictionary: teken het woord en laat de anderen raden. Speel met meer spelers of teams</span></span>`;
     b.onclick=()=>pictionary("ka"); const ref=box.querySelector('[data-m="verboden"]')||box.querySelector('[data-m="dertig"]')||box.querySelector('[data-m="kruis"]'); if(ref) ref.insertAdjacentElement("afterend",b); else box.appendChild(b); if(typeof decorate==="function") decorate(); };
 }
 /* Galgje ook bij de tijdvakken (test-only: SHOW_KAGALGJE); de woorden komen uit de gekozen tijdvakken */
@@ -10737,7 +10737,8 @@ const SHOW_LOCK=true; /*live: aan sinds 2026-11-26*/
 (function(){
   if(!SHOW_LOCK) return;
   const N={}; const set=(n,ids)=>ids.split(" ").forEach(i=>N[i]=n);
-  set(0,"ov flash lees exam proef otoets klas dertig verboden pictionary");
+  set(0,"ov flash lees exam proef otoets klas dertig verboden");
+  set(1,"pictionary");
   set(2,"memory kruis sudoku vbpuz wie galgje");
   set(3,"quiz gk koppelb fabel chrono tl tijd tijdlijn hitster tijdmachine keten ka2tv vb2ka koppel stadstaat imperium provincie reis gewesten stroming kolonie dekolonie totaal totdu rechten denker soort piramide");
   /* Aantal andere oefeningen dat je moet afmaken om de oefening weer te openen (standaard 2); per oefening aan te passen: LOCK_U.id=aantal */
