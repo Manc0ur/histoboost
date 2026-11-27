@@ -7257,7 +7257,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127102253"; let last=0, shown=false;
+  const BUILD="20261127105052"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10554,7 +10554,7 @@ function pictCss(){ if(document.getElementById("pictcss")) return; const s=docum
 function pictionary(scope){
   dtCss(); pictCss(); clearInterval(window.__dtI);
   const back=scope==="ka"?kaMenu:hcMenu, ex=()=>{ clearInterval(window.__dtI); back(); };
-  const pool=dtPool(scope).filter(p=>String(p.a).length<=60);
+  const pool=dtPool(scope).filter(p=>String(p.a).length<=60&&!/^(hitler|nationaal-?socialisme)$/i.test(String(p.a).trim()));
   if(pool.length<5){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Pictionary</h2><p class="note">Er zijn te weinig begrippen, personen en gebeurtenissen. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
   const C=S.pcCfg||(S.pcCfg={who:"solo",ns:4,nt:2,rounds:2,sec:60,scr:"scherm"});
   const RULES=`<ul class="dtrules" style="padding-left:1.1rem"><li>De tekenaar krijgt een begrip, een persoon of een gebeurtenis. Alleen de tekenaar mag het woord zien. De categorie mag je zeggen.</li><li>De tekenaar tekent het woord. Praten, gebaren en het schrijven van letters of cijfers mag niet.</li><li>De anderen raden binnen de tijd. Wie het goed raadt, krijgt een punt, en de tekenaar ook. In de vorm met teams krijgt het team één punt.</li></ul>`;
