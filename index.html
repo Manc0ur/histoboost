@@ -7257,7 +7257,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127131732"; let last=0, shown=false;
+  const BUILD="20261127132330"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10711,7 +10711,7 @@ function pictionary(scope){
 if(SHOW_PICTIONARY){
   const _pm=hcModes;
   hcModes=function(H){ const m=_pm(H); if(H.ob) return m; const i=m.findIndex(x=>x[0]==="verboden"); m.splice(i<0?m.length:i+1,0,["pictionary","Pictionary","Teken het woord en laat de anderen raden. Speel met meer spelers of teams"]); return m; };
-  if(!document.getElementById("pcspcss")){ const st=document.createElement("style"); st.id="pcspcss"; st.textContent=`.item[data-m="pictionary"]{position:relative}.pcsp{position:absolute;top:.6rem;right:.6rem;max-width:calc(100% - 4.8rem);text-align:right;font-size:.72rem;font-weight:800;line-height:1.2;color:var(--ink);background:color-mix(in srgb,var(--line) 45%,transparent);border:1px solid var(--line);border-radius:999px;padding:.2rem .6rem}`; document.head.appendChild(st); }
+  if(!document.getElementById("pcspcss")){ const st=document.createElement("style"); st.id="pcspcss"; st.textContent=`.item[data-m="pictionary"]{position:relative}.pcsp{position:absolute;top:.6rem;right:.6rem;max-width:calc(100% - 4.8rem);text-align:right;font-size:.72rem;font-weight:800;line-height:1.2;color:var(--ink);background:color-mix(in srgb,var(--line) 45%,transparent);border:1px solid var(--line);border-radius:999px;padding:.2rem .6rem}@media(max-width:700px){.pcsp{position:static;display:block;align-self:flex-start;width:fit-content;max-width:100%;margin-top:.7rem;text-align:left;border-radius:10px;padding:.3rem .6rem}}`; document.head.appendChild(st); }
   function pcBadge(b){ if(b.querySelector(".pcsp")) return; const sp=document.createElement("span"); sp.className="pcsp"; sp.textContent="Speciale mode (door Nina-Lente)"; b.appendChild(sp); }
   const _ph=hcMenu;
   hcMenu=function(){ _ph.apply(this,arguments); const b=app.querySelector('[data-m="pictionary"]'); if(b){ b.onclick=()=>pictionary("hc"); pcBadge(b); } };
