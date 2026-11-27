@@ -7275,7 +7275,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127145636"; let last=0, shown=false;
+  const BUILD="20261127170508"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8654,6 +8654,7 @@ function vbpCss(){ if(document.getElementById("vbpcss")) return; const s=documen
 .vbpdone.c0{background:color-mix(in srgb,#e0a526 22%,var(--surface));border-color:#e0a526}
 .vbpdone.c1{background:color-mix(in srgb,#3f8f5a 22%,var(--surface));border-color:#3f8f5a}
 .vbpdone.c2{background:color-mix(in srgb,#4b7bec 22%,var(--surface));border-color:#4b7bec}
+.vbpdone .vbpc{display:block;font-size:.72rem;font-weight:600;opacity:.75;margin-top:.15rem}
 .vbpmsg{min-height:1.6rem;font-weight:700;margin:.3rem 0}`;
   document.head.appendChild(s); }
 /* Extra puzzels: nieuwe combinaties van groepen uit bestaande sets (zonder overlap), door Claude samengesteld: docent graag controleren */
@@ -8666,7 +8667,22 @@ function vbpDefBind(st){ const d=app.querySelector('.suddefs[data-vd]'); if(!d) 
   d.querySelectorAll(".suddef1").forEach(x=>x.addEventListener("toggle",()=>{ x.open?st.dopen.add(x.dataset.w):st.dopen.delete(x.dataset.w); })); }
 function vbpuzStart(prev){
   vbpCss(); const L=vbpSets(); if(!L.length){ kaBackMenu(); return; }
-  const pool=L.length>1?L.filter(k=>k!==prev):L, key=pool[Math.floor(Math.random()*pool.length)], D=VBP[key];
+  /* Meerdere tijdvakken/deelvragen aan: in de helft van de puzzels komen de 3 groepen uit verschillende sets (docent graag controleren) */
+  const cx=k=>{ const d=VBP[k]; return d.tv?"tv"+d.tv:[].concat(d.hc).join("+")+":"+d.dv.join(","); };
+  const cl=k=>{ const d=VBP[k]; return d.tv?"Tijdvak "+d.tv:d.thema; };
+  const base=L.filter(k=>!k.startsWith("mix")), ctxs=new Set(base.map(cx));
+  let key, D;
+  if(ctxs.size>1&&Math.random()<.5){
+    for(let t=0;t<40&&!D;t++){
+      const sh=shuffle(base.slice()), pick=[], seen=new Set();
+      for(const k of sh){ if(pick.length<3&&!seen.has(cx(k))){ pick.push(k); seen.add(cx(k)); } }
+      for(const k of sh){ if(pick.length<3&&!pick.includes(k)) pick.push(k); }
+      if(pick.length<3) break;
+      const gs=pick.map(k=>{ const d=VBP[k], g=d.groups[Math.floor(Math.random()*d.groups.length)]; return {t:g.t,w:g.w,c:cl(k)}; });
+      const all=gs.flatMap(g=>g.w); if(new Set(all).size!==12) continue;
+      const first=VBP[pick[0]]; D={niveau:first.niveau,hc:first.hc,tv:first.tv,dv:first.dv,thema:"mix uit meerdere "+(first.tv?"tijdvakken":"onderdelen"),groups:gs,cross:true}; key="x"+Math.random();
+    } }
+  if(!D){ const pool=L.length>1?L.filter(k=>k!==prev):L; key=pool[Math.floor(Math.random()*pool.length)]; D=VBP[key]; }
   const words=shuffle(D.groups.flatMap((g,gi)=>g.w.map(w=>({w,g:gi}))));
   const st={sel:new Set(),done:[],fouten:0,msg:"",won:false,open:false,defOpen:false,dopen:new Set()};
   const rest=()=>words.filter(x=>!st.done.includes(x.g));
@@ -8677,8 +8693,8 @@ function vbpuzStart(prev){
     app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button>
     <div class="meta"><span>3 x 4 puzzel</span><span>${st.done.length} van 3 groepen · ${st.fouten} ${st.fouten===1?"misser":"missers"}</span></div>
     <h2>3 x 4 puzzel: ${esc(D.thema)}</h2>
-    ${st.done.length===0&&!st.won?`<p class="lead">Je ziet 12 begrippen door elkaar. Koppel telkens <strong>4 begrippen</strong> aan <strong>één thema</strong>. Er zijn 3 groepen van 4. Tik 4 begrippen aan en kies “Controleer”.</p>`:""}
-    ${st.done.map(g=>`<div class="vbpdone c${g}"><strong>${esc(D.groups[g].t)}</strong><span>${D.groups[g].w.map(esc).join(" · ")}</span></div>`).join("")}
+    ${st.done.length===0&&!st.won?`<p class="lead">Je ziet 12 begrippen door elkaar. Koppel telkens <strong>4 begrippen</strong> aan <strong>één thema</strong>. Er zijn 3 groepen van 4.${D.cross?" De groepen komen uit verschillende tijdvakken of onderdelen.":""} Tik 4 begrippen aan en kies “Controleer”.</p>`:""}
+    ${st.done.map(g=>`<div class="vbpdone c${g}"><strong>${esc(D.groups[g].t)}</strong><span>${D.groups[g].w.map(esc).join(" · ")}</span>${D.groups[g].c?`<span class="vbpc">${esc(D.groups[g].c)}</span>`:""}</div>`).join("")}
     ${left.length?`<div class="vbpg" role="group" aria-label="Begrippen">${left.map(x=>`<button class="vbpt" data-w="${esc(x.w)}" aria-pressed="${st.sel.has(x.w)}">${esc(x.w)}</button>`).join("")}</div>
     <p class="vbpmsg" role="status">${esc(st.msg)}</p>
     <div class="row"><button class="btn" id="chk"${st.sel.size===4?"":" disabled"}>Controleer</button><button class="btn ghost" id="shuf">Husselen</button><button class="btn ghost" id="clr"${st.sel.size?"":" disabled"}>Wis keuze</button></div>
