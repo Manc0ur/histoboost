@@ -7257,7 +7257,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127105052"; let last=0, shown=false;
+  const BUILD="20261127105247"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -8730,7 +8730,7 @@ function gewMeerkeuze(back){
     return {id:"gew:"+n,c:5,ask:"Welk gewest?",qhtml:`${gewSvg(n,false)}<p class="q" style="margin-top:.8rem">Welk gewest licht op?</p>`,opts,right:n,
       uitleg:gewUitleg(n),review:`${GEW_NAAM[n]}: nu ${GEW_NU[n]}.`,hint:`Dit gewest ligt ${gewRicht(n)}.`};
   });
-  mcEx({title:"Ken je gewesten: meerkeuze",qs,back,again:()=>gewMeerkeuze(back)});
+  mcEx({title:"Ken je gewesten: meerkeuze",qs,back,again:()=>gewMeerkeuze(back),optGrid:true});
 }
 function gewKlik(back){
   otStyle(); gewCss();
