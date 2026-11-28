@@ -7286,7 +7286,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261127173654"; let last=0, shown=false;
+  const BUILD="20261128093947"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -10781,7 +10781,7 @@ if(SHOW_KAGALGJE){
     ["Kennis en feiten","quiz koppelb fabel wie gk kruis",'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>'],
     ["Tijd en plaats","ka2tv tijd tijdlijn chrono tl hitster tijdmachine kaart order",'<path d="M12 21s-6.5-5.2-6.5-10.2a6.5 6.5 0 0113 0C18.5 15.8 12 21 12 21z"/><path d="M12 7.5v3.5l2.3 1.4"/>'],
     ["Verbanden","keten sudoku vbpuz koppel vb2ka",'<path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/>'],
-    ["Spellen en puzzels","memory kruis galgje dertig verboden pictionary hitster wie klas",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
+    ["Spellen en puzzels","memory kruis galgje vbpuz dertig verboden pictionary hitster wie klas",'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/>'],
     ["Toetsen en examen","mc exam proef otoets",'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M8.5 13l2.3 2.3 4.7-4.5"/>']];
   const nm=x=>(x.querySelector("strong")||{}).textContent||"";
   const HUE={"Leren en bestuderen":215,"Kennis en feiten":32,"Tijd en plaats":150,"Verbanden":272,"Spellen en puzzels":345,"Toetsen en examen":190,"Toetsvragen":190,"Losse oefeningen":220};
