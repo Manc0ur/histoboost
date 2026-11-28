@@ -284,6 +284,7 @@ body.lzhide .lzsticky .lzscroll{display:none}
 .item .ico{flex:none;width:2.6rem;height:2.6rem;border-radius:10px;display:grid;place-items:center;background:var(--bg);color:var(--focus)}
 .item .ico svg{width:1.45rem;height:1.45rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .item:disabled .ico{opacity:.5}
+.star.sp{pointer-events:none;cursor:inherit}
 .star{position:relative;display:inline-block;color:var(--muted);opacity:.75;font-size:.85em;line-height:1;cursor:help;vertical-align:.05em}
 .star.show::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);width:max-content;max-width:14rem;background:var(--ink);color:var(--surface);font-size:.75rem;font-weight:500;line-height:1.3;padding:.35rem .55rem;border-radius:6px;z-index:5;white-space:normal}
 .starnote{font-size:.82rem;color:var(--muted);margin:.2rem 0 .8rem}
@@ -6545,6 +6546,10 @@ function verplicht(t){
   const longest=cand.reduce((a,b)=>b.length>a.length?b:a);
   return hits.length/ws.length>=0.5 && hits.includes(longest);
 }
+/* ★ bij losse woorden (3 x 4 puzzel, sudoku): het woord staat letterlijk (of met dezelfde stammen) in de stoftekst van deze oefenomgeving */
+function litStof(t){ if(!SYL||!t) return false; const key=synorm(String(t).replace(/\(.*?\)/g,"")).trim(); if(!key) return false;
+  if(SYL.includes(" "+key+" ")) return true;
+  const ws=key.split(" ").filter(w=>w.length>=5); return ws.length>0&&ws.every(w=>SYL.includes(w.slice(0,Math.max(5,w.length-2)))); }
 const STARTIP="Staat in de stofomschrijving: dit moet je kennen";
 const starHtml=()=>`<span class="star" role="img" tabindex="0" aria-label="verplichte stof" title="${STARTIP}" data-tip="${STARTIP}">★</span>`;
 function decorate(){
@@ -6561,8 +6566,9 @@ function decorate(){
   app.querySelectorAll(".orow > .txt").forEach(el=>mark(el,el.firstChild?el.firstChild.textContent:""));
   app.querySelectorAll(".ecard").forEach(el=>mark(el,el.textContent));
   app.querySelectorAll(".hscard .ht").forEach(el=>mark(el,el.textContent));
+  app.querySelectorAll(".vbpt,.sudchip,.sudg .sc.full").forEach(el=>{ if(el.dataset.st) return; el.dataset.st="1"; if(litStof(el.dataset.w||el.textContent)){ el.insertAdjacentHTML("beforeend",' <span class="star sp" role="img" aria-label="verplichte stof" title="Staat in de stofomschrijving">★</span>'); any=true; } });
   if((any||app.querySelector(".star"))&&!app.querySelector(".starnote")){
-    const anchor=app.querySelector(".qcard,.order,.tl,.pool,.hscur-wrap,.hslist");
+    const anchor=app.querySelector(".qcard,.order,.tl,.pool,.hscur-wrap,.hslist,.vbpg,.sudpool");
     if(anchor) anchor.insertAdjacentHTML("beforebegin",`<p class="starnote"><span class="star" aria-hidden="true">★</span> = staat in de stofomschrijving, dit moet je kennen. Zonder sterretje: wel handig om te weten, geen verplichte stof.</p>`);
   }
 }
@@ -7286,7 +7292,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261128113313"; let last=0, shown=false;
+  const BUILD="20261128114049"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
