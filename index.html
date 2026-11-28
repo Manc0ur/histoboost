@@ -7292,7 +7292,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261128123918"; let last=0, shown=false;
+  const BUILD="20261128130705"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
@@ -9566,21 +9566,25 @@ function pswReisHint(r){ const parts=r.n.split(/\s+/).filter(w=>w.length>3), esc
 const PSW_EXCL=new Set(["De Japanse vloot vernietigt de Chinese vloot"]);
 function pswBank(niv){
   const bank=[], ids=(HCLIST[niv]||[]).filter(h=>h.id).map(h=>h.id);
-  const nine=(L,key)=>{ const seen=new Set(), out=[]; shuffle(L.slice()).forEach(x=>{ const k=key(x); if(!seen.has(k)&&out.length<9){ seen.add(k); out.push(x); } }); return out; };
-  ids.forEach(id=>{ const H=HCDATA[id]; if(!H) return; const T=H.titel;
+  const SYL0=SYL; /* voorkeur voor items die letterlijk in de stofomschrijving staan: eerst die, daarna pas de rest */
+  const nine=(L,key,lit)=>{ const seen=new Set(), out=[], S=shuffle(L.slice()), A=lit?[...S.filter(x=>lit.has(x)),...S.filter(x=>!lit.has(x))]:S; A.forEach(x=>{ const k=key(x); if(!seen.has(k)&&out.length<9){ seen.add(k); out.push(x); } }); return shuffle(out); };
+  ids.forEach(id=>{ const H=HCDATA[id]; if(!H) return; const T=H.titel; sylHC(H);
     const bs=(H.begrippen||[]).filter(b=>b.b&&b.d&&b.b.length<=38);
     const dvs=[...new Set(bs.map(b=>b.dv))].sort((a,b)=>a-b), many=dvs.filter(n=>bs.filter(b=>b.dv===n).length>=9);
-    (many.length?[...many,...(many.length>1?[null]:[])]:[null]).forEach(n=>{ const L=n==null?bs:bs.filter(b=>b.dv===n); if(new Set(L.map(b=>b.b.toLowerCase())).size<9) return;
+    (many.length?[...many,...(many.length>1?[null]:[])]:[null]).forEach(n=>{ const L=n==null?bs:bs.filter(b=>b.dv===n); if(new Set(L.map(b=>b.b.toLowerCase())).size<9) return; const LB=new Set(L.filter(b=>litStof(b.b)));
       bank.push({kind:"b",theme:`${T}: begrippen${n!=null&&dvs.length>1?` (deelvraag ${n})`:""}`,
-        build:()=>nine(L,b=>b.b.toLowerCase()).map(b=>({a:b.b,d:PSW_ALT[b.b+"|"+b.d]||pswMask(b.d,[b.b,...b.b.split(/\s+/)])}))}); });
+        build:()=>nine(L,b=>b.b.toLowerCase(),LB).map(b=>({a:b.b,d:PSW_ALT[b.b+"|"+b.d]||pswMask(b.d,[b.b,...b.b.split(/\s+/)])}))}); });
     const ps=WBI.filter(w=>w.hc&&w.hc[id]&&w.u&&w.n);
+    const LP=new Set(ps.filter(w=>litStof(w.n)));
     if(new Set(ps.map(p=>p.n)).size>=9) bank.push({kind:"p",theme:`${T}: personen`,
-      build:()=>nine(ps,p=>p.n).map(p=>{ const u=p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""); const s=u.split(/(?<=[.!?])\s+/).slice(0,2).join(" "); return {a:p.n,d:PSW_ALT[p.n+"|"+s]||pswMask(s,[p.n,...p.n.split(/\s+/)])}; })});
+      build:()=>nine(ps,p=>p.n,LP).map(p=>{ const u=p.u.replace(/\s*Wel handig om te weten, geen verplichte stof\.?$/,""); const s=u.split(/(?<=[.!?])\s+/).slice(0,2).join(" "); return {a:p.n,d:PSW_ALT[p.n+"|"+s]||pswMask(s,[p.n,...p.n.split(/\s+/)])}; })});
     const ev=(H.tijdlijn||[]).filter(e=>Number.isFinite(e.j)&&e.t&&!PSW_EXCL.has(e.t));
+    const LY=new Set(ev.filter(e=>SYL&&SYL.includes(" "+Math.abs(Math.round(e.j))+" ")));
     if(new Set(ev.map(e=>Math.round(e.j))).size>=9) bank.push({kind:"y",theme:`${T}: jaartallen`,
-      build:()=>nine(ev,e=>Math.round(e.j)).map(e=>({y:Math.round(e.j),a:e.j<0?Math.abs(Math.round(e.j))+" v.C.":String(Math.round(e.j)),d:"Wanneer gebeurde dit? "+String(e.t).replace(/[.]$/,"")}))});
+      build:()=>nine(ev,e=>Math.round(e.j),LY).map(e=>({y:Math.round(e.j),a:e.j<0?Math.abs(Math.round(e.j))+" v.C.":String(Math.round(e.j)),d:"Wanneer gebeurde dit? "+String(e.t).replace(/[.]$/,"")}))});
   });
-  PSW_X.forEach(th=>{ const L=th.items.filter(it=>(it[2]||th.lv).includes(niv[0])); if(new Set(L.map(i=>i[0])).size>=9) bank.push({kind:"x",theme:th.title,build:()=>nine(L,i=>i[0]).map(i=>({a:i[0],d:i[1]}))}); });
+  let UN=""; ids.forEach(id=>{ const H=HCDATA[id]; if(H&&!H.ob){ sylHC(H); UN+=SYL; } }); SYL=UN;
+  PSW_X.forEach(th=>{ const L=th.items.filter(it=>(it[2]||th.lv).includes(niv[0])); const LX=new Set(L.filter(it=>litStof(it[0]))); if(new Set(L.map(i=>i[0])).size>=9) bank.push({kind:"x",theme:th.title,build:()=>nine(L,i=>i[0],LX).map(i=>({a:i[0],d:i[1]}))}); });
   if(niv!=="tl") (()=>{ const KAT=id=>KA.find(k=>k.n===id), pool=PSW_K.filter(e=>KAT(e[0])).map(e=>({id:e[0],tv:KAT(e[0]).tv,t:KAT(e[0]).t,p:e[1]}));
     const pl=pool.filter(x=>x.tv>=(niv==="havo"?5:1)), maxTv=niv==="havo"?2:1;
     if(pl.length>=9) bank.push({kind:"k",theme:"Kenmerkende aspecten en personen: door de tijd heen",hint:"Kies de persoon die past bij het kenmerkend aspect.",build:()=>{ for(let tr=0;tr<400;tr++){ const C=[],cnt={}; shuffle(pl.slice()).forEach(x=>{ if(C.length<9&&(cnt[x.tv]||0)<maxTv){ C.push(x); cnt[x.tv]=(cnt[x.tv]||0)+1; } }); if(C.length<9) continue; const ids=new Set(C.map(x=>x.id)); const res=C.map(x=>{ const ok=x.p.filter(n=>!(PSW_KALT[n]||[]).some(i=>i!==x.id&&ids.has(i))); return ok.length?{a:ok[Math.floor(Math.random()*ok.length)],d:x.t,lab:"Kenmerkend aspect"}:null; }); if(res.every(Boolean)) return res; } return nine(pl,x=>x.id).map(x=>({a:x.p[0],d:x.t,lab:"Kenmerkend aspect"})); }}); })();
@@ -9588,10 +9592,11 @@ function pswBank(niv){
     const nTv=new Set(pool.map(x=>x.tv)).size, maxTv=niv==="havo"?2:1;
     if(nTv>=6&&pool.length>=12) bank.push({kind:"k",theme:"Kenmerkende aspecten en begrippen: door de tijd heen",hint:"Kies het begrip dat past bij het kenmerkend aspect.",build:()=>{ for(let tr=0;tr<600;tr++){ const pk=[], cnt={}; shuffle(pool.slice()).forEach(x=>{ if(pk.length>=9||(cnt[x.tv]||0)>=maxTv||pk.some(y=>PSW_KBCONF.some(c=>c.includes(x.id)&&c.includes(y.id)))) return; pk.push(x); cnt[x.tv]=(cnt[x.tv]||0)+1; }); if(pk.length===9) return pk.map(x=>({a:x.p[Math.floor(Math.random()*x.p.length)],d:x.t,lab:"Kenmerkend aspect"})); } return nine(pool,x=>x.id).map(x=>({a:x.p[0],d:x.t,lab:"Kenmerkend aspect"})); }}); })();
   if(mapData().world){
-    PSW_M.forEach(th=>{ const L=th.items.filter(it=>(it[4]||th.lv).includes(niv[0])); if(new Set(L.map(i=>i[0])).size>=9) bank.push({kind:"m",theme:th.title,build:()=>nine(L,i=>i[0]).map(i=>({a:i[0],d:i[3],h:pswMapHint(th.title,i[0],i[3]),m:{map:th.map,lat:i[1],lon:i[2],w:i[5]||th.w,q:th.q}}))}); });
+    PSW_M.forEach(th=>{ const L=th.items.filter(it=>(it[4]||th.lv).includes(niv[0])); const LM=new Set(L.filter(it=>litStof(it[0]))); if(new Set(L.map(i=>i[0])).size>=9) bank.push({kind:"m",theme:th.title,build:()=>nine(L,i=>i[0],LM).map(i=>({a:i[0],d:i[3],h:pswMapHint(th.title,i[0],i[3]),m:{map:th.map,lat:i[1],lon:i[2],w:i[5]||th.w,q:th.q}}))}); });
     if(typeof REIS!=="undefined"&&niv!=="tl") bank.push({kind:"m",theme:"Kaart: ontdekkingsreizigers",build:()=>nine(REIS.filter(r=>niv!=="havo"||r.n!=="Marco Polo"),r=>r.id).map(r=>({a:r.n,d:r.n+" ("+r.j+"). "+r.u,h:pswReisHint(r),m:{map:"world",seg:r.seg,q:"Wie maakte deze reis?"}}))});
   }
   bank.forEach(e=>{ e.hint=pswHint(e); });
+  SYL=SYL0;
   return bank;
 }
 /* Welke thema's lijken op elkaar? Uit één ronde van vier vragen komt van elke groep maximaal één vraag. De groepen staan hier, zodat ze makkelijk aan te passen zijn. Een thema dat nergens bij hoort, vormt zijn eigen groep (bij thema's uit een context is dat de context). */
