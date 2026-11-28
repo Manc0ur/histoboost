@@ -2855,12 +2855,12 @@ function orderEx({title,intro,items,back,meta,nextLabel,onNext,explain,hintAll})
 const SCHED_MEM={};
 function loadSt(key){ try{const v=localStorage.getItem("s:"+key); if(v) return JSON.parse(v);}catch(e){} return SCHED_MEM[key]||{seen:[],wrong:[]}; }
 function saveSt(key,st){ SCHED_MEM[key]=st; try{localStorage.setItem("s:"+key,JSON.stringify(st));}catch(e){} }
-function pickRound(key,items,idOf,n=10){
+function pickRound(key,items,idOf,n=10,lit){
   const st=loadSt(key), byId=new Map(items.map(x=>[String(idOf(x)),x])), all=[...byId.keys()];
   n=Math.min(n,all.length);
   const wslots=n===1?(Math.random()<.34?1:0):Math.ceil(n/2); /* bij één item per keer niet altijd de herhaallijst: anders blijven foute teksten steeds terugkomen */
   const picked=shuffle(st.wrong.filter(id=>byId.has(id))).slice(0,wslots);
-  const take=c=>{ for(const id of shuffle(c)){ if(picked.length>=n) break; if(!picked.includes(id)){ picked.push(id); if(!st.seen.includes(id)) st.seen.push(id); } } };
+  const take=c=>{ let sc=shuffle(c); if(lit&&SYL){ const L1=sc.filter(id=>lit(byId.get(id))); sc=L1.concat(sc.filter(id=>!L1.includes(id))); } for(const id of sc){ if(picked.length>=n) break; if(!picked.includes(id)){ picked.push(id); if(!st.seen.includes(id)) st.seen.push(id); } } };
   take(all.filter(id=>!st.seen.includes(id)));
   if(picked.length<n){ st.seen=st.seen.filter(id=>!byId.has(id)); take(all); }
   saveSt(key,st);
@@ -3131,10 +3131,10 @@ function hcMixGens(){
     MP=(H.map||MAP_HC).filter(d), GK=(H.gk||GK_STEDEN).filter(d), X=e=>(H.tlx||TLX)[e.j], BX=H.bext||BEXT;
   const allKa=[...new Set(H.dv.flatMap(x=>x.ka))];
   const gens=[
-    ()=>{ const b=B[Math.floor(Math.random()*B.length)]; if(!b) return null; const others=simBegrippen(b,H.begrippen,3);
+    ()=>{ const b=pickLit(B,x=>x.b); if(!b) return null; const others=simBegrippen(b,H.begrippen,3);
       return {ctx:ctxFor(b),id:"bg"+b.b,ask:QTAG("Begrip")+"Wat betekent dit begrip?",q:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.d})),
         hint:BX[b.b]?.[1]||`Dit begrip hoort bij deelvraag ${b.dv}.`,uitleg:`<strong>${esc(b.b)}</strong>: ${esc(b.d)}`,extra:BX[b.b]?.[0]||""}; },
-    ()=>{ const b=B[Math.floor(Math.random()*B.length)]; if(!b) return null; const others=simBegrippen(b,H.begrippen,3); if(others.length<3) return null;
+    ()=>{ const b=pickLit(B,x=>x.b); if(!b) return null; const others=simBegrippen(b,H.begrippen,3); if(others.length<3) return null;
       return {ctx:ctxFor(b),id:"bd"+b.b,ask:QTAG("Begrip")+"Welk begrip hoort bij deze omschrijving?",q:b.d,k:b.b,c:cc(b),right:b.b,opts:shuffle([b,...others]).map(x=>({id:x.b,label:x.b})),
         hint:BX[b.b]?.[1]||"",uitleg:`Dit is <strong>${esc(b.b)}</strong>.`,extra:BX[b.b]?.[0]||""}; },
     ()=>{ const KPn=KP.filter(y=>!Array.isArray(y.ka)&&!y.ex), x=KPn[Math.floor(Math.random()*KPn.length)]; if(!x) return null; const k=kaOf(x.ka);
@@ -3780,7 +3780,7 @@ function hcKoppelB(prev){
   let pool=H.begrippen.filter(b=>S.dvSel.has(b.dv)&&b.d);
   if(pool.length<6) pool=H.begrippen.filter(b=>b.d);
   const N=Math.min(pool.length>=8?7+(Math.random()<.5?1:0)-(Math.random()<.4?1:0):pool.length,8);
-  const round=pickRound(key,pool,b=>b.b,Math.max(4,N));
+  const round=pickRound(key,pool,b=>b.b,Math.max(4,N),b=>verplicht(b.b));
   const used=new Set(round.map(b=>b.d)), extra=[], others=H.begrippen.filter(x=>!round.includes(x)&&x.d&&!used.has(x.d));
   const want=Math.max(0,Math.min(12,Math.max(10,round.length+3))-round.length);
   for(const b of shuffle(round)){ if(extra.length>=want) break; for(const x of simBegrippen(b,others,3)){ if(!extra.includes(x)&&!used.has(x.d)){ extra.push(x); break; } } }
@@ -3808,7 +3808,7 @@ function hcKoppelB(prev){
     <p class="lead">Sleep bij elk begrip de juiste omschrijving. Je kunt ook op een omschrijving tikken en daarna op een begrip. Let op: er zijn meer omschrijvingen dan begrippen.</p>
     <div class="bk">
       <div class="bkl">${round.map((b,i)=>{ const ci=place[i], cls=checked?(isRight(i)?"correct":"wrong"):(ci===null?"empty":"");
-        return `<div class="bkrow"><div class="bkterm">${esc(b.b)}${ctxFor(b,false,true)?`<span class="bkctx">${ctxFor(b,false,true)}</span>`:""}</div>
+        return `<div class="bkrow"><div class="bkterm">${esc(b.b)}${verplicht(b.b)?" "+starHtml():""}${ctxFor(b,false,true)?`<span class="bkctx">${ctxFor(b,false,true)}</span>`:""}</div>
           <div class="bkslot ${cls}" data-slot="${i}" role="button" tabindex="0" aria-label="Omschrijving bij ${esc(b.b)}${ci!==null?": "+esc(chips[ci].t):", leeg"}">${ci!==null?(checked?`<span class="bkchip" style="cursor:default;border-color:transparent;background:transparent">${esc(chips[ci].t)}</span>`:chipHtml(ci)):"Sleep hier de omschrijving heen"}</div></div>`; }).join("")}</div>
       ${checked?"":`<div class="bkbank" data-bank="1"><h3>Omschrijvingen</h3>${bank.map(chipHtml).join("")||`<span class="gph">Alle omschrijvingen zijn gebruikt.</span>`}</div>`}
     </div>
@@ -3996,7 +3996,7 @@ function flashcards({scope,key,back}){
   const STOPW=new Set(["van","der","den","het","de","en","op","in","voor","met","von","zu","the","of"]);
   const maskName=(txt,n)=>{ let o=txt; [n,...n.split(/\s+/)].filter(w=>w.length>=3&&!STOPW.has(w.toLowerCase())).sort((a,b)=>b.length-a.length).forEach(w=>{ o=o.replace(new RegExp("(^|[^\\p{L}])"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?=$|[^\\p{L}])","giu"),"$1…"); }); return o; };
   let typ="", reverse=false, queue=[], known=0, total=0, misses=0, flipped=false;
-  function start(){ queue=shuffle(all.filter(c=>!typ||c.tag===typ)); known=0; total=queue.length; misses=0; flipped=false; draw(); }
+  function start(){ queue=stofFirst(shuffle(all.filter(c=>!typ||c.tag===typ)),c=>c.f); known=0; total=queue.length; misses=0; flipped=false; draw(); }
   function frontOf(c){ if(c.tag==="Gebeurtenis"||!reverse) return esc(c.f)+(verplicht(c.f)?" "+starHtml():"");
     return esc(c.tag==="Persoon"?maskName(c.a,c.f):c.a); }
   function backOf(c){
@@ -4072,8 +4072,9 @@ function hcGalgje(seen,scope){
   const ok=pool.filter(x=>{ const n=norm(x.w).replace(/[^A-Z]/g,"").length; return n>=3&&n<=30; });
   let fresh=ok.filter(x=>!seen.has(x.w)); if(!fresh.length){ seen.clear(); fresh=ok; }
   if(!fresh.length){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><p class="note">Kies minimaal één onderdeel met genoeg stof voor deze oefening.</p>`; app.querySelector("#back").onclick=BK; return; }
-  const tags=[...new Set(fresh.map(x=>x.tag))], tg=tags[Math.floor(Math.random()*tags.length)];
-  const item=pickN(fresh.filter(x=>x.tag===tg),1)[0]; seen.add(item.w);
+  const litF=SYL?fresh.filter(x=>verplicht(x.w)):[], cand=litF.length?litF:fresh;
+  const tags=[...new Set(cand.map(x=>x.tag))], tg=tags[Math.floor(Math.random()*tags.length)];
+  const item=pickN(cand.filter(x=>x.tag===tg),1)[0]; seen.add(item.w);
   const target=norm(item.w), MAX=6, guessed=new Set(); let wrong=0, done=false, hint=false; const hintOn=true;
   const isLetter=c=>/[A-Z]/.test(c);
   const letters=[...new Set(target.split("").filter(isLetter))];
@@ -4093,7 +4094,7 @@ function hcGalgje(seen,scope){
     <h2>Galgje</h2>
     <div class="gal">
       <svg viewBox="0 0 150 160" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-label="Galg, ${wrong} van ${MAX} fouten"><path d="M20 150h70M40 150V12h45v22"/>${parts(wrong)}</svg>
-      <div class="galinfo"><div class="galcat" role="note">Categorie: <strong>${item.tag}</strong></div>
+      <div class="galinfo"><div class="galcat" role="note">Categorie: <strong>${item.tag}</strong>${verplicht(item.w)?" "+starHtml():""}</div>
       ${hintOn&&!done?(hint?`<div class="note galclue" role="note" style="margin:.5rem 0"><strong>Hint:</strong> ${esc(item.clue.replace(/\.\.$/,"."))}</div>`:`<button type="button" class="btn ghost" id="ghint" style="margin:.5rem 0">Toon hint</button>`):""}
       <div class="galword" style="--n:${longest}" aria-label="Het woord, ${words.length} ${words.length===1?"woord":"woorden"}, ${item.w.length} tekens">${wordHtml}</div>
       ${done?"":`<div class="note">Nog ${MAX-wrong} ${MAX-wrong===1?"fout":"fouten"} mogelijk</div>`}</div>
@@ -4181,7 +4182,7 @@ function hcFabel(){
 function hcBegrip(){
   const H=S.hc, pool=H.begrippen.filter(b=>S.dvSel.has(b.dv));
   const BX=H.bext||BEXT, LK=H.lijkt||LIJKT;
-  const qs=pickRound(hk("begrip"),pool,b=>b.b).map(b=>{
+  const qs=pickRound(hk("begrip"),pool,b=>b.b,10,b=>verplicht(b.b)).map(b=>{
     const like=((H===STEDEN||H===BRITS||H.parts)?(LK[b.b]||[]).map(n=>H.begrippen.find(x=>x.b===n)).filter(Boolean):[]).slice(0,2);
     const others=[...like,...simBegrippen(b,H.begrippen.filter(x=>!like.includes(x)),3-like.length)];
     return {ctx:ctxFor(b),id:b.b,extra:BX[b.b]?.[0],hint:BX[b.b]?.[1],ask:"Wat betekent dit begrip?",q:b.b,c:H.dv[b.dv-1].c,right:b.b,
@@ -4788,7 +4789,7 @@ function hcTijdlijn(){ tlEx({all:S.hc.tijdlijn.filter(e=>S.dvSel.has(e.dv)),key:
 function kaTijdlijn(){ tlEx({all:KA_TL.filter(e=>S.sel.has(e.tv)&&kaOk(e)),key:"katl",back:kaMenu,again:kaTijdlijn,X:id=>{const e=KA_TL.find(x=>x.j===id); return e?[e.u,e.h]:null;},tv:true}); }
 function tlEx({all,key,back,again,X,tv}){
   if(all.length<2) return leeg("Tijdlijn",back,"gebeurtenissen");
-  const evs=ntDedupe(pickRound(key,all,e=>e.j,7)).sort((a,b)=>a.j-b.j);
+  const evs=ntDedupe(pickRound(key,all,e=>e.j,7,e=>verplicht(e.t))).sort((a,b)=>a.j-b.j);
   const years=evs.map(e=>e.j), order=shuffle(years);
   const place={}; years.forEach(y=>place[y]=null);
   let sel=null, checked=false, shown=false, recorded=false;
@@ -6550,6 +6551,9 @@ function verplicht(t){
 function litStof(t){ if(!SYL||!t) return false; const key=synorm(String(t).replace(/\(.*?\)/g,"")).trim(); if(!key) return false;
   if(SYL.includes(" "+key+" ")) return true;
   const ws=key.split(" ").filter(w=>w.length>=5); return ws.length>0&&ws.every(w=>SYL.includes(w.slice(0,Math.max(5,w.length-2)))); }
+/* stof eerst, dan aanvullen: items die in de stofomschrijving staan (met ★) komen eerst aan bod */
+const stofFirst=(arr,txt)=>{ if(!SYL||!arr.length) return arr; const a=[],b=[]; arr.forEach(x=>(verplicht(txt(x))?a:b).push(x)); return a.concat(b); };
+const pickLit=(L,txt)=>{ if(!SYL||!L.length) return L[Math.floor(Math.random()*L.length)]; const lit=L.filter(x=>verplicht(txt(x))); const P=lit.length&&Math.random()<.85?lit:L; return P[Math.floor(Math.random()*P.length)]; };
 const STARTIP="Staat in de stofomschrijving: dit moet je kennen";
 const starHtml=()=>`<span class="star" role="img" tabindex="0" aria-label="verplichte stof" title="${STARTIP}" data-tip="${STARTIP}">★</span>`;
 function decorate(){
@@ -6905,7 +6909,7 @@ function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
   const NR=6, total0=Math.min(NR,pool.length+begr.length);
   let nb=0; for(let k=0;k<total0;k++) if(begr.length&&(!pool.length||Math.random()<.5)) nb++;
   nb=Math.min(nb,begr.length); let np=total0-nb; if(np>pool.length){ np=pool.length; nb=total0-np; }
-  const lp=np?pickRound(key,pool,x=>x.id,np):[], lb=nb?pickRound(key+"-b",begr,x=>x.id,nb):[];
+  const lp=np?pickRound(key,pool,x=>x.id,np,x=>verplicht(x.n)):[], lb=nb?pickRound(key+"-b",begr,x=>x.id,nb,x=>verplicht(x.b||x.n||x.a||"")):[];
   const round=shuffle([...lp.map(()=>"p"),...lb.map(()=>"b")]).map(t=>t==="p"?lp.shift():lb.shift());
   let i=0,total=0,shown=1,done=false,wrong=new Set(),gone=new Set(),opts=[];
   const results=[];
@@ -6920,7 +6924,7 @@ function wieBenIk({pool,others,key,back,again,begr=[],begrAll=[]}){
     app.innerHTML=`<button class="back" id="back">‹ Stoppen</button>
       <div class="meta"><span>${begr.length?"Wie of wat ben ik?":"Wie ben ik?"}</span><span>${begr.length?"Vraag":"Persoon"} ${i+1} van ${round.length} · ${total} punten</span></div>
       <div class="progress"><i style="width:${i/round.length*100}%"></i></div>
-      <div class="qcard wbi"><p class="ask">${p.kind==="b"?"Wat ben ik?":"Wie ben ik?"} Hoe minder hints je nodig hebt, hoe meer punten.</p>
+      <div class="qcard wbi"><p class="ask">${p.kind==="b"?"Wat ben ik?":"Wie ben ik?"} Hoe minder hints je nodig hebt, hoe meer punten.${verplicht(p.n||p.b||"")?" "+starHtml():""}</p>
         <ol class="wbihints">${p.h.slice(0,shown).map((h,k)=>`<li${k===shown-1&&!done?' class="new"':""}>${esc(h)}</li>`).join("")}</ol>
         ${!done&&shown<NH?`<button class="btn ghost" id="hint">Nog een hint (${shown} van ${NH})</button>`:""}
         ${!done?`<p class="wbitip">Weet je dat het ${p.kind==="b"?"dat begrip":"die persoon"} niet is? Klik op het kruisje om het uit te sluiten.</p>`:""}
@@ -7067,7 +7071,7 @@ function kwRemember(placed){ try{ const a=(JSON.parse(localStorage.getItem("kwr"
 function kwBuild(words,target){
   let best=null; const R=kwRecent();
   for(let attempt=0;attempt<60;attempt++){
-    const pool=shuffle(words).map(w=>[w,Math.random()+1.2*(R.get(w.k)||0)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).map(w=>[w,w.k.length>9&&Math.random()<.35?1:0]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).slice(0,45); const fi=pool.findIndex(w=>w.k.length>=7&&w.k.length<=10); if(fi>0) pool.unshift(...pool.splice(fi,1)); const evs=pool.filter(w=>w.tag==="Gebeurtenis"&&!R.get(w.k)).slice(0,2); evs.forEach(e=>{ pool.splice(pool.indexOf(e),1); pool.splice(1,0,e); });
+    const pool=shuffle(words).map(w=>[w,Math.random()+1.2*(R.get(w.k)||0)-(SYL&&w.a&&verplicht(w.a)?.9:0)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).map(w=>[w,w.k.length>9&&Math.random()<.35?1:0]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]).slice(0,45); const fi=pool.findIndex(w=>w.k.length>=7&&w.k.length<=10); if(fi>0) pool.unshift(...pool.splice(fi,1)); const evs=pool.filter(w=>w.tag==="Gebeurtenis"&&!R.get(w.k)).slice(0,2); evs.forEach(e=>{ pool.splice(pool.indexOf(e),1); pool.splice(1,0,e); });
     const G=new Map(), D=new Map(), placed=[]; const at=(r,c)=>G.get(r+","+c);
     let minR=0,maxR=0,minC=0,maxC=0;
     const fits=(w,r,c,dir)=>{ const dr=dir?1:0, dc=dir?0:1, L=w.k.length; let cross=0;
@@ -7242,7 +7246,7 @@ function memory({scope,key,back,again}){
   const all=memPairs(scope);
   if(all.length<4){ app.innerHTML=`<button class="back" id="back">‹ Terug naar oefeningen</button><h2>Memory</h2><p class="note">Er zijn te weinig begrippen, personen en gebeurtenissen. Kies meer ${kiesWat()}.</p>`; app.querySelector("#back").onclick=back; return; }
   // mix van soorten: om de beurt een gebeurtenis, persoon en begrip
-  const by=t=>shuffle(all.filter(p=>p.tag===t)); const g=[by("Gebeurtenis"),by("Persoon"),by("Begrip")]; const pick=[];
+  const by=t=>stofFirst(shuffle(all.filter(p=>p.tag===t)),p=>p.a); const g=[by("Gebeurtenis"),by("Persoon"),by("Begrip")]; const pick=[];
   for(let r=0;pick.length<Math.min(8,all.length)&&r<30;r++){ const L=g[r%3]; if(L.length) pick.push(L.shift()); }
   const cards=shuffle(pick.flatMap((p,i)=>[{id:"a"+i,pair:i,txt:p.a,kind:"term",tag:p.tag},{id:"q"+i,pair:i,txt:p.q,kind:"desc",tag:"Omschrijving"}]));
   let open=[], found=new Set(), turns=0, lock=false; const run=Math.random().toString(36).slice(2);
@@ -7257,7 +7261,7 @@ function memory({scope,key,back,again}){
       <div class="row" style="margin:.6rem 0 1rem"><button class="btn" id="again">Nieuw spel</button><button class="btn ghost" id="menu">Andere oefening</button></div>`:""}
       <div class="memgrid" data-run="${run}">${cards.map(c=>{ const up=open.includes(c.id)||found.has(c.pair);
         return `<button class="memcard ${up?"up":""} ${found.has(c.pair)?"found":""} ${c.kind}" data-c="${c.id}" ${found.has(c.pair)?"disabled":""} aria-label="${up?esc(c.txt):"Omgedraaide kaart"}">
-          ${up?`<span class="qtag">${c.tag}</span><span class="memtxt">${esc(c.txt)}</span>`:`<span class="memback" aria-hidden="true">?</span>`}</button>`; }).join("")}</div>`;
+          ${up?`<span class="qtag">${c.tag}</span><span class="memtxt">${esc(c.txt)}${c.kind==="term"&&verplicht(c.txt)?" "+starHtml():""}</span>`:`<span class="memback" aria-hidden="true">?</span>`}</button>`; }).join("")}</div>`;
     app.querySelector("#back").onclick=back;
     const a=app.querySelector("#again"); if(a) a.onclick=again; const m=app.querySelector("#menu"); if(m) m.onclick=back;
     app.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>flip(b.dataset.c));
@@ -7292,7 +7296,7 @@ function hcMemory(){ memory({scope:"hc",key:hk("memory"),back:hcMenu,again:hcMem
   window.addEventListener("popstate",()=>{ armed=false; const b=app.querySelector("#back"); if(b) b.click(); else { try{ history.back(); }catch(e){} } });
 })();
 (function(){
-  const BUILD="20261128130705"; let last=0, shown=false;
+  const BUILD="20261128133556"; let last=0, shown=false;
   function check(){ const now=Date.now(); if(shown||now-last<5*60*1000) return; last=now;
     fetch("version.json?t="+now,{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.v||j.v===BUILD||shown) return; shown=true;
       const d=document.createElement("div"); d.className="newver"; d.setAttribute("role","status");
